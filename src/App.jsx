@@ -22,6 +22,13 @@ function App() {
         ];
     });
 
+    const [clubAdmins, setClubAdmins] = useState(() => {
+        const saved = localStorage.getItem('pls_club_admins');
+        return saved ? JSON.parse(saved) : [
+            { name: 'Otabek Admin', login: 'ota_admin', pass: '7777', club: 'PLS Kokand-1' }
+        ];
+    });
+
     const [clubs, setClubs] = useState(() => {
         const saved = localStorage.getItem('pls_clubs');
         return saved ? JSON.parse(saved) : [
@@ -37,12 +44,17 @@ function App() {
     }, [superAdmins]);
 
     useEffect(() => {
+        localStorage.setItem('pls_club_admins', JSON.stringify(clubAdmins));
+    }, [clubAdmins]);
+
+    useEffect(() => {
         localStorage.setItem('pls_clubs', JSON.stringify(clubs));
     }, [clubs]);
 
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [editIndex, setEditIndex] = useState(null);
     const [newAdmin, setNewAdmin] = useState({ name: '', phone: '', login: '', pass: '', club: '' });
+    const [superAdminTab, setSuperAdminTab] = useState('asosiy');
 
     const holdTimer = useRef(null);
 
@@ -85,11 +97,14 @@ function App() {
         setErrorMessage('');
         setTimeout(() => {
             const superAdmin = superAdmins.find(sa => sa.login === username && sa.pass === password);
+            const clubAdmin = clubAdmins.find(ca => ca.login === username && ca.pass === password);
 
             if (username === '4567' && password === '4567') {
                 setView('admin');
             } else if (superAdmin) {
                 setView('super-admin');
+            } else if (clubAdmin) {
+                setView('club-admin-view');
             } else if (username && password) {
                 setView('player');
             } else {
@@ -106,9 +121,14 @@ function App() {
         setTimeout(() => {
             const isMaster = (adminUser === '4567' && adminPass === '4567');
             const isAdmin = (adminUser.toLowerCase() === 'admin' && adminPass === 'admin777');
+            const superAdmin = superAdmins.find(sa => sa.login === adminUser && sa.pass === adminPass);
 
             if (isMaster || isAdmin) {
                 setView('admin');
+                setUsername(adminUser);
+            } else if (superAdmin) {
+                setView('super-admin');
+                setUsername(adminUser);
             } else {
                 setErrorMessage('Xavfsizlik kaliti noto\'g\'ri');
                 if (window.Telegram?.WebApp?.HapticFeedback) {
@@ -457,35 +477,116 @@ function App() {
                     </motion.div>
                 ) : view === 'super-admin' ? (
                     <motion.div
-                        key='super-admin' initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-                        className='relative z-10 w-full h-screen p-8 flex flex-col items-center justify-center gap-10 max-w-sm mx-auto overflow-hidden'
+                        key='super-admin' initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                        className='relative z-10 w-full h-screen flex flex-col bg-[#030308] max-w-lg mx-auto overflow-hidden'
                     >
-                        <div className='w-32 h-32 premium-glass flex items-center justify-center relative float'>
-                            <div className='absolute inset-0 bg-[#39ff14]/10 blur-[40px] rounded-full'></div>
-                            <User size={56} className='text-[#39ff14]' />
-                        </div>
-                        <div className='text-center space-y-3'>
-                            <h2 className='text-3xl font-black italic tracking-tighter uppercase syncopate luxury-gradient-text'>SUPER ADMIN</h2>
-                            <p className='text-white/40 text-[10px] font-bold tracking-[4px] uppercase'>FILIALLAR BOSHQARUVI</p>
-                        </div>
-
-                        <div className='premium-glass p-10 w-full space-y-8 border-white/5 relative'>
-                            <div className='absolute -top-4 left-1/2 -translate-x-1/2 bg-[#39ff14]/10 border border-[#39ff14]/30 px-4 py-1 rounded-full'>
-                                <span className='text-[8px] font-black tracking-[2px] text-[#39ff14]'>XUSH KELIBSIZ</span>
+                        {/* Tab HUD for Super Admin */}
+                        <div className='flex justify-between items-center p-6 bg-black/40 backdrop-blur-2xl border-b border-white/5'>
+                            <div className='flex gap-3'>
+                                {['asosiy', 'admins', 'logs'].map(tab => (
+                                    <button
+                                        key={tab} onClick={() => setSuperAdminTab(tab)}
+                                        className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-[2px] transition-all ${superAdminTab === tab ? 'bg-[#39ff14] text-black shadow-[0_0_15px_rgba(57,255,20,0.4)]' : 'bg-white/5 text-white/40'}`}
+                                    >
+                                        {tab === 'asosiy' ? 'BOSHQUVAR' : tab === 'admins' ? 'ADMINLAR' : 'JURNALLAR'}
+                                    </button>
+                                ))}
                             </div>
-
-                            <div className='text-center space-y-2 pt-2'>
-                                <p className='text-xl font-bold tracking-tight'>{superAdmins.find(sa => sa.login === username)?.name || 'ADMIN'}</p>
-                                <p className='text-[10px] text-[#39ff14] font-bold uppercase tracking-[3px]'>{superAdmins.find(sa => sa.login === username)?.club || 'PLS FILIAL'}</p>
-                            </div>
-
-                            <div className='flex flex-col gap-4'>
-                                <button className='btn-luxury w-full py-5 text-[11px] tracking-[2px] uppercase font-black'>PC MONITORING 🎮</button>
-                                <button className='btn-luxury w-full py-5 text-[11px] tracking-[2px] uppercase font-black'>KASSA NAZORATI 💰</button>
-                            </div>
+                            <button onClick={() => setView('login')} className='w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20'>
+                                <LogOut size={18} />
+                            </button>
                         </div>
 
-                        <button onClick={() => setView('login')} className='text-[10px] font-bold uppercase tracking-[4px] opacity-20 hover:opacity-100 transition-all'>TIZIMDAN CHIQISH</button>
+                        <div className='flex-1 overflow-y-auto p-6 space-y-8 pb-32'>
+                            <AnimatePresence mode='wait'>
+                                {superAdminTab === 'asosiy' ? (
+                                    <motion.div key='sa-dash' initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className='space-y-8'>
+                                        {/* My Club Info */}
+                                        <div className='premium-glass p-8 bg-gradient-to-br from-[#39ff14]/10 to-transparent border-[#39ff14]/30 relative overflow-hidden'>
+                                            <div className='flex justify-between items-start mb-6'>
+                                                <div className='space-y-1'>
+                                                    <p className='text-[8px] text-[#39ff14] font-black tracking-[4px] uppercase'>FILIAL_HOLATI</p>
+                                                    <h2 className='text-2xl font-black italic tracking-tighter uppercase syncopate'>{superAdmins.find(sa => sa.login === username)?.club || 'PLS FILIAL'}</h2>
+                                                </div>
+                                                <div className='w-3 h-3 rounded-full bg-[#39ff14] shadow-[0_0_12px_#39ff14] animate-pulse'></div>
+                                            </div>
+                                            <div className='grid grid-cols-2 gap-8'>
+                                                <div>
+                                                    <p className='text-[8px] text-white/30 font-bold uppercase tracking-[2px] mb-1'>AKTIV PC 🎮</p>
+                                                    <p className='text-3xl font-black italic tracking-tighter'>18 / 24</p>
+                                                </div>
+                                                <div>
+                                                    <p className='text-[8px] text-white/30 font-bold uppercase tracking-[2px] mb-1'>BUGUNGI KASSA 💰</p>
+                                                    <p className='text-3xl font-black italic tracking-tighter'>1.2M</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Actions for Super Admin */}
+                                        <div className='grid grid-cols-2 gap-4'>
+                                            <button className='premium-glass p-6 text-center hover:bg-[#39ff14]/10 transition-all group'>
+                                                <Monitor size={32} className='mx-auto mb-3 text-white/40 group-hover:text-[#39ff14]' />
+                                                <p className='text-[10px] font-black tracking-[2px]'>MONITORING</p>
+                                            </button>
+                                            <button className='premium-glass p-6 text-center hover:bg-[#39ff14]/10 transition-all group'>
+                                                <CreditCard size={32} className='mx-auto mb-3 text-white/40 group-hover:text-[#39ff14]' />
+                                                <p className='text-[10px] font-black tracking-[2px]'>HISOBOTLAR</p>
+                                            </button>
+                                        </div>
+
+                                        {/* Health bar */}
+                                        <div className='flex justify-between items-center p-6 bg-white/[0.02] rounded-3xl border border-white/5'>
+                                            <div className='text-[9px] font-bold text-white/40 uppercase tracking-[2px]'>STANTSIYALAR: <span className='text-[#39ff14]'>ONLAYN 🌐</span></div>
+                                            <div className='text-[9px] font-bold text-white/40 uppercase tracking-[2px]'>KASSA: <span className='text-[#39ff14]'>YOPILGAN 🔒</span></div>
+                                        </div>
+                                    </motion.div>
+                                ) : superAdminTab === 'admins' ? (
+                                    <motion.div key='sa-admins' initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className='space-y-6'>
+                                        <button className='w-full bg-[#39ff14]/10 border border-[#39ff14]/30 text-[#39ff14] py-5 rounded-2xl font-black text-[11px] tracking-[3px] uppercase hover:bg-[#39ff14]/20 transition-all'>
+                                            + CLUB ADMIN QO'SHISH
+                                        </button>
+
+                                        <div className='space-y-3'>
+                                            {clubAdmins.filter(ca => ca.club === superAdmins.find(sa => sa.login === username)?.club).map((admin, i) => (
+                                                <div key={i} className='premium-glass p-6 flex justify-between items-center border-white/5'>
+                                                    <div className='flex items-center gap-4'>
+                                                        <div className='w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center'>
+                                                            <User size={22} className='text-white/40' />
+                                                        </div>
+                                                        <div>
+                                                            <p className='font-bold text-sm tracking-wide'>{admin.name}</p>
+                                                            <p className='text-[10px] text-[#39ff14] font-bold tracking-[1px]'>{admin.login} / {admin.pass}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className='flex gap-2'>
+                                                        <button className='w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10'><Settings size={14} className='text-white/20' /></button>
+                                                        <button className='w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-red-500/10'><Trash2 size={14} className='text-red-400/40' /></button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                ) : (
+                                    <motion.div key='sa-logs' initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className='space-y-6'>
+                                        <div className='premium-glass p-6 space-y-6 border-white/5'>
+                                            <h4 className='text-[10px] font-bold opacity-30 uppercase tracking-[4px]'>FILIAL FAOLLIYATI ⚡</h4>
+                                            <div className='space-y-4'>
+                                                {[
+                                                    { msg: 'PC-14 sessiyasi tugadi', time: 'hozir' },
+                                                    { msg: 'Kassa ochildi', time: '12 daq' },
+                                                    { msg: 'Yangi xaridor: shox_pro', time: '24 daq' }
+                                                ].map((log, i) => (
+                                                    <div key={i} className='flex justify-between items-center py-3 border-b border-white/[0.03] last:border-0'>
+                                                        <span className='text-[12px] font-medium text-white/60'>{log.msg}</span>
+                                                        <span className='text-[9px] font-bold text-white/20 uppercase tracking-[1px]'>{log.time}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
                     </motion.div>
                 ) : (
                     <motion.div
