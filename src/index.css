@@ -5,46 +5,41 @@
 @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Outfit:wght@300;400;600;800&display=swap');
 
 :root {
-  --bg: #050210;
-  --primary: #00f2ff;
-  --accent: #9d3cff;
-  --glass: rgba(15, 15, 30, 0.45);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --bg: #020108;
+  --card: rgba(10, 10, 20, 0.5);
+  --border: rgba(255, 255, 255, 0.08);
+  --pls-cyan: #00f2ff;
+  --pls-purple: #9d3cff;
+  --pls-red: #ff3c41;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-body { background: var(--bg); color: #fff; font-family: 'Outfit', sans-serif; overflow: hidden; height: 100vh; }
+body { background: var(--bg); color: #fff; font-family: 'Outfit', sans-serif; overflow-x: hidden; min-height: 100vh; overflow-y: auto; }
 
 @layer components {
   .glass-card {
-    @apply backdrop-blur-[50px] bg-white/[0.03] border border-white/10 rounded-[44px];
-    box-shadow: 0 50px 120px -30px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.06), 0 0 30px -10px rgba(0, 242, 255, 0.1);
+    @apply backdrop-blur-[50px] bg-white/[0.04] border border-white/10 rounded-[36px];
+    box-shadow: 0 40px 100px -20px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.05);
+    position: relative;
+    overflow: hidden;
   }
-  .neon-glow {
-    box-shadow: 0 0 50px -15px var(--primary);
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+    pointer-events: none;
   }
+  .unbounded { font-family: 'Unbounded', cursive; }
   .mesh-gradient {
-    @apply fixed inset-0 opacity-40 z-0 pointer-events-none;
-    background: radial-gradient(at 0% 0%, #00f2ff 0, transparent 50%),
-                radial-gradient(at 100% 0%, #9d3cff 0, transparent 50%),
-                radial-gradient(at 50% 100%, #ff3c41 0, transparent 50%);
-    filter: blur(100px);
+    position: fixed; inset: 0; opacity: 0.4; z-index: 0; pointer-events: none;
+    background: radial-gradient(at 0% 0%, var(--pls-cyan) 0, transparent 50%),
+                radial-gradient(at 100% 0%, var(--pls-purple) 0, transparent 50%),
+                radial-gradient(at 50% 100%, var(--pls-red) 0, transparent 50%);
+    filter: blur(140px);
   }
+  .animate-spin-slow { animation: spin 8s linear infinite; }
 }
 
-@keyframes float {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(30px, -30px) scale(1.1); }
-  100% { transform: translate(0, 0) scale(1); }
-}
-
-.particle {
-  position: fixed;
-  border-radius: 50%;
-  background: var(--primary);
-  filter: blur(40px);
-  opacity: 0.15;
-  z-index: 1;
-  animation: float 15s infinite ease-in-out;
-}
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
