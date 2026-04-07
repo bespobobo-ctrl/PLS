@@ -942,57 +942,81 @@ function App() {
 
                         {/* Control Modal */}
                         <AnimatePresence>
-                            {selectedRoom && !isPaymentModalOpen && (
-                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='fixed inset-0 z-[100] bg-black/90 backdrop-blur-2xl flex items-center justify-center p-6' onClick={() => setSelectedRoom(null)}>
-                                    <motion.div
-                                        initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 10 }}
-                                        className='premium-glass w-full max-w-sm p-8 space-y-8 bg-[#030308] border-[#39ff14]/20'
-                                        onClick={e => e.stopPropagation()}
-                                    >
-                                        <div className='flex justify-between items-start'>
-                                            <div>
-                                                <h2 className='text-3xl font-black italic tracking-tighter uppercase syncopate text-[#39ff14]'>{selectedRoom.name}</h2>
-                                                <p className='text-[9px] font-black tracking-[4px] opacity-40 uppercase'>Boshqaruv paneli</p>
+                            {selectedRoom && !isPaymentModalOpen && (() => {
+                                const activeModalRoom = rooms.find(r => r.id === selectedRoom.id) || selectedRoom;
+                                return (
+                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='fixed inset-0 z-[100] bg-black/90 backdrop-blur-2xl flex items-center justify-center p-6' onClick={() => setSelectedRoom(null)}>
+                                        <motion.div
+                                            initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 10 }}
+                                            className='premium-glass w-full max-w-sm p-8 space-y-8 bg-[#030308] border-[#39ff14]/20'
+                                            onClick={e => e.stopPropagation()}
+                                        >
+                                            <div className='flex justify-between items-start'>
+                                                <div>
+                                                    <h2 className='text-3xl font-black italic tracking-tighter uppercase syncopate text-[#39ff14]'>{activeModalRoom.name}</h2>
+                                                    <p className='text-[9px] font-black tracking-[4px] opacity-40 uppercase'>Boshqaruv paneli</p>
+                                                </div>
+                                                <button onClick={() => setSelectedRoom(null)} className='p-2 rounded-xl bg-white/5 border border-white/10'><X size={20} /></button>
                                             </div>
-                                            <button onClick={() => setSelectedRoom(null)} className='p-2 rounded-xl bg-white/5 border border-white/10'><X size={20} /></button>
-                                        </div>
 
-                                        {selectedRoom.isBusy ? (
-                                            <div className='space-y-8 py-4'>
-                                                <div className='text-center space-y-2'>
-                                                    <p className='text-6xl font-black italic tracking-tighter text-white tracking-[-4px]'>{formatTime(currentTime - selectedRoom.startTime)}</p>
-                                                    <p className='text-[8px] font-black tracking-[4px] opacity-40 uppercase'>O'yin davom etmoqda...</p>
+                                            {activeModalRoom.isBusy ? (
+                                                <div className='space-y-8 py-4'>
+                                                    <div className='text-center space-y-2'>
+                                                        <p className='text-6xl font-black italic tracking-tighter text-white tracking-[-4px]'>{formatTime(currentTime - activeModalRoom.startTime)}</p>
+                                                        <p className='text-[8px] font-black tracking-[4px] opacity-40 uppercase'>O'yin davom etmoqda...</p>
+                                                    </div>
+                                                    <div className=' premium-glass p-6 border-white/5 space-y-4 bg-[#39ff14]/5'>
+                                                        <div className='flex justify-between items-center opacity-60'>
+                                                            <p className='text-[9px] font-black uppercase tracking-[1px]'>Vaqt hisobi:</p>
+                                                            <p className='text-xs font-bold'>{(calculateCost(activeModalRoom, currentTime) - (activeModalRoom.sessionBarTotal || 0)).toLocaleString()} UZS</p>
+                                                        </div>
+                                                        <div className='flex justify-between items-center text-[#39ff14]'>
+                                                            <p className='text-[9px] font-black uppercase tracking-[1px]'>Bar xizmati:</p>
+                                                            <p className='text-xs font-bold'>{(activeModalRoom.sessionBarTotal || 0).toLocaleString()} UZS</p>
+                                                        </div>
+                                                        <div className='pt-3 border-t border-white/10 flex justify-between items-center'>
+                                                            <p className='text-[10px] font-black tracking-[2px] opacity-60 uppercase'>JAMI HISOB:</p>
+                                                            <div className='text-right'>
+                                                                <p className='text-2xl font-black italic'>{calculateCost(activeModalRoom, currentTime).toLocaleString()}</p>
+                                                                <p className='text-[8px] opacity-40 font-bold uppercase tracking-[1px]'>UZS</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className='grid grid-cols-2 gap-4'>
+                                                        <button
+                                                            onClick={() => {
+                                                                handleAddBar(activeModalRoom.id, 10000);
+                                                                if (window.Telegram?.WebApp?.HapticFeedback) {
+                                                                    window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                                                                }
+                                                            }}
+                                                            className='premium-glass p-4 border-white/5 flex flex-col items-center gap-2 group hover:bg-[#39ff14]/10 transition-all active:scale-95'
+                                                        >
+                                                            <Coffee size={20} className='group-hover:text-[#39ff14] transition-colors' />
+                                                            <span className='text-[8px] font-black uppercase tracking-[1px]'>BAR +10K</span>
+                                                        </button>
+                                                        <button onClick={() => { if (window.confirm("Xonani o'chirasizmi?")) { setRooms(rooms.filter(r => r.id !== activeModalRoom.id)); setSelectedRoom(null); } }} className='premium-glass p-4 border-red-500/20 text-red-500 flex flex-col items-center gap-2'><Trash2 size={20} /><span className='text-[8px] font-black uppercase'>O'CHIRISH</span></button>
+                                                    </div>
+                                                    <button onClick={() => handleStopSession(activeModalRoom)} className='w-full bg-red-500 text-white font-black py-5 rounded-2xl uppercase tracking-[3px] text-xs shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:brightness-110 active:scale-[0.98] transition-all'>Sessiyani Yakunlash ⏹️</button>
                                                 </div>
-                                                <div className='premium-glass p-6 border-white/5 flex justify-between items-center bg-[#39ff14]/5'>
-                                                    <p className='text-[10px] font-black tracking-[2px] opacity-60 uppercase'>Hozirgi hisob:</p>
-                                                    <p className='text-2xl font-black italic'>{calculateCost(selectedRoom, currentTime).toLocaleString()} <span className='text-[10px] opacity-40 italic'>UZS</span></p>
+                                            ) : (
+                                                <div className='space-y-8 py-4'>
+                                                    <div className='premium-glass p-10 text-center border-dashed border-[#39ff14]/30'>
+                                                        <Gamepad2 size={48} className='mx-auto mb-4 opacity-10' />
+                                                        <p className='text-[10px] font-black tracking-[2px] opacity-40 uppercase'>Xona tayyor holatda</p>
+                                                    </div>
+                                                    <div className='grid grid-cols-3 gap-2'>
+                                                        <button onClick={() => handleStartRoomEdit(activeModalRoom, rooms.findIndex(r => r.id === activeModalRoom.id))} className='p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center gap-1'><Settings size={18} /><span className='text-[7px] font-bold uppercase'>Sozlama</span></button>
+                                                        <button onClick={() => toggleBlockRoom(activeModalRoom.id)} className='p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center gap-1'><Lock size={18} /><span className='text-[7px] font-bold uppercase'>Blok</span></button>
+                                                        <button onClick={() => { if (window.confirm("Xonani o'chirasizmi?")) { setRooms(rooms.filter(r => r.id !== activeModalRoom.id)); setSelectedRoom(null); } }} className='p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center gap-1 text-red-500'><Trash2 size={18} /><span className='text-[7px] font-bold uppercase'>O'chirish</span></button>
+                                                    </div>
+                                                    <button onClick={() => { handleStartSession(activeModalRoom.id); setSelectedRoom(null); }} className='w-full bg-[#39ff14] text-black font-black py-5 rounded-2xl uppercase tracking-[3px] text-xs shadow-[0_0_20px_rgba(57,255,20,0.3)]'>Vaqtni Boshlash ▶️</button>
                                                 </div>
-                                                <div className='grid grid-cols-2 gap-4'>
-                                                    <button onClick={() => handleAddBar(selectedRoom.id, 10000)} className='premium-glass p-4 border-white/5 flex flex-col items-center gap-2 group hover:bg-[#39ff14]/10 transition-all'>
-                                                        <Coffee size={20} className='group-hover:text-[#39ff14]' />
-                                                        <span className='text-[8px] font-black uppercase'>BAR +10K</span>
-                                                    </button>
-                                                    <button onClick={() => { if (window.confirm("Xonani o'chirasizmi?")) { setRooms(rooms.filter(r => r.id !== selectedRoom.id)); setSelectedRoom(null); } }} className='premium-glass p-4 border-red-500/20 text-red-500 flex flex-col items-center gap-2'><Trash2 size={20} /><span className='text-[8px] font-black uppercase'>O'CHIRISH</span></button>
-                                                </div>
-                                                <button onClick={() => handleStopSession(selectedRoom)} className='w-full bg-red-500 text-white font-black py-5 rounded-2xl uppercase tracking-[3px] text-xs shadow-[0_0_20px_rgba(239,68,68,0.3)]'>Sessiyani Yakunlash ⏹️</button>
-                                            </div>
-                                        ) : (
-                                            <div className='space-y-8 py-4'>
-                                                <div className='premium-glass p-10 text-center border-dashed border-[#39ff14]/30'>
-                                                    <Gamepad2 size={48} className='mx-auto mb-4 opacity-10' />
-                                                    <p className='text-[10px] font-black tracking-[2px] opacity-40 uppercase'>Xona tayyor holatda</p>
-                                                </div>
-                                                <div className='grid grid-cols-3 gap-2'>
-                                                    <button onClick={() => handleStartRoomEdit(selectedRoom, rooms.findIndex(r => r.id === selectedRoom.id))} className='p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center gap-1'><Settings size={18} /><span className='text-[7px] font-bold uppercase'>Sozlama</span></button>
-                                                    <button onClick={() => toggleBlockRoom(selectedRoom.id)} className='p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center gap-1'><Lock size={18} /><span className='text-[7px] font-bold uppercase'>Blok</span></button>
-                                                    <button onClick={() => { if (window.confirm("Xonani o'chirasizmi?")) { setRooms(rooms.filter(r => r.id !== selectedRoom.id)); setSelectedRoom(null); } }} className='p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center gap-1 text-red-500'><Trash2 size={18} /><span className='text-[7px] font-bold uppercase'>O'chirish</span></button>
-                                                </div>
-                                                <button onClick={() => { handleStartSession(selectedRoom.id); setSelectedRoom(null); }} className='w-full bg-[#39ff14] text-black font-black py-5 rounded-2xl uppercase tracking-[3px] text-xs shadow-[0_0_20px_rgba(57,255,20,0.3)]'>Vaqtni Boshlash ▶️</button>
-                                            </div>
-                                        )}
+                                            )}
+                                        </motion.div>
                                     </motion.div>
-                                </motion.div>
-                            )}
+                                );
+                            })()}
                         </AnimatePresence>
 
                         {/* Payment / Debt Modal */}
