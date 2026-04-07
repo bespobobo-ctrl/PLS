@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Lock, ArrowRight, Gamepad2, ShieldCheck, Zap } from 'lucide-react';
+import { User, Lock, ArrowRight, Gamepad2, ShieldCheck, Zap, Headphones } from 'lucide-react';
 
 function App() {
   useEffect(() => {
@@ -25,10 +25,9 @@ function App() {
 
   return (
     <div className='min-h-screen relative bg-[#050210] text-white font-outfit overflow-hidden selection:bg-pls-cyan/30'>
-      {/* 🏞️ Cinematic AI-Generated Background */}
       <div className='fixed inset-0 z-0 overflow-hidden'>
         <img src='/club-v2.png' className='w-full h-full object-cover scale-[1.05] blur-[1px]' alt='Gaming Club BG' />
-        <div className='bg-overlay fixed inset-0 z-0 bg-gradient-to-b from-[#050210]/40 via-[#050210]/70 to-[#050210]'></div>
+        <div className='bg-overlay fixed inset-0 z-0 bg-gradient-to-b from-[#050210]/40 via-[#050210]/75 to-[#050210]'></div>
         <div className='mesh-gradient'></div>
         <div className='particle w-[300px] h-[300px] top-[-100px] right-[-100px]'></div>
         <div className='particle w-[200px] h-[200px] bottom-[100px] left-[-100px] bg-pls-purple'></div>
@@ -38,7 +37,6 @@ function App() {
         variants={containerVariants} initial='hidden' animate='visible'
         className='relative z-10 w-full h-screen flex flex-col justify-between p-8 pb-14 max-w-lg mx-auto'
       >
-        {/* Header Section (Alive) */}
         <motion.div variants={itemVariants} className='flex justify-between items-center opacity-90'>
           <div className='flex items-center gap-3 group'>
              <div className='w-11 h-11 glass-card flex items-center justify-center border-white/20 transition-transform group-hover:rotate-12'>
@@ -55,18 +53,16 @@ function App() {
           </div>
         </motion.div>
 
-        {/* Main Content Area */}
         <div className='mb-4'>
            <motion.div variants={itemVariants} className='flex flex-col gap-3 mb-10 text-center'>
               <h2 className='text-7xl font-black italic unbounded tracking-[-3px] leading-none uppercase'>
                  <span className='block text-transparent bg-clip-text bg-gradient-to-r from-[#ff3c41] via-[#9d3cff] to-[#00f2ff] drop-shadow-2xl'>ARENA</span>
               </h2>
               <p className='text-slate-400 text-[11px] tracking-widest uppercase font-black opacity-50 flex items-center justify-center gap-2'>
-                <Zap size={10} className='text-pls-cyan' /> High-speed gaming awaits player
+                <Zap size={10} className='text-pls-cyan' /> Welcome back, Player
               </p>
            </motion.div>
 
-           {/* Glass Login Container */}
            <motion.div variants={itemVariants} className='glass-card p-10 flex flex-col gap-8'>
               <div className='space-y-4'>
                  <div className='relative group'>
@@ -90,24 +86,25 @@ function App() {
                  </div>
               </div>
 
-              <motion.button 
-                 whileTap={{ scale: 0.94 }}
-                 className='group relative w-full py-5.5 bg-gradient-to-r from-[#00f2ff] to-[#9d3cff] text-black font-black rounded-[28px] text-[13px] uppercase tracking-[4px] shadow-[0_20px_60px_-15px_rgba(0,242,255,0.4)] overflow-hidden transition-all hover:brightness-110'
-              >
-                 <span className='relative z-10 flex items-center justify-center gap-3'>
-                    Join Arena <ArrowRight size={20} className='group-hover:translate-x-1 transition-transform'/>
-                 </span>
-                 <div className='absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-700 ease-out'></div>
-              </motion.button>
-
-              <div className='flex justify-between items-center px-2'>
-                 <button className='text-[10px] text-slate-500 font-black uppercase tracking-widest hover:text-pls-cyan transition-all active:scale-95'>New Player? Register</button>
-                 <button className='text-[10px] text-slate-500 font-black uppercase tracking-widest hover:text-pls-red transition-all active:scale-95'>Forgot Account</button>
+              <div className='flex flex-col gap-6 items-center'>
+                 <motion.button 
+                    whileTap={{ scale: 0.94 }}
+                    className='group relative w-full py-5.5 bg-gradient-to-r from-[#00f2ff] to-[#9d3cff] text-black font-black rounded-[28px] text-[13px] uppercase tracking-[4px] shadow-[0_20px_60px_-15px_rgba(0,242,255,0.35)] overflow-hidden transition-all hover:brightness-110'
+                 >
+                    <span className='relative z-10 flex items-center justify-center gap-3'>
+                       Join Arena <ArrowRight size={20} className='group-hover:translate-x-1 transition-transform'/>
+                    </span>
+                    <div className='absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-700 ease-out'></div>
+                 </motion.button>
+                 
+                 <button className='flex items-center gap-2.5 text-[11px] text-slate-500 font-black uppercase tracking-[3px] hover:text-white transition-all active:scale-95 group'>
+                    <Headphones size={14} className='group-hover:rotate-12 transition-transform'/>
+                    Contact Administrator
+                 </button>
               </div>
            </motion.div>
         </div>
 
-        {/* Footer (Alive) */}
         <motion.div variants={itemVariants} className='flex justify-center flex-col items-center gap-4 opacity-40 mt-4'>
            <div className='w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent'></div>
            <span className='text-[10px] font-black uppercase tracking-[5px] text-slate-500'>2024 © PLS GAME NETWORK</span>
