@@ -48,6 +48,7 @@ function App() {
     ]));
 
     const [debts, setDebts] = useState(() => getInitialState('pls_debts', []));
+    const [sessions, setSessions] = useState(() => getInitialState('pls_sessions', []));
 
     const [currentTime, setCurrentTime] = useState(Date.now());
 
@@ -68,6 +69,10 @@ function App() {
     useEffect(() => {
         localStorage.setItem('pls_debts', JSON.stringify(debts));
     }, [debts]);
+
+    useEffect(() => {
+        localStorage.setItem('pls_sessions', JSON.stringify(sessions));
+    }, [sessions]);
 
     // Global Clock
     useEffect(() => {
@@ -262,7 +267,26 @@ function App() {
             setDebts([...debts, newDebt]);
         }
 
-        const elapsedHours = (currentTime - room.startTime) / (1000 * 60 * 60);
+        const elapsedHours = (Date.now() - room.startTime) / (1000 * 60 * 60);
+
+        // Record Session
+        const sessionRecord = {
+            id: Date.now(),
+            roomName: room.name,
+            startTime: room.startTime,
+            endTime: Date.now(),
+            duration: Date.now() - room.startTime,
+            timeCost: total - (Number(room.sessionBarTotal) || 0),
+            barCost: Number(room.sessionBarTotal) || 0,
+            totalCost: total,
+            paidAmount: paid,
+            debtAmount: debt,
+            club: room.club,
+            admin: username,
+            date: new Date().toLocaleDateString('uz-UZ'),
+            time: new Date().toLocaleTimeString('uz-UZ', { hour12: false })
+        };
+        setSessions([sessionRecord, ...sessions]);
 
         setRooms(rooms.map(r => r.id === room.id ? {
             ...r,
@@ -276,6 +300,7 @@ function App() {
 
         setIsPaymentModalOpen(false);
         setClientInfo({ name: '', phone: '' });
+        setSessionTotal(0);
     };
 
     const handleDeleteRoom = (id) => {
@@ -978,14 +1003,57 @@ function App() {
                                         )}
                                     </motion.div>
                                 ) : (
-                                    <motion.div key='ca-ops' initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='space-y-4'>
-                                        <div className='premium-glass p-6 border-white/5'>
-                                            <h4 className='text-[10px] font-black tracking-[4px] opacity-30 mb-6 uppercase'>Sessiyalar tarixi</h4>
-                                            <div className='space-y-4'>
-                                                <div className='flex items-center justify-between py-2 border-b border-white/5 opacity-40'>
-                                                    <span className='text-[10px] font-bold'>Sizning amallaringiz shu yerda ko'rinadi</span>
+                                    <motion.div key='ca-ops' initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='space-y-4 pb-32'>
+                                        <div className='flex justify-between items-center px-4 mb-4'>
+                                            <h4 className='text-[10px] font-black tracking-[4px] opacity-30 uppercase'>Barcha Sessiyalar ({sessions.filter(s => s.club === clubAdmins.find(ca => ca.login === username)?.club).length})</h4>
+                                            <button onClick={() => { if (window.confirm('Tarixni tozalash?')) setSessions(sessions.filter(s => s.club !== clubAdmins.find(ca => ca.login === username)?.club)) }} className='text-[8px] font-black text-red-500 opacity-30 hover:opacity-100 uppercase tracking-[2px] transition-all'>Tarixni Tozalash</button>
+                                        </div>
+
+                                        <div className='space-y-3 px-2'>
+                                            {sessions.filter(s => s.club === clubAdmins.find(ca => ca.login === username)?.club).map(session => (
+                                                <div key={session.id} className='premium-glass p-5 border-white/5 bg-white/[0.01] hover:bg-white/[0.03] transition-all relative overflow-hidden group'>
+                                                    <div className='absolute top-0 right-0 w-24 h-full bg-gradient-to-l from-[#39ff14]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity'></div>
+                                                    <div className='flex justify-between items-start mb-4'>
+                                                        <div>
+                                                            <div className='flex items-center gap-2 mb-1'>
+                                                                <span className='px-2 py-0.5 rounded-full bg-[#39ff14]/10 text-[#39ff14] text-[8px] font-black uppercase tracking-[1px]'>{session.roomName}</span>
+                                                                <span className='text-[8px] text-white/20 font-black uppercase tracking-[1px]'>{session.date} • {session.time}</span>
+                                                            </div>
+                                                            <p className='text-[13px] font-black italic tracking-tight'>{formatTime(session.duration)} O'YIN DAVOMIYATI</p>
+                                                        </div>
+                                                        <div className='text-right'>
+                                                            <p className='text-[14px] font-black text-[#39ff14] italic'>{session.totalCost.toLocaleString()} <span className='text-[8px] opacity-40 font-bold'>UZS</span></p>
+                                                            {session.debtAmount > 0 && <p className='text-[8px] font-black text-red-500 uppercase mt-0.5 italic'>-{session.debtAmount.toLocaleString()} QARZ</p>}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className='grid grid-cols-4 gap-2 pt-3 border-t border-white/5'>
+                                                        <div>
+                                                            <p className='text-[7px] text-white/20 font-bold uppercase mb-0.5'>Vaqt</p>
+                                                            <p className='text-[9px] font-black opacity-60'>{session.timeCost.toLocaleString()}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className='text-[7px] text-white/20 font-bold uppercase mb-0.5'>Bar</p>
+                                                            <p className='text-[9px] font-black opacity-60'>{session.barCost.toLocaleString()}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className='text-[7px] text-white/20 font-bold uppercase mb-0.5'>To'lov</p>
+                                                            <p className='text-[9px] font-black text-[#39ff14]'>{session.paidAmount.toLocaleString()}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className='text-[7px] text-white/20 font-bold uppercase mb-0.5'>Admin</p>
+                                                            <p className='text-[9px] font-black opacity-60 truncate'>{session.admin}</p>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            ))}
+
+                                            {sessions.filter(s => s.club === clubAdmins.find(ca => ca.login === username)?.club).length === 0 && (
+                                                <div className='py-20 text-center opacity-20'>
+                                                    <Activity size={40} className='mx-auto mb-4 opacity-5' />
+                                                    <p className='text-[10px] font-black uppercase tracking-[3px]'>Sessiyalar tarixi bo'sh</p>
+                                                </div>
+                                            )}
                                         </div>
                                     </motion.div>
                                 )}
