@@ -1,6 +1,11 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@theme {
+  --color-pls-cyan: #00f2ff;
+  --color-pls-purple: #9d3cff;
+  --color-pls-red: #ff3c41;
+  --color-pls-green: #3cff8e;
+}
 
 @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Outfit:wght@300;400;600;800&display=swap');
 
@@ -14,9 +19,7 @@
 
 body { background: var(--bg); color: #fff; font-family: 'Outfit', sans-serif; overflow: hidden; height: 100vh; }
 
-@layer components {
-  .glass { background: var(--card); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid var(--border); border-radius: 32px; }
-  .neon-glow { box-shadow: 0 0 20px rgba(0, 242, 255, 0.15); }
-  .unbounded { font-family: 'Unbounded', cursive; }
-  .bg-overlay { position: fixed; inset: 0; background: linear-gradient(180deg, rgba(5, 2, 10, 0.4) 0%, rgba(5, 2, 10, 0.95) 100%); z-index: 1; }
-}
+.glass { background: var(--card); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid var(--border); border-radius: 32px; }
+.neon-glow { box-shadow: 0 0 20px rgba(0, 242, 255, 0.15); }
+.unbounded { font-family: 'Unbounded', cursive; }
+.bg-overlay { position: fixed; inset: 0; background: linear-gradient(180deg, rgba(5, 2, 10, 0.4) 0%, rgba(5, 2, 10, 0.95) 100%); z-index: 1; }
