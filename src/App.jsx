@@ -109,7 +109,7 @@ function App() {
                                 </div>
                                 <div className='flex flex-col'>
                                     <span className='syncopate text-lg font-bold tracking-[3px] leading-tight'>PLS CLUB</span>
-                                    <span className='text-[10px] text-white/40 font-medium uppercase tracking-[2px]'>Premium Experience</span>
+                                    <span className='text-[10px] text-white/40 font-medium uppercase tracking-[2px]'>Premium Tajriba</span>
                                 </div>
                             </div>
 
@@ -138,7 +138,7 @@ function App() {
                                 <h1 className='text-6xl font-black italic syncopate luxury-gradient-text tracking-[-4px] leading-none mb-4'>
                                     ARENA
                                 </h1>
-                                <p className='text-white/30 text-[10px] font-semibold tracking-[4px] uppercase'>Welcome to Executive Gaming</p>
+                                <p className='text-white/30 text-[10px] font-semibold tracking-[4px] uppercase'>Premium o'yinlar olamiga xush kelibsiz</p>
                             </motion.div>
 
                             {/* Clean Form Container */}
@@ -171,7 +171,7 @@ function App() {
                         {/* Minimal Footer */}
                         <div className='flex flex-col items-center gap-4 opacity-20'>
                             <div className='w-12 h-[1px] bg-white'></div>
-                            <span className='text-[9px] font-bold tracking-[3px] uppercase'>Est. 2024</span>
+                            <span className='text-[9px] font-bold tracking-[3px] uppercase'>Tuzilgan: 2024</span>
                         </div>
                     </motion.div>
                 ) : view === 'admin-login' ? (
@@ -184,7 +184,7 @@ function App() {
                                 <div className='w-20 h-20 bg-white/5 rounded-[28px] mx-auto flex items-center justify-center border border-white/10'>
                                     <Lock size={32} className='text-white' />
                                 </div>
-                                <h3 className='syncopate text-sm font-bold tracking-[4px]'>ADMINISTRATOR</h3>
+                                <h3 className='syncopate text-sm font-bold tracking-[4px] uppercase'>ADMINISTRATOR</h3>
                             </div>
 
                             <form onSubmit={handleAdminVerify} className='space-y-6'>
@@ -206,7 +206,7 @@ function App() {
                                     type="submit" disabled={isLoading}
                                     className='btn-luxury w-full py-6'
                                 >
-                                    {isLoading ? 'Tekshirilmoqda...' : 'Tasdiqlash'}
+                                    {isLoading ? 'Tasdiqlanmoqda...' : 'Kirish'}
                                 </button>
 
                                 <button type="button" onClick={() => setView('login')} className='w-full text-[10px] uppercase font-bold tracking-[2px] opacity-20 hover:opacity-100 transition-opacity'>Bekor qilish</button>
@@ -221,12 +221,12 @@ function App() {
                         {/* Tab Control HUD */}
                         <div className='flex justify-between items-center p-6 bg-black/40 backdrop-blur-2xl border-b border-white/5'>
                             <div className='flex gap-3'>
-                                {['dashboard', 'users', 'logs'].map(tab => (
+                                {['asosiy', 'mijozlar', 'jurnallar'].map(tab => (
                                     <button
                                         key={tab} onClick={() => setAdminTab(tab)}
                                         className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-[2px] transition-all ${adminTab === tab ? 'bg-[#39ff14] text-black shadow-[0_0_15px_rgba(57,255,20,0.4)]' : 'bg-white/5 text-white/40'}`}
                                     >
-                                        {tab}
+                                        {tab === 'asosiy' ? 'BOSHQUVAR' : tab === 'mijozlar' ? 'MIJOZLAR' : 'JURNALLAR'}
                                     </button>
                                 ))}
                             </div>
@@ -237,25 +237,25 @@ function App() {
 
                         <div className='flex-1 overflow-y-auto p-6 space-y-8 pb-32'>
                             <AnimatePresence mode='wait'>
-                                {adminTab === 'dashboard' ? (
+                                {adminTab === 'asosiy' ? (
                                     <motion.div key='dash' initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className='space-y-8'>
                                         {/* 💎 PREMIUM STATS GRID */}
                                         <div className='grid grid-cols-2 gap-4'>
                                             <div className='premium-glass p-8 bg-gradient-to-br from-[#39ff14]/5 to-transparent border-[#39ff14]/20 relative overflow-hidden h-44 flex flex-col justify-between'>
                                                 <div className='flex justify-between items-start'>
-                                                    <span className='text-[9px] text-[#39ff14] font-bold tracking-[3px] uppercase'>ACTIVE_USERS</span>
+                                                    <span className='text-[9px] text-[#39ff14] font-bold tracking-[3px] uppercase'>AKTIV_O'YINCHILAR</span>
                                                     <div className='w-2 h-2 rounded-full bg-[#39ff14] shadow-[0_0_10px_#39ff14] animate-pulse'></div>
                                                 </div>
                                                 <h1 className='text-6xl font-black italic tracking-tighter'>14</h1>
-                                                <div className='text-[8px] text-white/20 font-bold tracking-[2px] uppercase'>ONLINE NODE SYSTEM 🟢</div>
+                                                <div className='text-[8px] text-white/20 font-bold tracking-[2px] uppercase'>ONLAYN TIZIM HOLATI 🟢</div>
                                             </div>
                                             <div className='grid gap-4'>
                                                 <div className='premium-glass p-5 flex flex-col justify-center'>
-                                                    <p className='text-[8px] text-white/40 font-bold uppercase tracking-[2px] mb-1'>SESSIONS 🕵️‍♂️</p>
+                                                    <p className='text-[8px] text-white/40 font-bold uppercase tracking-[2px] mb-1'>SESSIYALAR �</p>
                                                     <h3 className='text-2xl font-bold text-[#39ff14]'>282</h3>
                                                 </div>
                                                 <div className='premium-glass p-5 flex flex-col justify-center'>
-                                                    <p className='text-[8px] text-white/40 font-bold uppercase tracking-[2px] mb-1'>REVENUE 💰</p>
+                                                    <p className='text-[8px] text-white/40 font-bold uppercase tracking-[2px] mb-1'>DAROMAD 💰</p>
                                                     <h3 className='text-2xl font-bold'>1.4M</h3>
                                                 </div>
                                             </div>
@@ -265,7 +265,7 @@ function App() {
                                         <div className='premium-glass p-6 border-[#39ff14]/10 bg-[#39ff14]/[0.02]'>
                                             <div className='flex items-center gap-3 mb-4'>
                                                 <div className='w-2 h-2 rounded-full bg-[#39ff14]'></div>
-                                                <span className='text-[11px] font-bold tracking-[2px] uppercase'>BROADCASTER 🔉</span>
+                                                <span className='text-[11px] font-bold tracking-[2px] uppercase'>XABARNOMA 🔉</span>
                                             </div>
                                             <textarea
                                                 className='w-full bg-black/40 border border-white/5 rounded-2xl p-5 text-sm text-white placeholder:text-white/20 min-h-[100px] outline-none focus:border-[#39ff14]/30'
@@ -278,12 +278,12 @@ function App() {
 
                                         {/* 🛠️ SERVER HEALTH STATUS */}
                                         <div className='flex justify-between items-center p-6 bg-white/[0.02] rounded-3xl border border-white/5'>
-                                            <div className='text-[9px] font-bold text-white/40 uppercase tracking-[2px]'>OS: <span className='text-[#39ff14]'>STABLE 🟢</span></div>
-                                            <div className='text-[9px] font-bold text-white/40 uppercase tracking-[2px]'>LOAD: <span className='text-[#39ff14]'>LOW 🟢</span></div>
-                                            <div className='text-[9px] font-bold text-white/40 uppercase tracking-[2px]'>SYNC: <span className='text-[#39ff14]'>LIVE ⚡</span></div>
+                                            <div className='text-[9px] font-bold text-white/40 uppercase tracking-[2px]'>TIZIM: <span className='text-[#39ff14]'>BARQAROR 🟢</span></div>
+                                            <div className='text-[9px] font-bold text-white/40 uppercase tracking-[2px]'>YUKLAMA: <span className='text-[#39ff14]'>PAST 🟢</span></div>
+                                            <div className='text-[9px] font-bold text-white/40 uppercase tracking-[2px]'>SINXRON: <span className='text-[#39ff14]'>JONLI ⚡</span></div>
                                         </div>
                                     </motion.div>
-                                ) : adminTab === 'users' ? (
+                                ) : adminTab === 'mijozlar' ? (
                                     <motion.div key='users' initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className='space-y-6'>
                                         <div className='flex gap-3'>
                                             <input placeholder="ID bo'yicha qidirish..." className='input-luxury flex-1 py-4 px-6' />
@@ -300,12 +300,12 @@ function App() {
                                                         <img src={user.avatar} className='w-12 h-12 rounded-2xl bg-white/5 border border-white/10' alt='' />
                                                         <div>
                                                             <p className={`font-bold ${user.status === 'blocked' ? 'opacity-30' : ''}`}>{user.name}</p>
-                                                            <p className='text-[10px] text-[#39ff14] font-bold tracking-[1px]'>{user.balance} UZS</p>
+                                                            <p className='text-[10px] text-[#39ff14] font-bold tracking-[1px]'>{user.balance} SO'M</p>
                                                         </div>
                                                     </div>
                                                     <div className='flex gap-4'>
-                                                        <button className='text-white/20 hover:text-white'>✎</button>
-                                                        <button className={`${user.status === 'blocked' ? 'text-red-500' : 'text-[#39ff14]'}`}>{user.status === 'blocked' ? '🔒' : '🔓'}</button>
+                                                        <button className='text-white/20 hover:text-white text-lg'>✎</button>
+                                                        <button className={`${user.status === 'blocked' ? 'text-red-500' : 'text-[#39ff14]'} text-lg`}>{user.status === 'blocked' ? '🔒' : '🔓'}</button>
                                                     </div>
                                                 </div>
                                             ))}
@@ -314,19 +314,19 @@ function App() {
                                 ) : (
                                     <motion.div key='logs' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className='space-y-6'>
                                         <div className='premium-glass bg-black/60 p-6 space-y-6 border-white/5'>
-                                            <h4 className='text-[10px] font-bold opacity-30 uppercase tracking-[4px]'>TIZIM FAOLLIYATI (LIVE) ⚡</h4>
+                                            <h4 className='text-[10px] font-bold opacity-30 uppercase tracking-[4px]'>TIZIM FAOLLIYATI (JONLI) ⚡</h4>
                                             <div className='space-y-6'>
                                                 {[
-                                                    { name: 'shox_pro', action: 'Sessiya boshlandi', time: '14:20', status: 'active' },
-                                                    { name: 'bek_admin', action: 'Karta to\'ldirildi', time: '14:15', status: 'active' },
-                                                    { name: 'nodex_04', action: 'Sessiya yakunlandi', time: '14:02', status: 'error' }
+                                                    { name: 'shox_pro', action: 'Sessiya boshlandi', time: 'hozir', status: 'active' },
+                                                    { name: 'bek_admin', action: 'Balans to\'ldirildi', time: '5 daq', status: 'active' },
+                                                    { name: 'nodex_04', action: 'Xatolik yuz berdi', time: '12 daq', status: 'error' }
                                                 ].map((h, i) => (
                                                     <div key={i} className={`flex justify-between items-center p-5 bg-white/[0.02] rounded-2xl border-l-[3px] ${h.status === 'active' ? 'border-[#39ff14]' : 'border-red-500'}`}>
                                                         <div>
-                                                            <div className='text-[13px] font-bold'>{h.name}</div>
+                                                            <div className='text-[13px] font-bold uppercase tracking-[1px]'>{h.name}</div>
                                                             <div className='text-[9px] opacity-40 uppercase tracking-[1px] mt-1'>{h.action}</div>
                                                         </div>
-                                                        <div className='text-[10px] font-bold opacity-30'>{h.time}</div>
+                                                        <div className='text-[10px] font-bold opacity-30 uppercase tracking-[1px]'>{h.time}</div>
                                                     </div>
                                                 ))}
                                             </div>
