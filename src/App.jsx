@@ -26,6 +26,7 @@ function App() {
     ]);
 
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [editIndex, setEditIndex] = useState(null);
     const [newAdmin, setNewAdmin] = useState({ name: '', phone: '', login: '', pass: '', club: '' });
 
     const holdTimer = useRef(null);
@@ -103,11 +104,33 @@ function App() {
         }, 1800);
     };
 
-    const handleAddSuperAdmin = () => {
+    const handleSaveSuperAdmin = () => {
         if (!newAdmin.name || !newAdmin.login || !newAdmin.pass) return;
-        setSuperAdmins([...superAdmins, newAdmin]);
+
+        if (editIndex !== null) {
+            const updated = [...superAdmins];
+            updated[editIndex] = newAdmin;
+            setSuperAdmins(updated);
+        } else {
+            setSuperAdmins([...superAdmins, newAdmin]);
+        }
+
+        // Reset
         setNewAdmin({ name: '', phone: '', login: '', pass: '', club: '' });
         setIsAddModalOpen(false);
+        setEditIndex(null);
+    };
+
+    const handleDeleteSuperAdmin = (index) => {
+        if (window.confirm('Haqiqatdan ham ushbu super adminni o\'chirmoqchimisiz?')) {
+            setSuperAdmins(superAdmins.filter((_, i) => i !== index));
+        }
+    };
+
+    const handleStartEdit = (admin, index) => {
+        setNewAdmin(admin);
+        setEditIndex(index);
+        setIsAddModalOpen(true);
     };
 
     return (
@@ -335,8 +358,15 @@ function App() {
                                     </motion.div>
                                 ) : adminTab === 'admins' ? (
                                     <motion.div key='admins' initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className='space-y-6'>
-                                        <button onClick={() => setIsAddModalOpen(true)} className='w-full bg-[#39ff14]/10 border border-[#39ff14]/30 text-[#39ff14] py-5 rounded-2xl font-black text-[11px] tracking-[3px] uppercase hover:bg-[#39ff14]/20 transition-all'>
-                                            + YANGI SUPER ADMIN QO'SHISH
+                                        <button
+                                            onClick={() => {
+                                                setEditIndex(null);
+                                                setNewAdmin({ name: '', phone: '', login: '', pass: '', club: '' });
+                                                setIsAddModalOpen(!isAddModalOpen);
+                                            }}
+                                            className='w-full bg-[#39ff14]/10 border border-[#39ff14]/30 text-[#39ff14] py-5 rounded-2xl font-black text-[11px] tracking-[3px] uppercase hover:bg-[#39ff14]/20 transition-all'
+                                        >
+                                            {isAddModalOpen ? 'YOPISH' : "+ YANGI SUPER ADMIN QO'SHISH"}
                                         </button>
 
                                         {isAddModalOpen && (
@@ -346,7 +376,9 @@ function App() {
                                                 <input placeholder='Login' className='input-luxury' value={newAdmin.login} onChange={e => setNewAdmin({ ...newAdmin, login: e.target.value })} />
                                                 <input placeholder='Parol' className='input-luxury' value={newAdmin.pass} onChange={e => setNewAdmin({ ...newAdmin, pass: e.target.value })} />
                                                 <input placeholder='Klub nomi' className='input-luxury' value={newAdmin.club} onChange={e => setNewAdmin({ ...newAdmin, club: e.target.value })} />
-                                                <button onClick={handleAddSuperAdmin} className='w-full bg-[#39ff14] text-black font-bold py-3 rounded-xl'>Saqlash</button>
+                                                <button onClick={handleSaveSuperAdmin} className='w-full bg-[#39ff14] text-black font-bold py-3 rounded-xl uppercase tracking-[1px]'>
+                                                    {editIndex !== null ? 'Yangilash' : 'Saqlash'}
+                                                </button>
                                             </div>
                                         )}
 
@@ -364,7 +396,8 @@ function App() {
                                                             </div>
                                                         </div>
                                                         <div className='flex gap-3'>
-                                                            <button className='w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center'><Trash2 size={16} className='text-red-400' /></button>
+                                                            <button onClick={() => handleStartEdit(admin, i)} className='w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors'><Settings size={16} className='text-white/40' /></button>
+                                                            <button onClick={() => handleDeleteSuperAdmin(i)} className='w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-red-500/10 transition-colors'><Trash2 size={16} className='text-red-400' /></button>
                                                         </div>
                                                     </div>
 
