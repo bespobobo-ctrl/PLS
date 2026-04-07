@@ -15,9 +15,9 @@ sudo apt install -y nodejs git build-essential
 # 3. Install PM2 (Process Manager)
 sudo npm install -g pm2
 
-# 4. Create App Directory
-mkdir -p ~/pls-game-club
-cd ~/pls-game-club
+# 4. Use Current Directory
+# We assume the user is already inside the project folder
+# cd ~/pls-game-club # Removed fixed path
 
 # 5. Clone Repository (Assuming public or handled by user)
 # If repo is already cloned, skip this or copy files.
