@@ -9,6 +9,7 @@ function App() {
     const [password, setPassword] = useState('');
     const [adminUser, setAdminUser] = useState('');
     const [adminPass, setAdminPass] = useState('');
+    const [adminTab, setAdminTab] = useState('dashboard');
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
@@ -215,90 +216,124 @@ function App() {
                 ) : view === 'admin' ? (
                     <motion.div
                         key='admin' initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                        className='relative z-10 w-full h-screen p-8 pb-32 flex flex-col gap-8 max-w-lg mx-auto overflow-y-auto'
+                        className='relative z-10 w-full h-screen flex flex-col bg-[#030308] max-w-lg mx-auto overflow-hidden'
                     >
-                        {/* Header */}
-                        <div className='flex justify-between items-center py-4 bg-[#030308]/80 backdrop-blur-xl sticky top-0 z-50'>
-                            <div className='flex items-center gap-4'>
-                                <div className='w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10'>
-                                    <BarChart3 size={20} />
-                                </div>
-                                <h1 className='syncopate text-sm font-bold tracking-[2px]'>PANEL</h1>
+                        {/* Tab Control HUD */}
+                        <div className='flex justify-between items-center p-6 bg-black/40 backdrop-blur-2xl border-b border-white/5'>
+                            <div className='flex gap-3'>
+                                {['dashboard', 'users', 'logs'].map(tab => (
+                                    <button
+                                        key={tab} onClick={() => setAdminTab(tab)}
+                                        className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-[2px] transition-all ${adminTab === tab ? 'bg-[#39ff14] text-black shadow-[0_0_15px_rgba(57,255,20,0.4)]' : 'bg-white/5 text-white/40'}`}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
                             </div>
-                            <button onClick={() => setView('login')} className='w-10 h-10 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20'>
+                            <button onClick={() => setView('login')} className='w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20'>
                                 <LogOut size={18} />
                             </button>
                         </div>
 
-                        {/* Stats Large */}
-                        <div className='grid grid-cols-2 gap-4'>
-                            <div className='premium-glass p-6'>
-                                <div className='flex items-center gap-3 mb-4'>
-                                    <div className='w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,1)]'></div>
-                                    <span className='text-[10px] font-bold uppercase tracking-[1px] opacity-40'>Active</span>
-                                </div>
-                                <div className='flex items-baseline gap-1'>
-                                    <span className='text-4xl font-bold'>14</span>
-                                    <span className='text-sm opacity-20'>/24</span>
-                                </div>
-                                <p className='text-[11px] font-medium opacity-40 mt-1'>Mijozlar soni</p>
-                            </div>
-                            <div className='premium-glass p-6'>
-                                <div className='flex items-center gap-3 mb-4'>
-                                    <div className='w-2 h-2 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,1)]'></div>
-                                    <span className='text-[10px] font-bold uppercase tracking-[1px] opacity-40'>Resource</span>
-                                </div>
-                                <div className='flex items-baseline gap-1'>
-                                    <span className='text-4xl font-bold'>82</span>
-                                    <span className='text-sm opacity-20'>%</span>
-                                </div>
-                                <p className='text-[11px] font-medium opacity-40 mt-1'>Tizim yuklamasi</p>
-                            </div>
-                        </div>
-
-                        {/* Main Actions */}
-                        <div className='space-y-4'>
-                            <h3 className='text-[11px] font-bold uppercase tracking-[2px] opacity-30 px-2'>Boshqaruv elementlari</h3>
-                            <div className='space-y-3'>
-                                {[
-                                    { name: 'Kassa nazorati', icon: CreditCard, color: 'text-emerald-400' },
-                                    { name: 'Xonalar Monitoringi', icon: Monitor, color: 'text-cyan-400' },
-                                    { name: 'Moliyaviy Hisobotlar', icon: Database, color: 'text-purple-400' }
-                                ].map((item, i) => (
-                                    <button key={i} className='premium-glass w-full flex items-center justify-between p-6 hover:bg-white/[0.05] transition-colors'>
-                                        <div className='flex items-center gap-5'>
-                                            <div className='w-12 h-12 rounded-[20px] bg-white/5 flex items-center justify-center'>
-                                                <item.icon size={22} className={item.color} />
+                        <div className='flex-1 overflow-y-auto p-6 space-y-8 pb-32'>
+                            <AnimatePresence mode='wait'>
+                                {adminTab === 'dashboard' ? (
+                                    <motion.div key='dash' initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className='space-y-8'>
+                                        {/* 💎 PREMIUM STATS GRID */}
+                                        <div className='grid grid-cols-2 gap-4'>
+                                            <div className='premium-glass p-8 bg-gradient-to-br from-[#39ff14]/5 to-transparent border-[#39ff14]/20 relative overflow-hidden h-44 flex flex-col justify-between'>
+                                                <div className='flex justify-between items-start'>
+                                                    <span className='text-[9px] text-[#39ff14] font-bold tracking-[3px] uppercase'>ACTIVE_USERS</span>
+                                                    <div className='w-2 h-2 rounded-full bg-[#39ff14] shadow-[0_0_10px_#39ff14] animate-pulse'></div>
+                                                </div>
+                                                <h1 className='text-6xl font-black italic tracking-tighter'>14</h1>
+                                                <div className='text-[8px] text-white/20 font-bold tracking-[2px] uppercase'>ONLINE NODE SYSTEM 🟢</div>
                                             </div>
-                                            <span className='text-[15px] font-semibold'>{item.name}</span>
-                                        </div>
-                                        <ChevronRight size={20} className='opacity-20' />
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Modern activity list */}
-                        <div className='space-y-4'>
-                            <h3 className='text-[11px] font-bold uppercase tracking-[2px] opacity-30 px-2'>So'nggi harakatlar</h3>
-                            <div className='premium-glass p-6 space-y-6'>
-                                {[
-                                    { user: 'shox_pro', action: '6000 so\'m yechildi', time: 'hozir', status: 'success' },
-                                    { user: 'admin', action: 'Yangi PC qo\'shildi', time: '12 daq', status: 'neutral' },
-                                    { user: 'pc_14', action: 'Xatolik yuz berdi', time: '24 daq', status: 'error' }
-                                ].map((item, i) => (
-                                    <div key={i} className='flex items-center justify-between group'>
-                                        <div className='flex items-center gap-4'>
-                                            <div className={`w-1.5 h-10 rounded-full ${item.status === 'success' ? 'bg-emerald-500' : item.status === 'error' ? 'bg-red-500' : 'bg-white/10'}`}></div>
-                                            <div className='flex flex-col'>
-                                                <span className='text-[13px] font-semibold'>{item.user}</span>
-                                                <span className='text-[11px] opacity-40'>{item.action}</span>
+                                            <div className='grid gap-4'>
+                                                <div className='premium-glass p-5 flex flex-col justify-center'>
+                                                    <p className='text-[8px] text-white/40 font-bold uppercase tracking-[2px] mb-1'>SESSIONS 🕵️‍♂️</p>
+                                                    <h3 className='text-2xl font-bold text-[#39ff14]'>282</h3>
+                                                </div>
+                                                <div className='premium-glass p-5 flex flex-col justify-center'>
+                                                    <p className='text-[8px] text-white/40 font-bold uppercase tracking-[2px] mb-1'>REVENUE 💰</p>
+                                                    <h3 className='text-2xl font-bold'>1.4M</h3>
+                                                </div>
                                             </div>
                                         </div>
-                                        <span className='text-[10px] font-bold opacity-30'>{item.time}</span>
-                                    </div>
-                                ))}
-                            </div>
+
+                                        {/* 🚀 BROADCAST PANEL */}
+                                        <div className='premium-glass p-6 border-[#39ff14]/10 bg-[#39ff14]/[0.02]'>
+                                            <div className='flex items-center gap-3 mb-4'>
+                                                <div className='w-2 h-2 rounded-full bg-[#39ff14]'></div>
+                                                <span className='text-[11px] font-bold tracking-[2px] uppercase'>BROADCASTER 🔉</span>
+                                            </div>
+                                            <textarea
+                                                className='w-full bg-black/40 border border-white/5 rounded-2xl p-5 text-sm text-white placeholder:text-white/20 min-h-[100px] outline-none focus:border-[#39ff14]/30'
+                                                placeholder='Barcha foydalanuvchilarga xabar yuborish... ✍️'
+                                            />
+                                            <button className='w-full mt-4 bg-[#39ff14] text-black font-black py-5 rounded-2xl text-[12px] tracking-[2px] hover:brightness-110 active:scale-[0.98] transition-all'>
+                                                HAMMAGA TARQATISH 🔥
+                                            </button>
+                                        </div>
+
+                                        {/* 🛠️ SERVER HEALTH STATUS */}
+                                        <div className='flex justify-between items-center p-6 bg-white/[0.02] rounded-3xl border border-white/5'>
+                                            <div className='text-[9px] font-bold text-white/40 uppercase tracking-[2px]'>OS: <span className='text-[#39ff14]'>STABLE 🟢</span></div>
+                                            <div className='text-[9px] font-bold text-white/40 uppercase tracking-[2px]'>LOAD: <span className='text-[#39ff14]'>LOW 🟢</span></div>
+                                            <div className='text-[9px] font-bold text-white/40 uppercase tracking-[2px]'>SYNC: <span className='text-[#39ff14]'>LIVE ⚡</span></div>
+                                        </div>
+                                    </motion.div>
+                                ) : adminTab === 'users' ? (
+                                    <motion.div key='users' initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className='space-y-6'>
+                                        <div className='flex gap-3'>
+                                            <input placeholder="ID bo'yicha qidirish..." className='input-luxury flex-1 py-4 px-6' />
+                                            <button className='bg-[#39ff14] text-black px-6 rounded-2xl font-bold'>+</button>
+                                        </div>
+                                        <div className='space-y-3'>
+                                            {[
+                                                { name: 'shox_pro', balance: '12,500', status: 'active', avatar: 'https://api.dicebear.com/7.x/pixel-art/svg?seed=1' },
+                                                { name: 'bek_admin', balance: '45,000', status: 'active', avatar: 'https://api.dicebear.com/7.x/pixel-art/svg?seed=2' },
+                                                { name: 'dark_rider', balance: '0', status: 'blocked', avatar: 'https://api.dicebear.com/7.x/pixel-art/svg?seed=3' }
+                                            ].map((user, i) => (
+                                                <div key={i} className='premium-glass p-5 flex items-center justify-between border-white/5'>
+                                                    <div className='flex items-center gap-4'>
+                                                        <img src={user.avatar} className='w-12 h-12 rounded-2xl bg-white/5 border border-white/10' alt='' />
+                                                        <div>
+                                                            <p className={`font-bold ${user.status === 'blocked' ? 'opacity-30' : ''}`}>{user.name}</p>
+                                                            <p className='text-[10px] text-[#39ff14] font-bold tracking-[1px]'>{user.balance} UZS</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className='flex gap-4'>
+                                                        <button className='text-white/20 hover:text-white'>✎</button>
+                                                        <button className={`${user.status === 'blocked' ? 'text-red-500' : 'text-[#39ff14]'}`}>{user.status === 'blocked' ? '🔒' : '🔓'}</button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                ) : (
+                                    <motion.div key='logs' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className='space-y-6'>
+                                        <div className='premium-glass bg-black/60 p-6 space-y-6 border-white/5'>
+                                            <h4 className='text-[10px] font-bold opacity-30 uppercase tracking-[4px]'>TIZIM FAOLLIYATI (LIVE) ⚡</h4>
+                                            <div className='space-y-6'>
+                                                {[
+                                                    { name: 'shox_pro', action: 'Sessiya boshlandi', time: '14:20', status: 'active' },
+                                                    { name: 'bek_admin', action: 'Karta to\'ldirildi', time: '14:15', status: 'active' },
+                                                    { name: 'nodex_04', action: 'Sessiya yakunlandi', time: '14:02', status: 'error' }
+                                                ].map((h, i) => (
+                                                    <div key={i} className={`flex justify-between items-center p-5 bg-white/[0.02] rounded-2xl border-l-[3px] ${h.status === 'active' ? 'border-[#39ff14]' : 'border-red-500'}`}>
+                                                        <div>
+                                                            <div className='text-[13px] font-bold'>{h.name}</div>
+                                                            <div className='text-[9px] opacity-40 uppercase tracking-[1px] mt-1'>{h.action}</div>
+                                                        </div>
+                                                        <div className='text-[10px] font-bold opacity-30'>{h.time}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </motion.div>
                 ) : (
