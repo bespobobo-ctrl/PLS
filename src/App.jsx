@@ -994,47 +994,47 @@ function App() {
                             {selectedRoom && !isPaymentModalOpen && (() => {
                                 const activeModalRoom = rooms.find(r => r.id === selectedRoom.id) || selectedRoom;
                                 return (
-                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='fixed inset-0 z-[100] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-6' onClick={() => setSelectedRoom(null)}>
+                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='fixed inset-0 z-[100] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-4' onClick={() => setSelectedRoom(null)}>
                                         <motion.div
-                                            initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 15 }}
+                                            initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 15 }}
                                             className='premium-glass w-full max-w-sm p-0 overflow-hidden bg-[#05050a] border-white/5 shadow-[0_40px_100px_rgba(0,0,0,0.8)]'
                                             onClick={e => e.stopPropagation()}
                                         >
-                                            {/* Cinematic Header */}
-                                            <div className='p-8 pb-4 flex justify-between items-start relative'>
-                                                <div className='absolute top-0 right-0 w-32 h-32 bg-[#39ff14]/5 blur-[60px] rounded-full pointer-events-none'></div>
+                                            {/* Cinematic Header - Compact */}
+                                            <div className='p-6 pb-2 flex justify-between items-start relative'>
+                                                <div className='absolute top-0 right-0 w-24 h-24 bg-[#39ff14]/5 blur-[50px] rounded-full pointer-events-none'></div>
                                                 <div>
-                                                    <div className='flex items-center gap-2 mb-2'>
-                                                        <div className='w-1.5 h-1.5 rounded-full bg-[#39ff14]'></div>
-                                                        <span className='text-[9px] font-black tracking-[4px] text-[#39ff14] uppercase opacity-80'>STANTSIYA_NODO</span>
+                                                    <div className='flex items-center gap-2 mb-1'>
+                                                        <div className='w-1 h-1 rounded-full bg-[#39ff14]'></div>
+                                                        <span className='text-[8px] font-black tracking-[3px] text-[#39ff14] uppercase opacity-60'>STANTSIYA_NODO</span>
                                                     </div>
-                                                    <h2 className='text-5xl font-black italic tracking-tighter uppercase syncopate luxury-gradient-text leading-none'>{activeModalRoom.name}</h2>
+                                                    <h2 className='text-4xl font-black italic tracking-tighter uppercase syncopate luxury-gradient-text leading-none'>{activeModalRoom.name}</h2>
                                                 </div>
-                                                <button onClick={() => setSelectedRoom(null)} className='w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors'>
-                                                    <X size={20} className='opacity-40' />
+                                                <button onClick={() => setSelectedRoom(null)} className='w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors'>
+                                                    <X size={18} className='opacity-40' />
                                                 </button>
                                             </div>
 
                                             {activeModalRoom.isBusy ? (
-                                                <div className='p-8 pt-0 space-y-8'>
-                                                    {/* Central Timer HUD */}
-                                                    <div className='py-8 text-center relative'>
-                                                        <div className='absolute inset-0 flex items-center justify-center opacity-10'>
-                                                            <Activity size={120} className='text-[#39ff14]' />
+                                                <div className='p-6 pt-0 space-y-4'>
+                                                    {/* Central Timer HUD - Compact */}
+                                                    <div className='py-4 text-center relative'>
+                                                        <div className='absolute inset-0 flex items-center justify-center opacity-5'>
+                                                            <Activity size={80} className='text-[#39ff14]' />
                                                         </div>
-                                                        <p className='text-6xl font-black italic tracking-tighter text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] mb-1'>
+                                                        <p className='text-5xl font-black italic tracking-tighter text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] mb-1'>
                                                             {formatTime(currentTime - activeModalRoom.startTime)}
                                                         </p>
-                                                        <p className='text-[10px] font-black tracking-[5px] text-[#39ff14] uppercase animate-pulse'>SESSIA_AKTIV</p>
+                                                        <p className='text-[8px] font-black tracking-[4px] text-[#39ff14] uppercase animate-pulse'>SESSIA_AKTIV</p>
                                                     </div>
 
-                                                    {/* Bar Master Grid */}
-                                                    <div className='space-y-4'>
+                                                    {/* Bar Master Grid - Streamlined */}
+                                                    <div className='space-y-3'>
                                                         <div className='flex justify-between items-center px-1'>
-                                                            <span className='text-[10px] font-black tracking-[3px] opacity-30 uppercase'>Xizmatlar_Bar</span>
-                                                            <Coffee size={14} className='opacity-30' />
+                                                            <span className='text-[9px] font-black tracking-[2px] opacity-20 uppercase'>Bar_Xizmatlari</span>
+                                                            <Coffee size={12} className='opacity-20' />
                                                         </div>
-                                                        <div className='grid grid-cols-3 gap-3'>
+                                                        <div className='grid grid-cols-3 gap-2'>
                                                             {PRODUCTS.map(product => (
                                                                 <button
                                                                     key={product.id}
@@ -1044,64 +1044,64 @@ function App() {
                                                                             window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
                                                                         }
                                                                     }}
-                                                                    className='premium-glass p-0 h-20 flex flex-col items-center justify-center gap-1 border-white/5 hover:border-[#39ff14]/30 hover:bg-[#39ff14]/[0.02] active:scale-[0.94] transition-all group'
+                                                                    className='premium-glass p-0 h-16 flex flex-col items-center justify-center gap-0.5 border-white/5 hover:border-[#39ff14]/30 hover:bg-[#39ff14]/[0.02] active:scale-[0.94] transition-all group'
                                                                 >
-                                                                    <p className='text-[8px] font-bold opacity-40 group-hover:opacity-100 uppercase tracking-tighter px-1 truncate w-full text-center'>{product.name}</p>
-                                                                    <p className='text-[12px] font-black text-[#39ff14]'>{product.price / 1000}K</p>
+                                                                    <p className='text-[7px] font-bold opacity-30 group-hover:opacity-100 uppercase tracking-tighter px-1 truncate w-full text-center'>{product.name}</p>
+                                                                    <p className='text-[10px] font-black text-[#39ff14]'>{product.price / 1000}K</p>
                                                                 </button>
                                                             ))}
                                                         </div>
                                                     </div>
 
-                                                    {/* Billing Breakdown */}
-                                                    <div className='bg-white/[0.02] border border-white/5 rounded-[28px] p-6 flex justify-between items-center'>
-                                                        <div className='space-y-1'>
-                                                            <p className='text-[9px] font-black tracking-[2px] opacity-30 uppercase'>UMUMIY_HISOB</p>
-                                                            <div className='flex items-baseline gap-2'>
-                                                                <span className='text-4xl font-black italic tracking-tighter text-[#39ff14]'>
+                                                    {/* Billing Breakdown - Compact HUD */}
+                                                    <div className='bg-white/[0.02] border border-white/5 rounded-[22px] p-4 flex justify-between items-center'>
+                                                        <div className='space-y-0.5'>
+                                                            <p className='text-[8px] font-black tracking-[1.5px] opacity-20 uppercase'>UMUMIY_SUMMA</p>
+                                                            <div className='flex items-baseline gap-1.5'>
+                                                                <span className='text-3xl font-black italic tracking-tighter text-[#39ff14]'>
                                                                     {calculateCost(activeModalRoom, currentTime).toLocaleString()}
                                                                 </span>
-                                                                <span className='text-[10px] opacity-20 font-bold'>UZS</span>
+                                                                <span className='text-[9px] opacity-20 font-bold'>UZS</span>
                                                             </div>
                                                         </div>
-                                                        <div className='text-right space-y-2 opacity-30'>
-                                                            <div className='flex items-center gap-2 justify-end'>
-                                                                <span className='text-[8px] font-bold uppercase tracking-[1px]'>Vaqt:</span>
-                                                                <span className='text-[10px] font-black'>{(calculateCost(activeModalRoom, currentTime) - (activeModalRoom.sessionBarTotal || 0)).toLocaleString()}</span>
+                                                        <div className='text-right space-y-1 opacity-25'>
+                                                            <div className='flex items-center gap-1.5 justify-end'>
+                                                                <span className='text-[7px] font-bold uppercase'>Vaqt:</span>
+                                                                <span className='text-[9px] font-black'>{(calculateCost(activeModalRoom, currentTime) - (activeModalRoom.sessionBarTotal || 0)).toLocaleString()}</span>
                                                             </div>
-                                                            <div className='flex items-center gap-2 justify-end'>
-                                                                <span className='text-[8px] font-bold uppercase tracking-[1px]'>Bar:</span>
-                                                                <span className='text-[10px] font-black'>{(activeModalRoom.sessionBarTotal || 0).toLocaleString()}</span>
+                                                            <div className='flex items-center gap-1.5 justify-end'>
+                                                                <span className='text-[7px] font-bold uppercase'>Bar:</span>
+                                                                <span className='text-[9px] font-black'>{(activeModalRoom.sessionBarTotal || 0).toLocaleString()}</span>
                                                             </div>
                                                         </div>
                                                     </div>
 
                                                     <button
                                                         onClick={() => handleStopSession(activeModalRoom)}
-                                                        className='w-full bg-[#ff00ff] text-white font-black py-6 rounded-[24px] uppercase tracking-[4px] text-[10px] shadow-[0_15px_40px_rgba(255,0,255,0.2)] hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-3'
+                                                        className='w-full bg-[#ff00ff] text-white font-black py-5 rounded-[20px] uppercase tracking-[3px] text-[9px] shadow-[0_10px_30px_rgba(255,0,255,0.2)] hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2'
                                                     >
-                                                        <div className='w-4 h-4 border-2 border-white/30 rounded-sm flex items-center justify-center'>
-                                                            <div className='w-1.5 h-1.5 bg-white rounded-full'></div>
+                                                        <div className='w-3 h-3 border border-white/40 rounded-[3px] flex items-center justify-center'>
+                                                            <div className='w-1 h-1 bg-white rounded-full'></div>
                                                         </div>
                                                         Sessiyani Yakunlash
                                                     </button>
                                                 </div>
                                             ) : (
-                                                <div className='p-8 pt-0 space-y-10'>
-                                                    <div className='py-12 flex flex-col items-center justify-center gap-6 relative'>
-                                                        <div className='w-24 h-24 rounded-[32px] bg-white/[0.02] border border-white/5 flex items-center justify-center animate-pulse'>
-                                                            <Monitor size={40} className='opacity-10' />
+                                                <div className='p-6 pt-0 space-y-6'>
+                                                    <div className='py-8 flex flex-col items-center justify-center gap-4 relative'>
+                                                        <div className='w-20 h-20 rounded-[28px] bg-white/[0.02] border border-white/5 flex items-center justify-center animate-pulse'>
+                                                            <Monitor size={32} className='opacity-10' />
                                                         </div>
-                                                        <div className='text-center space-y-2'>
-                                                            <p className='text-[10px] font-bold tracking-[6px] opacity-20 uppercase'>STANTSIYA_BO'SH</p>
-                                                            <p className='text-[12px] font-medium opacity-40'>Sessiyani boshlash uchun tayyor</p>
+                                                        <div className='text-center space-y-1'>
+                                                            <p className='text-[9px] font-bold tracking-[4px] opacity-20 uppercase'>STANTSIYA_BO'SH</p>
+                                                            <p className='text-[10px] font-medium opacity-30'>Qabul uchun tayyor</p>
                                                         </div>
                                                     </div>
                                                     <button
                                                         onClick={() => { handleStartSession(activeModalRoom.id); setSelectedRoom(null); }}
-                                                        className='w-full bg-[#39ff14] text-black font-black py-6 rounded-[24px] uppercase tracking-[6px] text-[11px] shadow-[0_15px_40px_rgba(57,255,20,0.2)] hover:brightness-110 active:scale-[0.98] transition-all'
+                                                        className='w-full bg-[#39ff14] text-black font-black py-5 rounded-[20px] uppercase tracking-[5px] text-[10px] shadow-[0_10px_30px_rgba(57,255,20,0.2)] hover:brightness-110 active:scale-[0.98] transition-all'
                                                     >
-                                                        ▶️ BAQTNI BOSHLASH
+                                                        ▶️ VAQTNI BOSHLASH
                                                     </button>
                                                 </div>
                                             )}
@@ -1114,24 +1114,24 @@ function App() {
                         {/* Payment / Debt Modal */}
                         <AnimatePresence>
                             {isPaymentModalOpen && selectedRoom && (
-                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='fixed inset-0 z-[200] bg-black/98 backdrop-blur-3xl flex items-center justify-center p-6'>
-                                    <motion.div initial={{ scale: 0.9, y: 40 }} animate={{ scale: 1, y: 0 }} className='premium-glass w-full max-w-sm p-8 space-y-8 border-white/5 bg-[#05050a]'>
-                                        <div className='text-center space-y-2'>
-                                            <div className='inline-block px-3 py-1 bg-[#39ff14]/10 rounded-full border border-[#39ff14]/20 mb-2'>
-                                                <p className='text-[8px] font-black tracking-[3px] text-[#39ff14] uppercase'>TO'LOV_TERMINAL</p>
+                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='fixed inset-0 z-[200] bg-black/98 backdrop-blur-3xl flex items-center justify-center p-4'>
+                                    <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} className='premium-glass w-full max-w-sm p-6 space-y-6 border-white/5 bg-[#05050a]'>
+                                        <div className='text-center space-y-1'>
+                                            <div className='inline-block px-2.5 py-0.5 bg-[#39ff14]/10 rounded-full border border-[#39ff14]/20 mb-1'>
+                                                <p className='text-[7px] font-black tracking-[2px] text-[#39ff14] uppercase'>TO'LOV_TERMINAL</p>
                                             </div>
-                                            <h2 className='text-5xl font-black italic tracking-tighter text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]'>
+                                            <h2 className='text-4xl font-black italic tracking-tighter text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]'>
                                                 {calculateCost(selectedRoom, currentTime).toLocaleString()}
-                                                <span className='text-xs ml-2 opacity-30'>UZS</span>
+                                                <span className='text-[10px] ml-1.5 opacity-20'>UZS</span>
                                             </h2>
                                         </div>
 
-                                        <div className='space-y-6'>
-                                            <div className='space-y-2'>
-                                                <p className='text-[9px] font-black tracking-[2px] opacity-30 uppercase pl-2'>QABUL_QILINDI (SUMMA):</p>
+                                        <div className='space-y-4'>
+                                            <div className='space-y-1.5'>
+                                                <p className='text-[8px] font-black tracking-[1.5px] opacity-20 uppercase pl-1.5'>SUMMA_QABULI:</p>
                                                 <input
                                                     placeholder='0.00'
-                                                    className='input-luxury h-16 text-2xl font-black italic text-[#39ff14] text-center'
+                                                    className='input-luxury h-14 text-xl font-black italic text-[#39ff14] text-center'
                                                     value={paymentAmount}
                                                     onChange={e => setPaymentAmount(e.target.value)}
                                                     type='number'
@@ -1139,13 +1139,13 @@ function App() {
                                             </div>
 
                                             {Number(paymentAmount) < calculateCost(selectedRoom, currentTime) && (
-                                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className='space-y-4 p-6 bg-red-500/[0.03] border border-red-500/20 rounded-[24px]'>
-                                                    <div className='flex items-center gap-2 mb-2'>
-                                                        <Activity size={14} className='text-red-500' />
-                                                        <p className='text-[10px] font-black tracking-[2px] text-red-500 uppercase'>QARZ_REJESTRI_FAOL</p>
+                                                <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className='space-y-3 p-4 bg-red-500/[0.02] border border-red-500/15 rounded-[18px]'>
+                                                    <div className='flex items-center gap-1.5 mb-1'>
+                                                        <Activity size={12} className='text-red-500/60' />
+                                                        <p className='text-[9px] font-black tracking-[1.5px] text-red-500/60 uppercase'>QARZ_FAOL</p>
                                                     </div>
-                                                    <input placeholder='MIJOZ_ISMI' className='input-luxury-small h-12 bg-black/40 border-red-500/10' value={clientInfo.name} onChange={e => setClientInfo({ ...clientInfo, name: e.target.value })} />
-                                                    <input placeholder='CONTACT_PHONE' className='input-luxury-small h-12 bg-black/40 border-red-500/10' value={clientInfo.phone} onChange={e => setClientInfo({ ...clientInfo, phone: e.target.value })} />
+                                                    <input placeholder='KLIENT_NOMI' className='input-luxury-small h-10 bg-black/40 border-red-500/10' value={clientInfo.name} onChange={e => setClientInfo({ ...clientInfo, name: e.target.value })} />
+                                                    <input placeholder='TEL_NUM' className='input-luxury-small h-10 bg-black/40 border-red-500/10' value={clientInfo.phone} onChange={e => setClientInfo({ ...clientInfo, phone: e.target.value })} />
                                                 </motion.div>
                                             )}
 
@@ -1155,9 +1155,9 @@ function App() {
                                                     handleProcessPayment(selectedRoom, total);
                                                     setSelectedRoom(null);
                                                 }}
-                                                className='w-full h-16 bg-[#39ff14] text-black font-black rounded-2xl uppercase tracking-[4px] text-xs shadow-[0_10px_30px_rgba(57,255,20,0.2)] hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2'
+                                                className='w-full h-14 bg-[#39ff14] text-black font-black rounded-xl uppercase tracking-[3px] text-[10px] shadow-[0_8px_25px_rgba(57,255,20,0.2)] hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2'
                                             >
-                                                TASDIQLASH VA YOPISH <ArrowRight size={16} />
+                                                TERMINALNI YOPISH <ArrowRight size={14} />
                                             </button>
                                         </div>
                                     </motion.div>
