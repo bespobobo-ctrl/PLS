@@ -33,13 +33,15 @@ function App() {
         { name: 'Otabek Admin', login: 'ota_admin', pass: '7777', club: 'PLS Kokand-1' }
     ]));
 
-    const PRODUCTS = [
-        { id: 1, name: 'Pepsi 0.5L', price: 8000 },
-        { id: 2, name: 'Coca-Cola 0.5L', price: 8000 },
-        { id: 3, name: 'Flash Energy', price: 12000 },
-        { id: 4, name: 'Chips Lays', price: 15000 },
-        { id: 5, name: 'Sandwich', price: 18000 }
-    ];
+    const [inventory, setInventory] = useState(() => getInitialState('pls_inventory', [
+        { id: 1, name: 'Pepsi 0.5L', price: 8000, stock: 24 },
+        { id: 2, name: 'Coca-Cola 0.5L', price: 8000, stock: 24 },
+        { id: 3, name: 'Flash Energy', price: 12000, stock: 12 },
+        { id: 4, name: 'Chips Lays', price: 15000, stock: 10 },
+        { id: 5, name: 'Sandwich', price: 18000, stock: 5 }
+    ]));
+
+    const [sales, setSales] = useState(() => getInitialState('pls_sales', []));
 
     const [rooms, setRooms] = useState(() => getInitialState('pls_rooms', [
         { id: 1, name: 'VIP_01', price: '18,500', club: 'PLS Kokand-1', isBlocked: false, isBusy: false, startTime: null, dailyHours: 0, dailyRevenue: 0, sessionBarTotal: 0, barItems: [] },
@@ -231,12 +233,44 @@ function App() {
         return timeCost + (Number(room.sessionBarTotal) || 0);
     };
 
-    const handleAddBar = (id, amount, itemName) => {
-        setRooms(rooms.map(r => r.id === id ? {
+    const handleAddBar = (roomId, amount, itemName, productId) => {
+        const product = inventory.find(p => p.id === productId);
+        if (!product || product.stock <= 0) {
+            alert('Mahsulot omborga tugagan!');
+            return;
+        }
+
+        setInventory(inventory.map(p => p.id === productId ? { ...p, stock: p.stock - 1 } : p));
+        setRooms(rooms.map(r => r.id === roomId ? {
             ...r,
             sessionBarTotal: (r.sessionBarTotal || 0) + amount,
             barItems: [...(r.barItems || []), { name: itemName, price: amount, time: Date.now() }]
         } : r));
+    };
+
+    const handleDirectSale = (productId, club) => {
+        const product = inventory.find(p => p.id === productId);
+        if (!product || product.stock <= 0) return;
+
+        setInventory(inventory.map(p => p.id === productId ? { ...p, stock: p.stock - 1 } : p));
+        const saleRecord = {
+            id: Date.now(),
+            productName: product.name,
+            totalCost: product.price,
+            club: club,
+            date: new Date().toLocaleDateString('uz-UZ'),
+            time: new Date().toLocaleTimeString('uz-UZ', { hour12: false }),
+            type: 'Naqd Sotuv'
+        };
+        setSales([saleRecord, ...sales]);
+
+        if (window.Telegram?.WebApp?.HapticFeedback) {
+            window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+        }
+    };
+
+    const handleRestock = (productId, amount) => {
+        setInventory(inventory.map(p => p.id === productId ? { ...p, stock: p.stock + amount } : p));
     };
 
     const handleStartSession = (id) => {
@@ -283,6 +317,7 @@ function App() {
             debtAmount: debt,
             club: room.club,
             admin: username,
+            type: 'Xona Sessiyasi',
             date: new Date().toLocaleDateString('uz-UZ'),
             time: new Date().toLocaleTimeString('uz-UZ', { hour12: false })
         };
@@ -839,24 +874,27 @@ function App() {
                             </button>
                         </div>
 
-                        {/* Bottom Nav - GameZone HUD Style */}
-                        <div className='fixed bottom-4 left-1/2 -translate-x-1/2 w-[98%] max-w-lg bg-black/90 backdrop-blur-3xl border border-white/10 rounded-full p-2 flex justify-around items-center z-50 shadow-2xl'>
-                            {[
-                                { id: 'asosiy', label: 'Asosiy', icon: <Database size={18} /> },
-                                { id: 'xarita', label: 'Xarita', icon: <Monitor size={18} /> },
-                                { id: 'bar', label: 'Bar', icon: <Zap size={18} /> },
-                                { id: 'qarz', label: 'Qarz', icon: <CreditCard size={18} /> },
-                                { id: 'ops', label: 'Operatsiya', icon: <Activity size={18} /> }
-                            ].map(item => (
-                                <button
-                                    key={item.id}
-                                    onClick={() => setClubAdminTab(item.id)}
-                                    className={`flex flex-col items-center gap-1 py-2 px-1 transition-all ${clubAdminTab === item.id ? 'text-[#39ff14] scale-110' : 'opacity-30'}`}
-                                >
-                                    {item.icon}
-                                    <span className='text-[7px] font-black uppercase tracking-[1px]'>{item.label}</span>
-                                </button>
-                            ))}
+                        <div className='fixed bottom-4 left-1/2 -translate-x-1/2 w-[98%] max-w-lg bg-black/80 backdrop-blur-3xl border border-white/5 rounded-full p-2.5 flex justify-around items-center z-50 shadow-[0_20px_60px_rgba(0,0,0,0.6)]'>
+                            <button onClick={() => setClubAdminTab('asosiy')} className={`flex flex-col items-center gap-1 transition-all ${clubAdminTab === 'asosiy' ? 'text-[#39ff14] scale-110' : 'text-white/20'}`}>
+                                <Database size={20} />
+                                <span className='text-[7px] font-black uppercase tracking-[1px]'>Asosiy</span>
+                            </button>
+                            <button onClick={() => setClubAdminTab('xarita')} className={`flex flex-col items-center gap-1 transition-all ${clubAdminTab === 'xarita' ? 'text-[#39ff14] scale-110' : 'text-white/20'}`}>
+                                <Monitor size={20} />
+                                <span className='text-[7px] font-black uppercase tracking-[1px]'>Xarita</span>
+                            </button>
+                            <button onClick={() => setClubAdminTab('bar')} className={`flex flex-col items-center gap-1 transition-all ${clubAdminTab === 'bar' ? 'text-[#39ff14] scale-110' : 'text-white/20'}`}>
+                                <Coffee size={20} className={clubAdminTab === 'bar' ? 'drop-shadow-[0_0_8px_rgba(57,255,20,0.5)]' : ''} />
+                                <span className='text-[7px] font-black uppercase tracking-[1px]'>Bar</span>
+                            </button>
+                            <button onClick={() => setClubAdminTab('qarz')} className={`flex flex-col items-center gap-1 transition-all ${clubAdminTab === 'qarz' ? 'text-[#39ff14] scale-110' : 'text-white/20'}`}>
+                                <CreditCard size={20} />
+                                <span className='text-[7px] font-black uppercase tracking-[1px]'>Qarz</span>
+                            </button>
+                            <button onClick={() => setClubAdminTab('ops')} className={`flex flex-col items-center gap-1 transition-all ${clubAdminTab === 'ops' ? 'text-[#39ff14] scale-110' : 'text-white/20'}`}>
+                                <Activity size={20} />
+                                <span className='text-[7px] font-black uppercase tracking-[1px]'>Ops</span>
+                            </button>
                         </div>
 
                         <div className='flex-1 overflow-y-auto p-4 pb-32'>
@@ -980,11 +1018,56 @@ function App() {
                                         </div>
                                     </motion.div>
                                 ) : clubAdminTab === 'bar' ? (
-                                    <motion.div key='ca-bar' initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className='space-y-4'>
-                                        {/* Simplified Bar Shell */}
-                                        <div className='premium-glass p-6 text-center opacity-30 border-dashed'>
-                                            <Coffee size={32} className='mx-auto mb-2' />
-                                            <p className='text-[10px] font-bold uppercase tracking-[2px]'>Tez orada: Bar mahsulotlarini boshqarish</p>
+                                    <motion.div key='ca-bar' initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='space-y-6 pb-32 px-2'>
+                                        <div className='flex justify-between items-center px-2'>
+                                            <h4 className='text-[10px] font-black tracking-[4px] opacity-30 uppercase'>Ombor & To'g'ridan-to'g'ri Sotuv</h4>
+                                            <button onClick={() => setInventory(inventory.map(p => ({ ...p, stock: p.stock + 10 })))} className='text-[8px] font-black text-[#39ff14] opacity-30 hover:opacity-100 uppercase tracking-[2px] transition-all'>+ Hammasini To'ldirish</button>
+                                        </div>
+
+                                        <div className='grid grid-cols-1 gap-3'>
+                                            {inventory.map(product => {
+                                                const club = clubAdmins.find(ca => ca.login === username)?.club;
+                                                return (
+                                                    <div key={product.id} className='premium-glass p-5 border-white/5 bg-white/[0.01] flex items-center justify-between group overflow-hidden relative'>
+                                                        <div className='flex items-center gap-4 relative z-10'>
+                                                            <div className='w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center'>
+                                                                <Coffee size={20} className={product.stock <= 5 ? 'text-red-500 animate-pulse' : 'opacity-20'} />
+                                                            </div>
+                                                            <div>
+                                                                <p className='text-[13px] font-black italic tracking-wide uppercase'>{product.name}</p>
+                                                                <p className='text-[9px] font-bold text-[#39ff14] opacity-80'>{product.price.toLocaleString()} UZS</p>
+                                                                <div className='flex items-center gap-2 mt-1'>
+                                                                    <div className='w-24 h-1 bg-white/5 rounded-full overflow-hidden'>
+                                                                        <motion.div
+                                                                            initial={{ width: 0 }}
+                                                                            animate={{ width: `${Math.min(100, (product.stock / 50) * 100)}%` }}
+                                                                            className={`h-full ${product.stock <= 5 ? 'bg-red-500' : 'bg-[#39ff14]'}`}
+                                                                        ></motion.div>
+                                                                    </div>
+                                                                    <span className={`text-[8px] font-black ${product.stock <= 5 ? 'text-red-500' : 'opacity-30'}`}>{product.stock} dona</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className='flex items-center gap-2 relative z-10'>
+                                                            <button
+                                                                onClick={() => handleRestock(product.id, 10)}
+                                                                className='w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center hover:bg-white/10 transition-all opacity-40 hover:opacity-100'
+                                                                title='Omborga qoʻshish'
+                                                            >
+                                                                <Database size={16} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDirectSale(product.id, club)}
+                                                                disabled={product.stock <= 0}
+                                                                className={`px-4 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-[1px] transition-all flex items-center gap-2 ${product.stock <= 0 ? 'bg-white/5 opacity-10' : 'bg-blue-500 text-white shadow-[0_5px_15px_rgba(59,130,246,0.3)] hover:brightness-110 active:scale-95'}`}
+                                                            >
+                                                                <Zap size={12} /> Sotish
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     </motion.div>
                                 ) : clubAdminTab === 'qarz' ? (
@@ -1005,55 +1088,51 @@ function App() {
                                 ) : (
                                     <motion.div key='ca-ops' initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='space-y-4 pb-32'>
                                         <div className='flex justify-between items-center px-4 mb-4'>
-                                            <h4 className='text-[10px] font-black tracking-[4px] opacity-30 uppercase'>Barcha Sessiyalar ({sessions.filter(s => s.club === clubAdmins.find(ca => ca.login === username)?.club).length})</h4>
-                                            <button onClick={() => { if (window.confirm('Tarixni tozalash?')) setSessions(sessions.filter(s => s.club !== clubAdmins.find(ca => ca.login === username)?.club)) }} className='text-[8px] font-black text-red-500 opacity-30 hover:opacity-100 uppercase tracking-[2px] transition-all'>Tarixni Tozalash</button>
+                                            <h4 className='text-[10px] font-black tracking-[4px] opacity-30 uppercase'>Barcha Amallar ({[...sessions, ...sales].filter(s => s.club === clubAdmins.find(ca => ca.login === username)?.club).length})</h4>
+                                            <button onClick={() => { if (window.confirm('Tarixni tozalash?')) { setSessions(sessions.filter(s => s.club !== clubAdmins.find(ca => ca.login === username)?.club)); setSales(sales.filter(s => s.club !== clubAdmins.find(ca => ca.login === username)?.club)); } }} className='text-[8px] font-black text-red-500 opacity-30 hover:opacity-100 uppercase tracking-[2px] transition-all'>Tarixni Tozalash</button>
                                         </div>
 
                                         <div className='space-y-3 px-2'>
-                                            {sessions.filter(s => s.club === clubAdmins.find(ca => ca.login === username)?.club).map(session => (
-                                                <div key={session.id} className='premium-glass p-5 border-white/5 bg-white/[0.01] hover:bg-white/[0.03] transition-all relative overflow-hidden group'>
-                                                    <div className='absolute top-0 right-0 w-24 h-full bg-gradient-to-l from-[#39ff14]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity'></div>
-                                                    <div className='flex justify-between items-start mb-4'>
-                                                        <div>
-                                                            <div className='flex items-center gap-2 mb-1'>
-                                                                <span className='px-2 py-0.5 rounded-full bg-[#39ff14]/10 text-[#39ff14] text-[8px] font-black uppercase tracking-[1px]'>{session.roomName}</span>
-                                                                <span className='text-[8px] text-white/20 font-black uppercase tracking-[1px]'>{session.date} • {session.time}</span>
+                                            {[...sessions, ...sales].filter(s => s.club === clubAdmins.find(ca => ca.login === username)?.club)
+                                                .sort((a, b) => b.id - a.id)
+                                                .map(item => (
+                                                    <div key={item.id} className={`premium-glass p-5 border-white/5 bg-white/[0.01] hover:bg-white/[0.03] transition-all relative overflow-hidden group ${item.type === 'Naqd Sotuv' ? 'border-l-2 border-l-blue-500' : ''}`}>
+                                                        <div className='flex justify-between items-start mb-4'>
+                                                            <div>
+                                                                <div className='flex items-center gap-2 mb-1'>
+                                                                    <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[1px] ${item.type === 'Naqd Sotuv' ? 'bg-blue-500/10 text-blue-500' : 'bg-[#39ff14]/10 text-[#39ff14]'}`}>{item.roomName || item.productName}</span>
+                                                                    <span className='text-[8px] text-white/20 font-black uppercase tracking-[1px]'>{item.date} • {item.time}</span>
+                                                                </div>
+                                                                <p className='text-[13px] font-black italic tracking-tight uppercase'>{item.type === 'Naqd Sotuv' ? 'NAQD SOTUV' : `${formatTime(item.duration)} O'YIN DAVOMIYATI`}</p>
                                                             </div>
-                                                            <p className='text-[13px] font-black italic tracking-tight'>{formatTime(session.duration)} O'YIN DAVOMIYATI</p>
+                                                            <div className='text-right'>
+                                                                <p className={`text-[14px] font-black italic ${item.type === 'Naqd Sotuv' ? 'text-blue-500' : 'text-[#39ff14]'}`}>{item.totalCost?.toLocaleString() || item.price?.toLocaleString()} <span className='text-[8px] opacity-40 font-bold'>UZS</span></p>
+                                                                {item.debtAmount > 0 && <p className='text-[8px] font-black text-red-500 uppercase mt-0.5 italic'>-{item.debtAmount.toLocaleString()} QARZ</p>}
+                                                            </div>
                                                         </div>
-                                                        <div className='text-right'>
-                                                            <p className='text-[14px] font-black text-[#39ff14] italic'>{session.totalCost.toLocaleString()} <span className='text-[8px] opacity-40 font-bold'>UZS</span></p>
-                                                            {session.debtAmount > 0 && <p className='text-[8px] font-black text-red-500 uppercase mt-0.5 italic'>-{session.debtAmount.toLocaleString()} QARZ</p>}
-                                                        </div>
-                                                    </div>
 
-                                                    <div className='grid grid-cols-4 gap-2 pt-3 border-t border-white/5'>
-                                                        <div>
-                                                            <p className='text-[7px] text-white/20 font-bold uppercase mb-0.5'>Vaqt</p>
-                                                            <p className='text-[9px] font-black opacity-60'>{session.timeCost.toLocaleString()}</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className='text-[7px] text-white/20 font-bold uppercase mb-0.5'>Bar</p>
-                                                            <p className='text-[9px] font-black opacity-60'>{session.barCost.toLocaleString()}</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className='text-[7px] text-white/20 font-bold uppercase mb-0.5'>To'lov</p>
-                                                            <p className='text-[9px] font-black text-[#39ff14]'>{session.paidAmount.toLocaleString()}</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className='text-[7px] text-white/20 font-bold uppercase mb-0.5'>Admin</p>
-                                                            <p className='text-[9px] font-black opacity-60 truncate'>{session.admin}</p>
-                                                        </div>
+                                                        {item.type !== 'Naqd Sotuv' && (
+                                                            <div className='grid grid-cols-4 gap-2 pt-3 border-t border-white/5'>
+                                                                <div>
+                                                                    <p className='text-[7px] text-white/20 font-bold uppercase mb-0.5'>Vaqt</p>
+                                                                    <p className='text-[9px] font-black opacity-60'>{item.timeCost?.toLocaleString()}</p>
+                                                                </div>
+                                                                <div>
+                                                                    <p className='text-[7px] text-white/20 font-bold uppercase mb-0.5'>Bar</p>
+                                                                    <p className='text-[9px] font-black opacity-60'>{item.barCost?.toLocaleString()}</p>
+                                                                </div>
+                                                                <div>
+                                                                    <p className='text-[7px] text-white/20 font-bold uppercase mb-0.5'>To'lov</p>
+                                                                    <p className='text-[9px] font-black text-[#39ff14]'>{item.paidAmount?.toLocaleString()}</p>
+                                                                </div>
+                                                                <div>
+                                                                    <p className='text-[7px] text-white/20 font-bold uppercase mb-0.5'>Admin</p>
+                                                                    <p className='text-[9px] font-black opacity-60 truncate'>{item.admin || 'Tizim'}</p>
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                </div>
-                                            ))}
-
-                                            {sessions.filter(s => s.club === clubAdmins.find(ca => ca.login === username)?.club).length === 0 && (
-                                                <div className='py-20 text-center opacity-20'>
-                                                    <Activity size={40} className='mx-auto mb-4 opacity-5' />
-                                                    <p className='text-[10px] font-black uppercase tracking-[3px]'>Sessiyalar tarixi bo'sh</p>
-                                                </div>
-                                            )}
+                                                ))}
                                         </div>
                                     </motion.div>
                                 )}
@@ -1105,19 +1184,20 @@ function App() {
                                                             <Coffee size={12} className='opacity-20' />
                                                         </div>
                                                         <div className='grid grid-cols-3 gap-2'>
-                                                            {PRODUCTS.map(product => (
+                                                            {inventory.map(product => (
                                                                 <button
                                                                     key={product.id}
                                                                     onClick={() => {
-                                                                        handleAddBar(activeModalRoom.id, product.price, product.name);
+                                                                        handleAddBar(activeModalRoom.id, product.price, product.name, product.id);
                                                                         if (window.Telegram?.WebApp?.HapticFeedback) {
                                                                             window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
                                                                         }
                                                                     }}
-                                                                    className='premium-glass p-0 h-16 flex flex-col items-center justify-center gap-0.5 border-white/5 hover:border-[#39ff14]/30 hover:bg-[#39ff14]/[0.02] active:scale-[0.94] transition-all group'
+                                                                    className={`premium-glass p-0 h-16 flex flex-col items-center justify-center gap-0.5 border-white/5 transition-all group ${product.stock <= 0 ? 'opacity-20 grayscale pointer-events-none' : 'hover:border-[#39ff14]/30 hover:bg-[#39ff14]/[0.02] active:scale-[0.94]'}`}
                                                                 >
                                                                     <p className='text-[7px] font-bold opacity-30 group-hover:opacity-100 uppercase tracking-tighter px-1 truncate w-full text-center'>{product.name}</p>
                                                                     <p className='text-[10px] font-black text-[#39ff14]'>{product.price / 1000}K</p>
+                                                                    <p className='text-[6px] opacity-20 font-black'>{product.stock} dona</p>
                                                                 </button>
                                                             ))}
                                                         </div>
