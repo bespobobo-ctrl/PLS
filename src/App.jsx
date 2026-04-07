@@ -14,20 +14,24 @@ function App() {
     const [errorMessage, setErrorMessage] = useState('');
 
     // Persistent State for Main Admin
-    const [superAdmins, setSuperAdmins] = useState(() => {
-        const saved = localStorage.getItem('pls_super_admins');
-        return saved ? JSON.parse(saved) : [
-            { name: 'Shoxrux Mirzo', phone: '+998 90 123 45 67', login: 'shox_pro', pass: '1111', club: 'PLS Kokand-1' },
-            { name: 'Jasur Bek', phone: '+998 94 987 65 43', login: 'jasur_99', pass: '2222', club: 'PLS Fergana-2' }
-        ];
-    });
+    const getInitialState = (key, defaultValue) => {
+        try {
+            const saved = localStorage.getItem(key);
+            const parsed = saved ? JSON.parse(saved) : null;
+            return (parsed && (Array.isArray(parsed) || typeof parsed === 'object')) ? parsed : defaultValue;
+        } catch (e) {
+            return defaultValue;
+        }
+    };
 
-    const [clubAdmins, setClubAdmins] = useState(() => {
-        const saved = localStorage.getItem('pls_club_admins');
-        return saved ? JSON.parse(saved) : [
-            { name: 'Otabek Admin', login: 'ota_admin', pass: '7777', club: 'PLS Kokand-1' }
-        ];
-    });
+    const [superAdmins, setSuperAdmins] = useState(() => getInitialState('pls_super_admins', [
+        { name: 'Shoxrux Mirzo', phone: '+998 90 123 45 67', login: 'shox_pro', pass: '1111', club: 'PLS Kokand-1' },
+        { name: 'Jasur Bek', phone: '+998 94 987 65 43', login: 'jasur_99', pass: '2222', club: 'PLS Fergana-2' }
+    ]));
+
+    const [clubAdmins, setClubAdmins] = useState(() => getInitialState('pls_club_admins', [
+        { name: 'Otabek Admin', login: 'ota_admin', pass: '7777', club: 'PLS Kokand-1' }
+    ]));
 
     const PRODUCTS = [
         { id: 1, name: 'Pepsi 0.5L', price: 8000 },
@@ -37,19 +41,13 @@ function App() {
         { id: 5, name: 'Sandwich', price: 18000 }
     ];
 
-    const [rooms, setRooms] = useState(() => {
-        const saved = localStorage.getItem('pls_rooms');
-        return saved ? JSON.parse(saved) : [
-            { id: 1, name: 'VIP_01', price: '18,500', club: 'PLS Kokand-1', isBlocked: false, isBusy: false, startTime: null, dailyHours: 0, dailyRevenue: 0, sessionBarTotal: 0, barItems: [] },
-            { id: 2, name: 'ROOM_02', price: '12,000', club: 'PLS Kokand-1', isBlocked: false, isBusy: false, startTime: null, dailyHours: 0, dailyRevenue: 0, sessionBarTotal: 0, barItems: [] },
-            { id: 3, name: 'ROOM_03', price: '12,000', club: 'PLS Kokand-1', isBlocked: false, isBusy: false, startTime: null, dailyHours: 0, dailyRevenue: 0, sessionBarTotal: 0, barItems: [] }
-        ];
-    });
+    const [rooms, setRooms] = useState(() => getInitialState('pls_rooms', [
+        { id: 1, name: 'VIP_01', price: '18,500', club: 'PLS Kokand-1', isBlocked: false, isBusy: false, startTime: null, dailyHours: 0, dailyRevenue: 0, sessionBarTotal: 0, barItems: [] },
+        { id: 2, name: 'ROOM_02', price: '12,000', club: 'PLS Kokand-1', isBlocked: false, isBusy: false, startTime: null, dailyHours: 0, dailyRevenue: 0, sessionBarTotal: 0, barItems: [] },
+        { id: 3, name: 'ROOM_03', price: '12,000', club: 'PLS Kokand-1', isBlocked: false, isBusy: false, startTime: null, dailyHours: 0, dailyRevenue: 0, sessionBarTotal: 0, barItems: [] }
+    ]));
 
-    const [debts, setDebts] = useState(() => {
-        const saved = localStorage.getItem('pls_debts');
-        return saved ? JSON.parse(saved) : [];
-    });
+    const [debts, setDebts] = useState(() => getInitialState('pls_debts', []));
 
     const [currentTime, setCurrentTime] = useState(Date.now());
 
@@ -227,7 +225,7 @@ function App() {
         const priceStr = room.price || '0';
         const hourly = parseInt(priceStr.toString().replace(/[^0-9]/g, '')) || 0;
         const timeCost = Math.floor((elapsedMs / (1000 * 60 * 60)) * hourly);
-        return timeCost + (room.sessionBarTotal || 0);
+        return timeCost + (Number(room.sessionBarTotal) || 0);
     };
 
     const handleAddBar = (id, amount, itemName) => {
@@ -846,9 +844,9 @@ function App() {
                                         )}
 
                                         <div className='space-y-4 pb-32'>
-                                            {rooms.filter(r => r.club === clubAdmins.find(ca => ca.login === username)?.club).map((room, i) => (
+                                            {(rooms || []).filter(r => r && r.club === clubAdmins.find(ca => ca.login === username)?.club).map((room, i) => (
                                                 <div
-                                                    key={room.id}
+                                                    key={room.id || i}
                                                     onClick={() => !room.isBlocked && setSelectedRoom(room)}
                                                     className={`premium-glass p-6 border-white/5 relative group transition-all ${room.isBusy ? 'bg-[#39ff14]/[0.02]' : 'hover:bg-white/[0.02]'}`}
                                                 >
@@ -915,7 +913,7 @@ function App() {
                                             <div className='space-y-6'>
                                                 <div className='flex justify-between items-end'>
                                                     <p className='text-6xl font-black italic tracking-tighter text-[#39ff14] shadow-[0_0_20px_rgba(57,255,20,0.2)]'>
-                                                        {rooms.filter(r => r.club === clubAdmins.find(ca => ca.login === username)?.club).reduce((acc, r) => acc + (r.dailyRevenue || 0), 0).toLocaleString()}
+                                                        {Number((rooms || []).filter(r => r && r.club === clubAdmins.find(ca => ca.login === username)?.club).reduce((acc, r) => acc + (Number(r.dailyRevenue) || 0), 0)).toLocaleString()}
                                                     </p>
                                                     <p className='text-sm font-black opacity-30 tracking-[4px] ml-4'>UZS</p>
                                                 </div>
