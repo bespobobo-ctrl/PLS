@@ -60,9 +60,6 @@ function App() {
         localStorage.setItem('pls_club_admins', JSON.stringify(clubAdmins));
     }, [clubAdmins]);
 
-    useEffect(() => {
-        localStorage.setItem('pls_clubs', JSON.stringify(clubs));
-    }, [clubs]);
 
     useEffect(() => {
         localStorage.setItem('pls_rooms', JSON.stringify(rooms));
