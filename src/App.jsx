@@ -224,7 +224,8 @@ function App() {
     const calculateCost = (room, now) => {
         if (!room.startTime) return 0;
         const elapsedMs = now - room.startTime;
-        const hourly = parseInt(room.price.replace(/[^0-9]/g, '')) || 0;
+        const priceStr = room.price || '0';
+        const hourly = parseInt(priceStr.toString().replace(/[^0-9]/g, '')) || 0;
         const timeCost = Math.floor((elapsedMs / (1000 * 60 * 60)) * hourly);
         return timeCost + (room.sessionBarTotal || 0);
     };
@@ -858,7 +859,10 @@ function App() {
                                                         </div>
                                                         <div className='flex items-center gap-1 bg-black/40 p-2 rounded-xl border border-white/5'>
                                                             <button
-                                                                onClick={(e) => { e.stopPropagation(); handleStartRoomEdit(room, i); }}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleStartRoomEdit(room, rooms.findIndex(r => r.id === room.id));
+                                                                }}
                                                                 className='w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors'
                                                             >
                                                                 <Settings size={14} className='opacity-30' />
