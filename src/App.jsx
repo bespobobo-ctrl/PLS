@@ -490,52 +490,73 @@ function App() {
                         <div className='flex-1 overflow-y-auto p-6 space-y-8 pb-32'>
                             <AnimatePresence mode='wait'>
                                 {adminTab === 'asosiy' ? (
-                                    <motion.div key='dash' initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className='space-y-8'>
-                                        {/* 💎 PREMIUM STATS GRID */}
-                                        <div className='grid grid-cols-2 gap-4'>
-                                            <div className='premium-glass p-8 bg-gradient-to-br from-[#39ff14]/5 to-transparent border-[#39ff14]/20 relative overflow-hidden h-44 flex flex-col justify-between'>
-                                                <div className='flex justify-between items-start'>
-                                                    <span className='text-[9px] text-[#39ff14] font-bold tracking-[3px] uppercase'>JAMI_KLUBLAR</span>
-                                                    <div className='w-2 h-2 rounded-full bg-[#39ff14] shadow-[0_0_10px_#39ff14] animate-pulse'></div>
-                                                </div>
-                                                <h1 className='text-6xl font-black italic tracking-tighter'>{clubs.length}</h1>
-                                                <div className='text-[8px] text-white/20 font-bold tracking-[2px] uppercase'>AKTIV FILIALLAR 🟢</div>
-                                            </div>
-                                            <div className='grid gap-4'>
-                                                <div className='premium-glass p-5 flex flex-col justify-center text-center'>
-                                                    <p className='text-[8px] text-white/40 font-bold uppercase tracking-[2px] mb-1'>UMUMIY XONALAR 🔥</p>
-                                                    <h3 className='text-2xl font-bold text-[#39ff14]'>{clubs.reduce((acc, c) => acc + c.rooms, 0)}</h3>
-                                                </div>
-                                                <div className='premium-glass p-5 flex flex-col justify-center text-center'>
-                                                    <p className='text-[8px] text-white/40 font-bold uppercase tracking-[2px] mb-1'>KUNLIK DAROMAD 💰</p>
-                                                    <h3 className='text-2xl font-bold italic tracking-tight'>2.4M</h3>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <motion.div key='admin-dash' initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className='space-y-8'>
+                                        {/* 🚀 REAL-TIME CLUBS AGGREGATION */}
+                                        {(() => {
+                                            const clubList = Array.from(new Set(clubAdmins.map(ca => ca.club))).map(clubName => {
+                                                const clubRooms = (rooms || []).filter(r => r && r.club === clubName);
+                                                return {
+                                                    name: clubName,
+                                                    rooms: clubRooms.length,
+                                                    dailyRevenue: clubRooms.reduce((acc, r) => acc + (Number(r.dailyRevenue) || 0), 0)
+                                                };
+                                            });
+                                            const clubs = clubList; // For legacy matching
 
-                                        {/* 🚀 CLUB NODES LIST */}
-                                        <div className='space-y-4'>
-                                            <h3 className='text-[10px] font-bold uppercase tracking-[4px] text-white/30 px-2'>ULANGAN XONALAR HOLATI</h3>
-                                            <div className='space-y-3'>
-                                                {clubs.map((club, i) => (
-                                                    <div key={i} className='premium-glass p-6 flex justify-between items-center border-white/5'>
-                                                        <div className='flex items-center gap-4'>
-                                                            <div className='w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10'>
-                                                                <Monitor size={22} className='text-[#39ff14]' />
-                                                            </div>
+                                            return (
+                                                <>
+                                                    {/* � KPI OVERVIEW */}
+                                                    <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                                                        <div className='premium-glass p-8 bg-gradient-to-br from-[#39ff14]/10 to-transparent border-[#39ff14]/20 flex justify-between items-center'>
                                                             <div>
-                                                                <p className='font-bold text-sm tracking-wide'>{club.name}</p>
-                                                                <p className='text-[10px] text-white/30 uppercase tracking-[1px]'>{club.rooms} TA STANTSIYA</p>
+                                                                <div className='flex items-center gap-3 mb-2'>
+                                                                    <div className='w-2 h-2 rounded-full bg-[#39ff14] animate-pulse'></div>
+                                                                    <span className='text-[10px] font-bold tracking-[2px] uppercase opacity-40'>Global Network</span>
+                                                                </div>
+                                                                <h1 className='text-6xl font-black italic tracking-tighter'>{clubs.length}</h1>
+                                                                <div className='text-[8px] text-white/20 font-bold tracking-[2px] uppercase'>AKTIV FILIALLAR 🟢</div>
+                                                            </div>
+                                                            <div className='grid gap-4'>
+                                                                <div className='premium-glass p-5 flex flex-col justify-center text-center'>
+                                                                    <p className='text-[8px] text-white/40 font-bold uppercase tracking-[2px] mb-1'>UMUMIY XONALAR 🔥</p>
+                                                                    <h3 className='text-2xl font-bold text-[#39ff14]'>{clubs.reduce((acc, c) => acc + c.rooms, 0)}</h3>
+                                                                </div>
+                                                                <div className='premium-glass p-5 flex flex-col justify-center text-center'>
+                                                                    <p className='text-[8px] text-white/40 font-bold uppercase tracking-[2px] mb-1'>JAMI DAROMAD 💰</p>
+                                                                    <h3 className='text-2xl font-bold italic tracking-tight'>
+                                                                        {(clubs.reduce((acc, c) => acc + c.dailyRevenue, 0) / 1000000).toFixed(1)}M
+                                                                    </h3>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                        <div className='text-right'>
-                                                            <p className='text-[12px] font-bold text-[#39ff14]'>{club.dailyRevenue} SO'M</p>
-                                                            <p className='text-[8px] text-white/20 uppercase tracking-[1px]'>BUGUN</p>
+
+                                                        {/* 🚀 CLUB NODES LIST */}
+                                                        <div className='space-y-4'>
+                                                            <h3 className='text-[10px] font-bold uppercase tracking-[4px] text-white/30 px-2'>ULANGAN XONALAR HOLATI</h3>
+                                                            <div className='space-y-3'>
+                                                                {clubs.map((club, i) => (
+                                                                    <div key={i} className='premium-glass p-6 flex justify-between items-center border-white/5'>
+                                                                        <div className='flex items-center gap-4'>
+                                                                            <div className='w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10'>
+                                                                                <Monitor size={22} className='text-[#39ff14]' />
+                                                                            </div>
+                                                                            <div>
+                                                                                <p className='font-bold text-sm tracking-wide'>{club.name}</p>
+                                                                                <p className='text-[10px] text-white/30 uppercase tracking-[1px]'>{club.rooms} TA STANTSIYA</p>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className='text-right'>
+                                                                            <p className='text-[12px] font-bold text-[#39ff14]'>{Number(club.dailyRevenue).toLocaleString()} SO'M</p>
+                                                                            <p className='text-[8px] text-white/20 uppercase tracking-[1px]'>BUGUN</p>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                ))}
-                                            </div>
-                                        </div>
+                                                </>
+                                            );
+                                        })()}
 
                                         {/* 🚀 BROADCAST PANEL */}
                                         <div className='premium-glass p-6 border-[#39ff14]/10 bg-[#39ff14]/[0.02]'>
