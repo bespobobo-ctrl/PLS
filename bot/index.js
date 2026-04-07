@@ -8,7 +8,7 @@ bot.start((ctx) => {
     const welcomeText = `🚀 <b>Siz PLS Game Club botiga xush kelibsiz!</b>\n\nBu bot orqali siz klubdagi kompyuterlarni band qilishingiz, balansingizni to'ldirishingiz va xizmatingizni boshqarishingiz mumkin.\n\nO'yinga tayyormisiz? 👇`;
 
     return ctx.replyWithHTML(welcomeText, Markup.inlineKeyboard([
-        [Markup.button.webApp('🕹️ MINI APP-NI OCHISH', 'https://pls-taupe.vercel.app?v=admin_v13')]
+        [Markup.button.webApp('🕹️ MINI APP-NI OCHISH', 'https://pls-taupe.vercel.app?v=admin_v14')]
     ]));
 });
 

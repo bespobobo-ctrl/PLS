@@ -52,8 +52,11 @@ function App() {
     }, [clubs]);
 
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isClubAddModalOpen, setIsClubAddModalOpen] = useState(false);
     const [editIndex, setEditIndex] = useState(null);
+    const [clubEditIndex, setClubEditIndex] = useState(null);
     const [newAdmin, setNewAdmin] = useState({ name: '', phone: '', login: '', pass: '', club: '' });
+    const [newClubAdmin, setNewClubAdmin] = useState({ name: '', login: '', pass: '', club: '' });
     const [superAdminTab, setSuperAdminTab] = useState('asosiy');
 
     const holdTimer = useRef(null);
@@ -141,7 +144,6 @@ function App() {
 
     const handleSaveSuperAdmin = () => {
         if (!newAdmin.name || !newAdmin.login || !newAdmin.pass) return;
-
         if (editIndex !== null) {
             const updated = [...superAdmins];
             updated[editIndex] = newAdmin;
@@ -149,11 +151,38 @@ function App() {
         } else {
             setSuperAdmins([...superAdmins, newAdmin]);
         }
-
-        // Reset
         setNewAdmin({ name: '', phone: '', login: '', pass: '', club: '' });
         setIsAddModalOpen(false);
         setEditIndex(null);
+    };
+
+    const handleSaveClubAdmin = (currentClub) => {
+        if (!newClubAdmin.name || !newClubAdmin.login || !newClubAdmin.pass) return;
+        const adminData = { ...newClubAdmin, club: currentClub };
+
+        if (clubEditIndex !== null) {
+            const updated = [...clubAdmins];
+            updated[clubEditIndex] = adminData;
+            setClubAdmins(updated);
+        } else {
+            setClubAdmins([...clubAdmins, adminData]);
+        }
+
+        setNewClubAdmin({ name: '', login: '', pass: '', club: '' });
+        setIsClubAddModalOpen(false);
+        setClubEditIndex(null);
+    };
+
+    const handleDeleteClubAdmin = (index) => {
+        if (window.confirm('Haqiqatdan ham ushbu club adminni o\'chirmoqchimisiz?')) {
+            setClubAdmins(clubAdmins.filter((_, i) => i !== index));
+        }
+    };
+
+    const handleStartClubEdit = (admin, index) => {
+        setNewClubAdmin(admin);
+        setClubEditIndex(index);
+        setIsClubAddModalOpen(true);
     };
 
     const handleDeleteSuperAdmin = (index) => {
@@ -522,7 +551,6 @@ function App() {
                                             </div>
                                         </div>
 
-                                        {/* Actions for Super Admin */}
                                         <div className='grid grid-cols-2 gap-4'>
                                             <button className='premium-glass p-6 text-center hover:bg-[#39ff14]/10 transition-all group'>
                                                 <Monitor size={32} className='mx-auto mb-3 text-white/40 group-hover:text-[#39ff14]' />
@@ -534,17 +562,34 @@ function App() {
                                             </button>
                                         </div>
 
-                                        {/* Health bar */}
                                         <div className='flex justify-between items-center p-6 bg-white/[0.02] rounded-3xl border border-white/5'>
                                             <div className='text-[9px] font-bold text-white/40 uppercase tracking-[2px]'>STANTSIYALAR: <span className='text-[#39ff14]'>ONLAYN 🌐</span></div>
-                                            <div className='text-[9px] font-bold text-white/40 uppercase tracking-[2px]'>KASSA: <span className='text-[#39ff14]'>YOPILGAN 🔒</span></div>
+                                            <div className='text-[9px] font-bold text-white/40 uppercase tracking-[2px]'>KASSA: <span className='text-white'>OCHIQ ✅</span></div>
                                         </div>
                                     </motion.div>
                                 ) : superAdminTab === 'admins' ? (
                                     <motion.div key='sa-admins' initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className='space-y-6'>
-                                        <button className='w-full bg-[#39ff14]/10 border border-[#39ff14]/30 text-[#39ff14] py-5 rounded-2xl font-black text-[11px] tracking-[3px] uppercase hover:bg-[#39ff14]/20 transition-all'>
-                                            + CLUB ADMIN QO'SHISH
+                                        <button
+                                            onClick={() => {
+                                                setClubEditIndex(null);
+                                                setNewClubAdmin({ name: '', login: '', pass: '', club: '' });
+                                                setIsClubAddModalOpen(!isClubAddModalOpen);
+                                            }}
+                                            className='w-full bg-[#39ff14]/10 border border-[#39ff14]/30 text-[#39ff14] py-5 rounded-2xl font-black text-[11px] tracking-[3px] uppercase hover:bg-[#39ff14]/20 transition-all'
+                                        >
+                                            {isClubAddModalOpen ? 'YOPISH' : "+ CLUB ADMIN QO'SHISH"}
                                         </button>
+
+                                        {isClubAddModalOpen && (
+                                            <div className='premium-glass p-6 space-y-4 border-[#39ff14]/20'>
+                                                <input placeholder='Admin Ismi' className='input-luxury' value={newClubAdmin.name} onChange={e => setNewClubAdmin({ ...newClubAdmin, name: e.target.value })} />
+                                                <input placeholder='Login' className='input-luxury' value={newClubAdmin.login} onChange={e => setNewClubAdmin({ ...newClubAdmin, login: e.target.value })} />
+                                                <input placeholder='Parol' className='input-luxury' value={newClubAdmin.pass} onChange={e => setNewClubAdmin({ ...newClubAdmin, pass: e.target.value })} />
+                                                <button onClick={() => handleSaveClubAdmin(superAdmins.find(sa => sa.login === username)?.club)} className='w-full bg-[#39ff14] text-black font-bold py-3 rounded-xl uppercase tracking-[1px]'>
+                                                    {clubEditIndex !== null ? 'Yangilash' : 'Saqlash'}
+                                                </button>
+                                            </div>
+                                        )}
 
                                         <div className='space-y-3'>
                                             {clubAdmins.filter(ca => ca.club === superAdmins.find(sa => sa.login === username)?.club).map((admin, i) => (
@@ -559,8 +604,8 @@ function App() {
                                                         </div>
                                                     </div>
                                                     <div className='flex gap-2'>
-                                                        <button className='w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10'><Settings size={14} className='text-white/20' /></button>
-                                                        <button className='w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-red-500/10'><Trash2 size={14} className='text-red-400/40' /></button>
+                                                        <button onClick={() => handleStartClubEdit(admin, i)} className='w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10'><Settings size={14} className='text-white/20' /></button>
+                                                        <button onClick={() => handleDeleteClubAdmin(i)} className='w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-red-500/10'><Trash2 size={14} className='text-red-400/40' /></button>
                                                     </div>
                                                 </div>
                                             ))}
@@ -586,6 +631,102 @@ function App() {
                                     </motion.div>
                                 )}
                             </AnimatePresence>
+                        </div>
+                    </motion.div>
+                ) : view === 'club-admin-view' ? (
+                    <motion.div
+                        key='club-admin' initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                        className='relative z-10 w-full h-screen flex flex-col bg-[#030308] max-w-lg mx-auto overflow-hidden'
+                    >
+                        {/* Club Admin Header - GameZone Style */}
+                        <div className='p-6 bg-black/40 backdrop-blur-3xl border-b border-white/5 flex justify-between items-center'>
+                            <div className='flex items-center gap-4'>
+                                <div className='w-12 h-12 rounded-2xl bg-[#39ff14]/10 border border-[#39ff14]/20 flex items-center justify-center relative'>
+                                    <ShieldCheck size={24} className='text-[#39ff14]' />
+                                    <div className='absolute -top-1 -right-1 w-3 h-3 bg-[#39ff14] rounded-full shadow-[0_0_10px_#39ff14] border-2 border-[#030308]'></div>
+                                </div>
+                                <div>
+                                    <h3 className='text-sm font-black italic tracking-tighter uppercase syncopate'>{clubAdmins.find(ca => ca.login === username)?.club || 'PLS CLUB'}</h3>
+                                    <p className='text-[8px] text-white/30 font-bold uppercase tracking-[2px]'>{clubAdmins.find(ca => ca.login === username)?.name || 'Admin'}</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setView('login')} className='p-3 rounded-xl bg-white/5 border border-white/10'>
+                                <LogOut size={18} className='text-white/40' />
+                            </button>
+                        </div>
+
+                        {/* Stats Strip */}
+                        <div className='px-6 py-4 bg-[#39ff14]/5 flex justify-between items-center border-b border-[#39ff14]/10'>
+                            <div className='flex items-center gap-2'>
+                                <Activity size={14} className='text-[#39ff14]' />
+                                <span className='text-[9px] font-black uppercase tracking-[1px]'>AKTIV XONALAR: <span className='text-white'>8 / 24</span></span>
+                            </div>
+                            <div className='flex items-center gap-2'>
+                                <CreditCard size={14} className='text-[#39ff14]' />
+                                <span className='text-[9px] font-black uppercase tracking-[1px]'>MABLAG': <span className='text-white'>940,000 UZS</span></span>
+                            </div>
+                        </div>
+
+                        {/* Room Grid - Timer Based */}
+                        <div className='flex-1 overflow-y-auto p-4 grid grid-cols-2 gap-3 pb-32'>
+                            {[...Array(24)].map((_, i) => (
+                                <div key={i} className={`premium-glass p-4 border-white/5 relative group transition-all ${i < 8 ? 'bg-[#39ff14]/5' : ''}`}>
+                                    <div className='flex justify-between items-start mb-4'>
+                                        <div className='space-y-1'>
+                                            <p className='text-[7px] text-white/30 font-black tracking-[2px] uppercase'>XONA_ID</p>
+                                            <p className='text-xl font-black italic tracking-tighter uppercase syncopate'>N_{i + 1}</p>
+                                        </div>
+                                        <div className={`w-2 h-2 rounded-full ${i < 8 ? 'bg-[#39ff14] shadow-[0_0_8px_#39ff14]' : 'bg-white/10'}`}></div>
+                                    </div>
+
+                                    <div className='space-y-3'>
+                                        {i < 8 ? (
+                                            <>
+                                                <div className='space-y-1'>
+                                                    <p className='text-[7px] text-[#39ff14] font-black tracking-[1px] uppercase'>O'YINCHI</p>
+                                                    <p className='text-[10px] font-bold truncate opacity-80'>MuxammadAli_07</p>
+                                                </div>
+                                                <div className='p-3 bg-black/40 rounded-xl border border-[#39ff14]/20 flex items-center justify-between'>
+                                                    <Zap size={12} className='text-[#39ff14]' />
+                                                    <span className='text-xs font-black italic tracking-tighter text-[#39ff14]'>01:42:07</span>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className='py-6 text-center opacity-10 flex flex-col items-center gap-2'>
+                                                <Gamepad2 size={24} />
+                                                <span className='text-[8px] font-black tracking-[2px] uppercase'>BO'SH</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Action Button - Overlay on Hover */}
+                                    <div className='absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-[32px]'>
+                                        <button className='bg-[#39ff14] text-black px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-[2px]'>
+                                            {i < 8 ? 'YOPISH ⏹️' : 'OCHISH ▶️'}
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Bottom Nav - GameZone HUD Style */}
+                        <div className='fixed bottom-4 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-black/90 backdrop-blur-2xl border border-white/10 rounded-3xl p-2 flex justify-around items-center z-50 shadow-2xl'>
+                            <button className='flex flex-col items-center gap-1 p-3 text-[#39ff14]'>
+                                <Monitor size={20} />
+                                <span className='text-[7px] font-black uppercase tracking-[1px]'>XONALAR</span>
+                            </button>
+                            <button className='flex flex-col items-center gap-1 p-3 opacity-20'>
+                                <Database size={20} />
+                                <span className='text-[7px] font-black uppercase tracking-[1px]'>JURNAL</span>
+                            </button>
+                            <button className='flex flex-col items-center gap-1 p-3 opacity-20'>
+                                <BarChart3 size={20} />
+                                <span className='text-[7px] font-black uppercase tracking-[1px]'>KASSA</span>
+                            </button>
+                            <button className='flex flex-col items-center gap-1 p-3 opacity-20'>
+                                <Settings size={20} />
+                                <span className='text-[7px] font-black uppercase tracking-[1px]'>SOZLAMALAR</span>
+                            </button>
                         </div>
                     </motion.div>
                 ) : (
