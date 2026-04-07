@@ -9,9 +9,24 @@ function App() {
     const [password, setPassword] = useState('');
     const [adminUser, setAdminUser] = useState('');
     const [adminPass, setAdminPass] = useState('');
-    const [adminTab, setAdminTab] = useState('dashboard');
+    const [adminTab, setAdminTab] = useState('asosiy');
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
+
+    // Mock Data for Main Admin
+    const [superAdmins, setSuperAdmins] = useState([
+        { name: 'Shoxrux Mirzo', phone: '+998 90 123 45 67', login: 'shox_pro', pass: '1111', club: 'PLS Kokand-1' },
+        { name: 'Jasur Bek', phone: '+998 94 987 65 43', login: 'jasur_99', pass: '2222', club: 'PLS Fergana-2' }
+    ]);
+
+    const [clubs, setClubs] = useState([
+        { name: 'PLS Kokand-1', rooms: 24, dailyRevenue: '850,000' },
+        { name: 'PLS Fergana-2', rooms: 12, dailyRevenue: '420,000' },
+        { name: 'PLS Tashkent-3', rooms: 32, dailyRevenue: '1,200,000' }
+    ]);
+
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [newAdmin, setNewAdmin] = useState({ name: '', phone: '', login: '', pass: '', club: '' });
 
     const holdTimer = useRef(null);
 
@@ -53,8 +68,12 @@ function App() {
         setIsLoading(true);
         setErrorMessage('');
         setTimeout(() => {
+            const superAdmin = superAdmins.find(sa => sa.login === username && sa.pass === password);
+
             if (username === '4567' && password === '4567') {
                 setView('admin');
+            } else if (superAdmin) {
+                setView('super-admin');
             } else if (username && password) {
                 setView('player');
             } else {
@@ -82,6 +101,13 @@ function App() {
             }
             setIsLoading(false);
         }, 1800);
+    };
+
+    const handleAddSuperAdmin = () => {
+        if (!newAdmin.name || !newAdmin.login || !newAdmin.pass) return;
+        setSuperAdmins([...superAdmins, newAdmin]);
+        setNewAdmin({ name: '', phone: '', login: '', pass: '', club: '' });
+        setIsAddModalOpen(false);
     };
 
     return (
@@ -221,12 +247,12 @@ function App() {
                         {/* Tab Control HUD */}
                         <div className='flex justify-between items-center p-6 bg-black/40 backdrop-blur-2xl border-b border-white/5'>
                             <div className='flex gap-3'>
-                                {['asosiy', 'mijozlar', 'jurnallar'].map(tab => (
+                                {['asosiy', 'admins', 'jurnallar'].map(tab => (
                                     <button
                                         key={tab} onClick={() => setAdminTab(tab)}
                                         className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-[2px] transition-all ${adminTab === tab ? 'bg-[#39ff14] text-black shadow-[0_0_15px_rgba(57,255,20,0.4)]' : 'bg-white/5 text-white/40'}`}
                                     >
-                                        {tab === 'asosiy' ? 'BOSHQUVAR' : tab === 'mijozlar' ? 'MIJOZLAR' : 'JURNALLAR'}
+                                        {tab === 'asosiy' ? 'BOSHQUVAR' : tab === 'admins' ? 'SUPER ADMINLAR' : 'JURNALLAR'}
                                     </button>
                                 ))}
                             </div>
@@ -243,21 +269,45 @@ function App() {
                                         <div className='grid grid-cols-2 gap-4'>
                                             <div className='premium-glass p-8 bg-gradient-to-br from-[#39ff14]/5 to-transparent border-[#39ff14]/20 relative overflow-hidden h-44 flex flex-col justify-between'>
                                                 <div className='flex justify-between items-start'>
-                                                    <span className='text-[9px] text-[#39ff14] font-bold tracking-[3px] uppercase'>AKTIV_O'YINCHILAR</span>
+                                                    <span className='text-[9px] text-[#39ff14] font-bold tracking-[3px] uppercase'>JAMI_KLUBLAR</span>
                                                     <div className='w-2 h-2 rounded-full bg-[#39ff14] shadow-[0_0_10px_#39ff14] animate-pulse'></div>
                                                 </div>
-                                                <h1 className='text-6xl font-black italic tracking-tighter'>14</h1>
-                                                <div className='text-[8px] text-white/20 font-bold tracking-[2px] uppercase'>ONLAYN TIZIM HOLATI 🟢</div>
+                                                <h1 className='text-6xl font-black italic tracking-tighter'>{clubs.length}</h1>
+                                                <div className='text-[8px] text-white/20 font-bold tracking-[2px] uppercase'>AKTIV FILIALLAR 🟢</div>
                                             </div>
                                             <div className='grid gap-4'>
-                                                <div className='premium-glass p-5 flex flex-col justify-center'>
-                                                    <p className='text-[8px] text-white/40 font-bold uppercase tracking-[2px] mb-1'>SESSIYALAR �</p>
-                                                    <h3 className='text-2xl font-bold text-[#39ff14]'>282</h3>
+                                                <div className='premium-glass p-5 flex flex-col justify-center text-center'>
+                                                    <p className='text-[8px] text-white/40 font-bold uppercase tracking-[2px] mb-1'>UMUMIY XONALAR 🔥</p>
+                                                    <h3 className='text-2xl font-bold text-[#39ff14]'>{clubs.reduce((acc, c) => acc + c.rooms, 0)}</h3>
                                                 </div>
-                                                <div className='premium-glass p-5 flex flex-col justify-center'>
-                                                    <p className='text-[8px] text-white/40 font-bold uppercase tracking-[2px] mb-1'>DAROMAD 💰</p>
-                                                    <h3 className='text-2xl font-bold'>1.4M</h3>
+                                                <div className='premium-glass p-5 flex flex-col justify-center text-center'>
+                                                    <p className='text-[8px] text-white/40 font-bold uppercase tracking-[2px] mb-1'>KUNLIK DAROMAD 💰</p>
+                                                    <h3 className='text-2xl font-bold italic tracking-tight'>2.4M</h3>
                                                 </div>
+                                            </div>
+                                        </div>
+
+                                        {/* 🚀 CLUB NODES LIST */}
+                                        <div className='space-y-4'>
+                                            <h3 className='text-[10px] font-bold uppercase tracking-[4px] text-white/30 px-2'>ULANGAN XONALAR HOLATI</h3>
+                                            <div className='space-y-3'>
+                                                {clubs.map((club, i) => (
+                                                    <div key={i} className='premium-glass p-6 flex justify-between items-center border-white/5'>
+                                                        <div className='flex items-center gap-4'>
+                                                            <div className='w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10'>
+                                                                <Monitor size={22} className='text-[#39ff14]' />
+                                                            </div>
+                                                            <div>
+                                                                <p className='font-bold text-sm tracking-wide'>{club.name}</p>
+                                                                <p className='text-[10px] text-white/30 uppercase tracking-[1px]'>{club.rooms} TA STANTSIYA</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className='text-right'>
+                                                            <p className='text-[12px] font-bold text-[#39ff14]'>{club.dailyRevenue} SO'M</p>
+                                                            <p className='text-[8px] text-white/20 uppercase tracking-[1px]'>BUGUN</p>
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
 
@@ -265,11 +315,11 @@ function App() {
                                         <div className='premium-glass p-6 border-[#39ff14]/10 bg-[#39ff14]/[0.02]'>
                                             <div className='flex items-center gap-3 mb-4'>
                                                 <div className='w-2 h-2 rounded-full bg-[#39ff14]'></div>
-                                                <span className='text-[11px] font-bold tracking-[2px] uppercase'>XABARNOMA 🔉</span>
+                                                <span className='text-[11px] font-bold tracking-[2px] uppercase'>SUPER ADMINLARGA XABAR YUBORISH 🔉</span>
                                             </div>
                                             <textarea
-                                                className='w-full bg-black/40 border border-white/5 rounded-2xl p-5 text-sm text-white placeholder:text-white/20 min-h-[100px] outline-none focus:border-[#39ff14]/30'
-                                                placeholder='Barcha foydalanuvchilarga xabar yuborish... ✍️'
+                                                className='w-full bg-black/40 border border-white/5 rounded-2xl p-5 text-sm text-white placeholder:text-white/20 min-h-[100px] outline-none focus:border-[#39ff14]/30 transition-all'
+                                                placeholder='Barcha super adminlarga xabar yuborish... ✍️'
                                             />
                                             <button className='w-full mt-4 bg-[#39ff14] text-black font-black py-5 rounded-2xl text-[12px] tracking-[2px] hover:brightness-110 active:scale-[0.98] transition-all'>
                                                 HAMMAGA TARQATISH 🔥
@@ -283,29 +333,50 @@ function App() {
                                             <div className='text-[9px] font-bold text-white/40 uppercase tracking-[2px]'>SINXRON: <span className='text-[#39ff14]'>JONLI ⚡</span></div>
                                         </div>
                                     </motion.div>
-                                ) : adminTab === 'mijozlar' ? (
-                                    <motion.div key='users' initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className='space-y-6'>
-                                        <div className='flex gap-3'>
-                                            <input placeholder="ID bo'yicha qidirish..." className='input-luxury flex-1 py-4 px-6' />
-                                            <button className='bg-[#39ff14] text-black px-6 rounded-2xl font-bold'>+</button>
-                                        </div>
+                                ) : adminTab === 'admins' ? (
+                                    <motion.div key='admins' initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className='space-y-6'>
+                                        <button onClick={() => setIsAddModalOpen(true)} className='w-full bg-[#39ff14]/10 border border-[#39ff14]/30 text-[#39ff14] py-5 rounded-2xl font-black text-[11px] tracking-[3px] uppercase hover:bg-[#39ff14]/20 transition-all'>
+                                            + YANGI SUPER ADMIN QO'SHISH
+                                        </button>
+
+                                        {isAddModalOpen && (
+                                            <div className='premium-glass p-6 space-y-4 border-[#39ff14]/20'>
+                                                <input placeholder='Ism' className='input-luxury' value={newAdmin.name} onChange={e => setNewAdmin({ ...newAdmin, name: e.target.value })} />
+                                                <input placeholder='Telefon' className='input-luxury' value={newAdmin.phone} onChange={e => setNewAdmin({ ...newAdmin, phone: e.target.value })} />
+                                                <input placeholder='Login' className='input-luxury' value={newAdmin.login} onChange={e => setNewAdmin({ ...newAdmin, login: e.target.value })} />
+                                                <input placeholder='Parol' className='input-luxury' value={newAdmin.pass} onChange={e => setNewAdmin({ ...newAdmin, pass: e.target.value })} />
+                                                <input placeholder='Klub nomi' className='input-luxury' value={newAdmin.club} onChange={e => setNewAdmin({ ...newAdmin, club: e.target.value })} />
+                                                <button onClick={handleAddSuperAdmin} className='w-full bg-[#39ff14] text-black font-bold py-3 rounded-xl'>Saqlash</button>
+                                            </div>
+                                        )}
+
                                         <div className='space-y-3'>
-                                            {[
-                                                { name: 'shox_pro', balance: '12,500', status: 'active', avatar: 'https://api.dicebear.com/7.x/pixel-art/svg?seed=1' },
-                                                { name: 'bek_admin', balance: '45,000', status: 'active', avatar: 'https://api.dicebear.com/7.x/pixel-art/svg?seed=2' },
-                                                { name: 'dark_rider', balance: '0', status: 'blocked', avatar: 'https://api.dicebear.com/7.x/pixel-art/svg?seed=3' }
-                                            ].map((user, i) => (
-                                                <div key={i} className='premium-glass p-5 flex items-center justify-between border-white/5'>
-                                                    <div className='flex items-center gap-4'>
-                                                        <img src={user.avatar} className='w-12 h-12 rounded-2xl bg-white/5 border border-white/10' alt='' />
-                                                        <div>
-                                                            <p className={`font-bold ${user.status === 'blocked' ? 'opacity-30' : ''}`}>{user.name}</p>
-                                                            <p className='text-[10px] text-[#39ff14] font-bold tracking-[1px]'>{user.balance} SO'M</p>
+                                            {superAdmins.map((admin, i) => (
+                                                <div key={i} className='premium-glass p-6 flex flex-col gap-4 border-white/5'>
+                                                    <div className='flex justify-between items-start'>
+                                                        <div className='flex items-center gap-4'>
+                                                            <div className='w-14 h-14 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center'>
+                                                                <User size={28} className='text-white/40' />
+                                                            </div>
+                                                            <div>
+                                                                <p className='font-bold text-lg tracking-tight'>{admin.name}</p>
+                                                                <p className='text-[10px] text-[#39ff14] font-bold tracking-[1px]'>{admin.club}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className='flex gap-3'>
+                                                            <button className='w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center'><Trash2 size={16} className='text-red-400' /></button>
                                                         </div>
                                                     </div>
-                                                    <div className='flex gap-4'>
-                                                        <button className='text-white/20 hover:text-white text-lg'>✎</button>
-                                                        <button className={`${user.status === 'blocked' ? 'text-red-500' : 'text-[#39ff14]'} text-lg`}>{user.status === 'blocked' ? '🔒' : '🔓'}</button>
+
+                                                    <div className='grid grid-cols-2 gap-3 pt-2 border-t border-white/5'>
+                                                        <div>
+                                                            <p className='text-[8px] text-white/20 uppercase tracking-[2px] mb-1'>Tel raqami</p>
+                                                            <p className='text-[11px] font-medium'>{admin.phone || 'Nomalum'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className='text-[8px] text-white/20 uppercase tracking-[2px] mb-1'>Login / Parol</p>
+                                                            <p className='text-[11px] font-bold text-[#39ff14] tracking-widest'>{admin.login} / {admin.pass}</p>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}
@@ -317,9 +388,9 @@ function App() {
                                             <h4 className='text-[10px] font-bold opacity-30 uppercase tracking-[4px]'>TIZIM FAOLLIYATI (JONLI) ⚡</h4>
                                             <div className='space-y-6'>
                                                 {[
-                                                    { name: 'shox_pro', action: 'Sessiya boshlandi', time: 'hozir', status: 'active' },
-                                                    { name: 'bek_admin', action: 'Balans to\'ldirildi', time: '5 daq', status: 'active' },
-                                                    { name: 'nodex_04', action: 'Xatolik yuz berdi', time: '12 daq', status: 'error' }
+                                                    { name: 'KOKAND_01', action: 'Xabarnoma yuborildi', time: 'hozir', status: 'active' },
+                                                    { name: 'FERGANA_02', action: 'Yangi PC qo\'shildi', time: '5 daq', status: 'active' },
+                                                    { name: 'SYSTEM_SRV', action: 'Arxivlash yakunlandi', time: '12 daq', status: 'active' }
                                                 ].map((h, i) => (
                                                     <div key={i} className={`flex justify-between items-center p-5 bg-white/[0.02] rounded-2xl border-l-[3px] ${h.status === 'active' ? 'border-[#39ff14]' : 'border-red-500'}`}>
                                                         <div>
@@ -335,6 +406,38 @@ function App() {
                                 )}
                             </AnimatePresence>
                         </div>
+                    </motion.div>
+                ) : view === 'super-admin' ? (
+                    <motion.div
+                        key='super-admin' initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                        className='relative z-10 w-full h-screen p-8 flex flex-col items-center justify-center gap-10 max-w-sm mx-auto overflow-hidden'
+                    >
+                        <div className='w-32 h-32 premium-glass flex items-center justify-center relative float'>
+                            <div className='absolute inset-0 bg-[#39ff14]/10 blur-[40px] rounded-full'></div>
+                            <User size={56} className='text-[#39ff14]' />
+                        </div>
+                        <div className='text-center space-y-3'>
+                            <h2 className='text-3xl font-black italic tracking-tighter uppercase syncopate luxury-gradient-text'>SUPER ADMIN</h2>
+                            <p className='text-white/40 text-[10px] font-bold tracking-[4px] uppercase'>FILIALLAR BOSHQARUVI</p>
+                        </div>
+
+                        <div className='premium-glass p-10 w-full space-y-8 border-white/5 relative'>
+                            <div className='absolute -top-4 left-1/2 -translate-x-1/2 bg-[#39ff14]/10 border border-[#39ff14]/30 px-4 py-1 rounded-full'>
+                                <span className='text-[8px] font-black tracking-[2px] text-[#39ff14]'>XUSH KELIBSIZ</span>
+                            </div>
+
+                            <div className='text-center space-y-2 pt-2'>
+                                <p className='text-xl font-bold tracking-tight'>{superAdmins.find(sa => sa.login === username)?.name || 'ADMIN'}</p>
+                                <p className='text-[10px] text-[#39ff14] font-bold uppercase tracking-[3px]'>{superAdmins.find(sa => sa.login === username)?.club || 'PLS FILIAL'}</p>
+                            </div>
+
+                            <div className='flex flex-col gap-4'>
+                                <button className='btn-luxury w-full py-5 text-[11px] tracking-[2px] uppercase font-black'>PC MONITORING 🎮</button>
+                                <button className='btn-luxury w-full py-5 text-[11px] tracking-[2px] uppercase font-black'>KASSA NAZORATI 💰</button>
+                            </div>
+                        </div>
+
+                        <button onClick={() => setView('login')} className='text-[10px] font-bold uppercase tracking-[4px] opacity-20 hover:opacity-100 transition-all'>TIZIMDAN CHIQISH</button>
                     </motion.div>
                 ) : (
                     <motion.div
