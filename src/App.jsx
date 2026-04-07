@@ -91,6 +91,7 @@ function App() {
     const [selectedRoom, setSelectedRoom] = useState(null);
     const [paymentAmount, setPaymentAmount] = useState('');
     const [clientInfo, setClientInfo] = useState({ name: '', phone: '' });
+    const [sessionTotal, setSessionTotal] = useState(0);
 
     const [superAdminTab, setSuperAdminTab] = useState('asosiy');
     const [clubAdminTab, setClubAdminTab] = useState('xarita');
@@ -239,8 +240,9 @@ function App() {
 
     const handleStopSession = (room) => {
         const total = calculateCost(room, currentTime);
-        setSelectedRoom(room);
+        setSessionTotal(total);
         setPaymentAmount(total.toString());
+        setSelectedRoom(room);
         setIsPaymentModalOpen(true);
     };
 
@@ -1121,7 +1123,7 @@ function App() {
                                                 <p className='text-[7px] font-black tracking-[2px] text-[#39ff14] uppercase'>TO'LOV_TERMINAL</p>
                                             </div>
                                             <h2 className='text-4xl font-black italic tracking-tighter text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]'>
-                                                {calculateCost(selectedRoom, currentTime).toLocaleString()}
+                                                {sessionTotal.toLocaleString()}
                                                 <span className='text-[10px] ml-1.5 opacity-20'>UZS</span>
                                             </h2>
                                         </div>
@@ -1138,7 +1140,7 @@ function App() {
                                                 />
                                             </div>
 
-                                            {Number(paymentAmount) < calculateCost(selectedRoom, currentTime) && (
+                                            {Number(paymentAmount) < sessionTotal && (
                                                 <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className='space-y-3 p-4 bg-red-500/[0.02] border border-red-500/15 rounded-[18px]'>
                                                     <div className='flex items-center gap-1.5 mb-1'>
                                                         <Activity size={12} className='text-red-500/60' />
@@ -1151,8 +1153,7 @@ function App() {
 
                                             <button
                                                 onClick={() => {
-                                                    const total = calculateCost(selectedRoom, currentTime);
-                                                    handleProcessPayment(selectedRoom, total);
+                                                    handleProcessPayment(selectedRoom, sessionTotal);
                                                     setSelectedRoom(null);
                                                 }}
                                                 className='w-full h-14 bg-[#39ff14] text-black font-black rounded-xl uppercase tracking-[3px] text-[10px] shadow-[0_8px_25px_rgba(57,255,20,0.2)] hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2'
