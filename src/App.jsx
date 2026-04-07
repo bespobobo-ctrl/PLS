@@ -13,17 +13,32 @@ function App() {
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
-    // Mock Data for Main Admin
-    const [superAdmins, setSuperAdmins] = useState([
-        { name: 'Shoxrux Mirzo', phone: '+998 90 123 45 67', login: 'shox_pro', pass: '1111', club: 'PLS Kokand-1' },
-        { name: 'Jasur Bek', phone: '+998 94 987 65 43', login: 'jasur_99', pass: '2222', club: 'PLS Fergana-2' }
-    ]);
+    // Persistent State for Main Admin
+    const [superAdmins, setSuperAdmins] = useState(() => {
+        const saved = localStorage.getItem('pls_super_admins');
+        return saved ? JSON.parse(saved) : [
+            { name: 'Shoxrux Mirzo', phone: '+998 90 123 45 67', login: 'shox_pro', pass: '1111', club: 'PLS Kokand-1' },
+            { name: 'Jasur Bek', phone: '+998 94 987 65 43', login: 'jasur_99', pass: '2222', club: 'PLS Fergana-2' }
+        ];
+    });
 
-    const [clubs, setClubs] = useState([
-        { name: 'PLS Kokand-1', rooms: 24, dailyRevenue: '850,000' },
-        { name: 'PLS Fergana-2', rooms: 12, dailyRevenue: '420,000' },
-        { name: 'PLS Tashkent-3', rooms: 32, dailyRevenue: '1,200,000' }
-    ]);
+    const [clubs, setClubs] = useState(() => {
+        const saved = localStorage.getItem('pls_clubs');
+        return saved ? JSON.parse(saved) : [
+            { name: 'PLS Kokand-1', rooms: 24, dailyRevenue: '850,000' },
+            { name: 'PLS Fergana-2', rooms: 12, dailyRevenue: '420,000' },
+            { name: 'PLS Tashkent-3', rooms: 32, dailyRevenue: '1,200,000' }
+        ];
+    });
+
+    // Save to LocalStorage whenever state changes
+    useEffect(() => {
+        localStorage.setItem('pls_super_admins', JSON.stringify(superAdmins));
+    }, [superAdmins]);
+
+    useEffect(() => {
+        localStorage.setItem('pls_clubs', JSON.stringify(clubs));
+    }, [clubs]);
 
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [editIndex, setEditIndex] = useState(null);
