@@ -41,11 +41,18 @@ function App() {
     const [rooms, setRooms] = useState(() => {
         const saved = localStorage.getItem('pls_rooms');
         return saved ? JSON.parse(saved) : [
-            { id: 1, name: 'N_01', price: '12,000', club: 'PLS Kokand-1', isBlocked: false, isBusy: true },
-            { id: 2, name: 'N_02', price: '12,000', club: 'PLS Kokand-1', isBlocked: false, isBusy: false },
-            { id: 3, name: 'VIP_01', price: '25,000', club: 'PLS Kokand-1', isBlocked: true, isBusy: false }
+            { id: 1, name: 'N_01', price: '12,000', club: 'PLS Kokand-1', isBlocked: false, isBusy: false, startTime: null, dailyHours: 0, dailyRevenue: 0 },
+            { id: 2, name: 'N_02', price: '12,000', club: 'PLS Kokand-1', isBlocked: false, isBusy: false, startTime: null, dailyHours: 0, dailyRevenue: 0 },
+            { id: 3, name: 'VIP_01', price: '25,000', club: 'PLS Kokand-1', isBlocked: false, isBusy: false, startTime: null, dailyHours: 0, dailyRevenue: 0 }
         ];
     });
+
+    const [debts, setDebts] = useState(() => {
+        const saved = localStorage.getItem('pls_debts');
+        return saved ? JSON.parse(saved) : [];
+    });
+
+    const [currentTime, setCurrentTime] = useState(Date.now());
 
     // Save to LocalStorage whenever state changes
     useEffect(() => {
@@ -64,9 +71,20 @@ function App() {
         localStorage.setItem('pls_rooms', JSON.stringify(rooms));
     }, [rooms]);
 
+    useEffect(() => {
+        localStorage.setItem('pls_debts', JSON.stringify(debts));
+    }, [debts]);
+
+    // Global Clock
+    useEffect(() => {
+        const interval = setInterval(() => setCurrentTime(Date.now()), 1000);
+        return () => clearInterval(interval);
+    }, []);
+
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isClubAddModalOpen, setIsClubAddModalOpen] = useState(false);
     const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
     const [editIndex, setEditIndex] = useState(null);
     const [clubEditIndex, setClubEditIndex] = useState(null);
@@ -75,6 +93,10 @@ function App() {
     const [newAdmin, setNewAdmin] = useState({ name: '', phone: '', login: '', pass: '', club: '' });
     const [newClubAdmin, setNewClubAdmin] = useState({ name: '', login: '', pass: '', club: '' });
     const [newRoom, setNewRoom] = useState({ name: '', price: '', isBlocked: false });
+
+    const [selectedRoom, setSelectedRoom] = useState(null);
+    const [paymentAmount, setPaymentAmount] = useState('');
+    const [clientInfo, setClientInfo] = useState({ name: '', phone: '' });
 
     const [superAdminTab, setSuperAdminTab] = useState('asosiy');
     const [clubAdminTab, setClubAdminTab] = useState('xarita');
@@ -193,6 +215,83 @@ function App() {
         setClubEditIndex(null);
     };
 
+    const formatTime = (ms) => {
+        const secs = Math.floor(ms / 1000) % 60;
+        const mins = Math.floor(ms / (1000 * 60)) % 60;
+        const hrs = Math.floor(ms / (1000 * 60 * 60));
+        return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    };
+
+    const calculateCost = (room, now) => {
+        if (!room.startTime) return 0;
+        const elapsedMs = now - room.startTime;
+        const hourly = parseInt(room.price.replace(/[^0-9]/g, '')) || 0;
+        const timeCost = Math.floor((elapsedMs / (1000 * 60 * 60)) * hourly);
+        return timeCost + (room.sessionBarTotal || 0);
+    };
+
+    const handleAddBar = (id, amount) => {
+        setRooms(rooms.map(r => r.id === id ? { ...r, sessionBarTotal: (r.sessionBarTotal || 0) + amount } : r));
+    };
+
+    const handleStartSession = (id) => {
+        setRooms(rooms.map(r => r.id === id ? { ...r, isBusy: true, startTime: Date.now(), sessionBarTotal: 0 } : r));
+    };
+
+    const handleStopSession = (room) => {
+        const total = calculateCost(room, currentTime);
+        setSelectedRoom(room);
+        setPaymentAmount(total.toString());
+        setIsPaymentModalOpen(true);
+    };
+
+    const handleProcessPayment = (room, total) => {
+        const paid = parseInt(paymentAmount) || 0;
+        const debt = total - paid;
+
+        if (debt > 0) {
+            const newDebt = {
+                id: Date.now(),
+                client: clientInfo.name || 'Noma\'lum Mijoz',
+                phone: clientInfo.phone || 'Noma\'lum',
+                amount: debt,
+                date: new Date().toLocaleDateString(),
+                club: room.club
+            };
+            setDebts([...debts, newDebt]);
+        }
+
+        const elapsedHours = (currentTime - room.startTime) / (1000 * 60 * 60);
+
+        setRooms(rooms.map(r => r.id === room.id ? {
+            ...r,
+            isBusy: false,
+            startTime: null,
+            sessionBarTotal: 0,
+            dailyHours: r.dailyHours + elapsedHours,
+            dailyRevenue: r.dailyRevenue + paid
+        } : r));
+
+        setIsPaymentModalOpen(false);
+        setClientInfo({ name: '', phone: '' });
+    };
+
+    const handleDeleteRoom = (id) => {
+        if (window.confirm('Haqiqatdan ham ushbu xonani o\'chirmoqchimisiz?')) {
+            setRooms(rooms.filter(r => r.id !== id));
+        }
+    };
+
+    const handleStartRoomEdit = (room, index) => {
+        setNewRoom(room);
+        setRoomEditIndex(index);
+        setIsRoomModalOpen(true);
+    };
+
+    const toggleBlockRoom = (id) => {
+        setRooms(rooms.map(r => r.id === id ? { ...r, isBlocked: !r.isBlocked } : r));
+    };
+
     const handleDeleteClubAdmin = (index) => {
         if (window.confirm('Haqiqatdan ham ushbu club adminni o\'chirmoqchimisiz?')) {
             setClubAdmins(clubAdmins.filter((_, i) => i !== index));
@@ -219,7 +318,7 @@ function App() {
 
     const handleSaveRoom = (currentClub) => {
         if (!newRoom.name || !newRoom.price) return;
-        const roomData = { ...newRoom, id: Date.now(), club: currentClub, isBusy: false };
+        const roomData = { ...newRoom, id: Date.now(), club: currentClub, isBusy: false, startTime: null, dailyHours: 0, dailyRevenue: 0 };
 
         if (roomEditIndex !== null) {
             const updated = [...rooms];
@@ -232,22 +331,6 @@ function App() {
         setNewRoom({ name: '', price: '', isBlocked: false });
         setIsRoomModalOpen(false);
         setRoomEditIndex(null);
-    };
-
-    const handleDeleteRoom = (id) => {
-        if (window.confirm('Haqiqatdan ham ushbu xonani o\'chirmoqchimisiz?')) {
-            setRooms(rooms.filter(r => r.id !== id));
-        }
-    };
-
-    const handleStartRoomEdit = (room, index) => {
-        setNewRoom(room);
-        setRoomEditIndex(index);
-        setIsRoomModalOpen(true);
-    };
-
-    const toggleBlockRoom = (id) => {
-        setRooms(rooms.map(r => r.id === id ? { ...r, isBlocked: !r.isBlocked } : r));
     };
 
     return (
@@ -700,7 +783,7 @@ function App() {
                                 </div>
                                 <div>
                                     <h3 className='text-sm font-black italic tracking-tighter uppercase syncopate'>{clubAdmins.find(ca => ca.login === username)?.club || 'PLS CLUB'}</h3>
-                                    <p className='text-[8px] text-white/30 font-bold uppercase tracking-[2px]'>{clubAdmins.find(ca => ca.login === username)?.name || 'Admin'}</p>
+                                    <p className='text-[8px] text-[#39ff14] font-black uppercase tracking-[2px]'>{new Date(currentTime).toLocaleTimeString('uz-UZ', { hour12: false })}</p>
                                 </div>
                             </div>
                             <button onClick={() => setView('login')} className='p-3 rounded-xl bg-white/5 border border-white/10'>
@@ -732,7 +815,6 @@ function App() {
                             <AnimatePresence mode='wait'>
                                 {clubAdminTab === 'xarita' ? (
                                     <motion.div key='ca-map' initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='space-y-6 pb-20'>
-                                        {/* Add Room Functional HUD */}
                                         <button
                                             onClick={() => {
                                                 setRoomEditIndex(null);
@@ -746,8 +828,8 @@ function App() {
 
                                         {isRoomModalOpen && (
                                             <div className='premium-glass p-6 space-y-4 border-[#39ff14]/20'>
-                                                <input placeholder='Xona nomi (masalan: N_01)' className='input-luxury' value={newRoom.name} onChange={e => setNewRoom({ ...newRoom, name: e.target.value })} />
-                                                <input placeholder='Soatlik narxi (masalan: 12,000)' className='input-luxury' value={newRoom.price} onChange={e => setNewRoom({ ...newRoom, price: e.target.value })} />
+                                                <input placeholder='Xona nomi' className='input-luxury' value={newRoom.name} onChange={e => setNewRoom({ ...newRoom, name: e.target.value })} />
+                                                <input placeholder='Soatlik narxi' className='input-luxury' value={newRoom.price} onChange={e => setNewRoom({ ...newRoom, price: e.target.value })} />
                                                 <div className='flex items-center gap-3 px-2'>
                                                     <input type='checkbox' id='block-room' checked={newRoom.isBlocked} onChange={e => setNewRoom({ ...newRoom, isBlocked: e.target.checked })} className='w-5 h-5 accent-[#39ff14]' />
                                                     <label htmlFor='block-room' className='text-[10px] font-bold uppercase tracking-[1px] opacity-60'>Vaqtincha bloklash</label>
@@ -758,46 +840,35 @@ function App() {
                                             </div>
                                         )}
 
-                                        <div className='grid grid-cols-2 gap-3 pb-20'>
-                                            {rooms.filter(r => r.club === clubAdmins.find(ca => ca.login === username)?.club).map((room, i) => (
-                                                <div key={room.id} className={`premium-glass p-4 border-white/5 relative group transition-all ${room.isBusy ? 'bg-[#39ff14]/5' : room.isBlocked ? 'bg-red-500/5 grayscale' : ''}`}>
+                                        <div className='grid grid-cols-2 gap-3'>
+                                            {rooms.filter(r => r.club === clubAdmins.find(ca => ca.login === username)?.club).map((room) => (
+                                                <div
+                                                    key={room.id}
+                                                    onClick={() => !room.isBlocked && setSelectedRoom(room)}
+                                                    className={`premium-glass p-4 border-white/5 relative group transition-all ${room.isBusy ? 'bg-[#39ff14]/5' : room.isBlocked ? 'bg-red-500/5 grayscale' : 'hover:bg-white/5'}`}
+                                                >
                                                     <div className='flex justify-between items-start mb-4'>
                                                         <div className='space-y-1'>
-                                                            <div className='flex items-center gap-2'>
-                                                                <p className='text-[7px] text-white/30 font-black tracking-[2px] uppercase'>XONA_ID</p>
-                                                                {room.isBlocked && <Lock size={8} className='text-red-500' />}
-                                                            </div>
-                                                            <p className='text-xl font-black italic tracking-tighter uppercase syncopate'>{room.name}</p>
+                                                            <p className='text-[7px] text-white/30 font-black tracking-[2px] uppercase'>{room.name}</p>
+                                                            <p className='text-xs font-black text-[#39ff14]'>{room.price} UZS</p>
                                                         </div>
-                                                        <div className={`w-2 h-2 rounded-full ${room.isBusy ? 'bg-[#39ff14] shadow-[0_0_8px_#39ff14]' : room.isBlocked ? 'bg-red-500 shadow-[0_0_8px_red]' : 'bg-white/10'}`}></div>
+                                                        <div className={`w-2 h-2 rounded-full ${room.isBusy ? 'bg-[#39ff14] shadow-[0_0_8px_#39ff14]' : room.isBlocked ? 'bg-red-500' : 'bg-white/10'}`}></div>
                                                     </div>
-
                                                     <div className='space-y-3'>
-                                                        <div>
-                                                            <p className='text-[10px] font-black tracking-[1px] text-[#39ff14]/60'>{room.price} UZS <span className='text-[7px] opacity-40 italic'>/soat</span></p>
-                                                        </div>
                                                         {room.isBusy ? (
                                                             <div className='p-3 bg-black/40 rounded-xl border border-[#39ff14]/20 flex items-center justify-between'>
                                                                 <Zap size={10} className='text-[#39ff14]' />
-                                                                <span className='text-xs font-black italic tracking-tighter text-[#39ff14]'>01:42:07</span>
+                                                                <span className='text-[10px] font-black italic tracking-tighter text-[#39ff14]'>{formatTime(currentTime - room.startTime)}</span>
                                                             </div>
                                                         ) : (
                                                             <div className='py-4 text-center opacity-10 flex flex-col items-center gap-2'>
                                                                 <span className='text-[8px] font-black tracking-[2px] uppercase'>{room.isBlocked ? "BLOKLANGAN" : "BO'SH"}</span>
                                                             </div>
                                                         )}
-                                                    </div>
-
-                                                    {/* Control Overlay */}
-                                                    <div className='absolute inset-0 bg-black/95 backdrop-blur-md flex flex-col items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity rounded-[32px]'>
-                                                        <div className='flex gap-2 mb-2'>
-                                                            <button onClick={() => handleStartRoomEdit(room, rooms.findIndex(r => r.id === room.id))} className='p-2 rounded-xl bg-white/5 border border-white/10'><Settings size={14} /></button>
-                                                            <button onClick={() => toggleBlockRoom(room.id)} className={`p-2 rounded-xl border ${room.isBlocked ? 'bg-red-500/20 border-red-500/40 text-red-500' : 'bg-white/5 border-white/10 text-white/40'}`}><Lock size={14} /></button>
-                                                            <button onClick={() => handleDeleteRoom(room.id)} className='p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500'><Trash2 size={14} /></button>
+                                                        <div className='pt-2 border-t border-white/5 flex justify-between items-center'>
+                                                            <span className='text-[6px] text-white/30 font-bold uppercase'>Bugun:</span>
+                                                            <span className='text-[7px] font-black text-[#39ff14]'>{room.dailyHours.toFixed(1)}s | {room.dailyRevenue.toLocaleString()}</span>
                                                         </div>
-                                                        <button className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-[2px] ${room.isBlocked ? 'bg-white/5 text-white/20' : 'bg-[#39ff14] text-black'}`} disabled={room.isBlocked}>
-                                                            {room.isBusy ? 'YOPISH ⏹️' : 'OCHISH ▶️'}
-                                                        </button>
                                                     </div>
                                                 </div>
                                             ))}
@@ -809,17 +880,23 @@ function App() {
                                             <p className='text-[10px] font-black tracking-[4px] uppercase text-[#39ff14] mb-4'>KUNLIK_KPI</p>
                                             <div className='space-y-6'>
                                                 <div className='flex justify-between items-end'>
-                                                    <p className='text-4xl font-black italic tracking-tighter'>940,000</p>
+                                                    <p className='text-4xl font-black italic tracking-tighter'>
+                                                        {rooms.filter(r => r.club === clubAdmins.find(ca => ca.login === username)?.club).reduce((acc, r) => acc + r.dailyRevenue, 0).toLocaleString()}
+                                                    </p>
                                                     <p className='text-[10px] font-bold opacity-30'>UZS</p>
                                                 </div>
                                                 <div className='grid grid-cols-2 gap-4 pt-4 border-t border-white/5'>
                                                     <div>
-                                                        <p className='text-[8px] opacity-30 font-bold'>BAR SAVDOSI</p>
-                                                        <p className='text-lg font-black italic'>140,000</p>
+                                                        <p className='text-[8px] opacity-30 font-bold uppercase'>AMIY QARZLAR</p>
+                                                        <p className='text-lg font-black italic text-red-500'>
+                                                            {debts.filter(d => d.club === clubAdmins.find(ca => ca.login === username)?.club).reduce((acc, d) => acc + d.amount, 0).toLocaleString()}
+                                                        </p>
                                                     </div>
                                                     <div>
-                                                        <p className='text-[8px] opacity-30 font-bold'>XONA IJROSI</p>
-                                                        <p className='text-lg font-black italic'>800,000</p>
+                                                        <p className='text-[8px] opacity-30 font-bold uppercase'>AKTIV PC</p>
+                                                        <p className='text-lg font-black italic text-[#39ff14]'>
+                                                            {rooms.filter(r => r.club === clubAdmins.find(ca => ca.login === username)?.club && r.isBusy).length}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -827,47 +904,34 @@ function App() {
                                     </motion.div>
                                 ) : clubAdminTab === 'bar' ? (
                                     <motion.div key='ca-bar' initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className='space-y-4'>
-                                        <div className='premium-glass p-6 border-white/5 flex justify-between items-center'>
-                                            <p className='font-black italic'>Coca-Cola 0.5L</p>
-                                            <div className='flex items-center gap-4'>
-                                                <p className='text-[#39ff14] font-black'>12x</p>
-                                                <button className='px-4 py-2 rounded-lg bg-[#39ff14] text-black text-[10px] font-black'>SOTISH</button>
-                                            </div>
-                                        </div>
-                                        <div className='premium-glass p-6 border-white/5 flex justify-between items-center'>
-                                            <p className='font-black italic'>Lays 90g</p>
-                                            <div className='flex items-center gap-4'>
-                                                <p className='text-[#39ff14] font-black'>5x</p>
-                                                <button className='px-4 py-2 rounded-lg bg-[#39ff14] text-black text-[10px] font-black'>SOTISH</button>
-                                            </div>
+                                        {/* Simplified Bar Shell */}
+                                        <div className='premium-glass p-6 text-center opacity-30 border-dashed'>
+                                            <Coffee size={32} className='mx-auto mb-2' />
+                                            <p className='text-[10px] font-bold uppercase tracking-[2px]'>Tez orada: Bar mahsulotlarini boshqarish</p>
                                         </div>
                                     </motion.div>
                                 ) : clubAdminTab === 'qarz' ? (
                                     <motion.div key='ca-qarz' initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='space-y-4'>
-                                        <div className='premium-glass p-6 border-red-500/20'>
-                                            <div className='flex justify-between items-center'>
+                                        {debts.filter(d => d.club === clubAdmins.find(ca => ca.login === username)?.club).map(debt => (
+                                            <div key={debt.id} className='premium-glass p-6 border-red-500/20 flex justify-between items-center'>
                                                 <div>
-                                                    <p className='font-black'>Azizxo'ja</p>
-                                                    <p className='text-[10px] text-red-500 font-bold tracking-[2px]'>-45,000 UZS</p>
+                                                    <p className='font-black italic'>{debt.client}</p>
+                                                    <p className='text-[9px] text-white/40 font-bold'>{debt.phone} • {debt.date}</p>
                                                 </div>
-                                                <button className='p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500'>
-                                                    <CreditCard size={18} />
-                                                </button>
+                                                <p className='text-sm font-black text-red-500'>-{debt.amount.toLocaleString()} UZS</p>
                                             </div>
-                                        </div>
+                                        ))}
+                                        {debts.filter(d => d.club === clubAdmins.find(ca => ca.login === username)?.club).length === 0 && (
+                                            <p className='text-center opacity-20 text-[10px] font-bold uppercase tracking-[2px] py-12'>Qarzdorlar yo'q</p>
+                                        )}
                                     </motion.div>
                                 ) : (
                                     <motion.div key='ca-ops' initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='space-y-4'>
                                         <div className='premium-glass p-6 border-white/5'>
-                                            <h4 className='text-[10px] font-black tracking-[4px] opacity-30 mb-6'>OXIRGI AMALLAR</h4>
+                                            <h4 className='text-[10px] font-black tracking-[4px] opacity-30 mb-6 uppercase'>Sessiyalar tarixi</h4>
                                             <div className='space-y-4'>
-                                                <div className='flex items-center justify-between py-2 border-b border-white/5'>
-                                                    <span className='text-xs opacity-60'>Xona N_04 yopildi</span>
-                                                    <span className='text-[9px] font-bold'>14:20</span>
-                                                </div>
-                                                <div className='flex items-center justify-between py-2 border-b border-white/5'>
-                                                    <span className='text-xs opacity-60'>Bar: Cola sotildi</span>
-                                                    <span className='text-[9px] font-bold'>13:55</span>
+                                                <div className='flex items-center justify-between py-2 border-b border-white/5 opacity-40'>
+                                                    <span className='text-[10px] font-bold'>Sizning amallaringiz shu yerda ko'rinadi</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -875,6 +939,101 @@ function App() {
                                 )}
                             </AnimatePresence>
                         </div>
+
+                        {/* Control Modal */}
+                        <AnimatePresence>
+                            {selectedRoom && !isPaymentModalOpen && (
+                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='fixed inset-0 z-[100] bg-black/90 backdrop-blur-2xl flex items-center justify-center p-6' onClick={() => setSelectedRoom(null)}>
+                                    <motion.div
+                                        initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 10 }}
+                                        className='premium-glass w-full max-w-sm p-8 space-y-8 bg-[#030308] border-[#39ff14]/20'
+                                        onClick={e => e.stopPropagation()}
+                                    >
+                                        <div className='flex justify-between items-start'>
+                                            <div>
+                                                <h2 className='text-3xl font-black italic tracking-tighter uppercase syncopate text-[#39ff14]'>{selectedRoom.name}</h2>
+                                                <p className='text-[9px] font-black tracking-[4px] opacity-40 uppercase'>Boshqaruv paneli</p>
+                                            </div>
+                                            <button onClick={() => setSelectedRoom(null)} className='p-2 rounded-xl bg-white/5 border border-white/10'><X size={20} /></button>
+                                        </div>
+
+                                        {selectedRoom.isBusy ? (
+                                            <div className='space-y-8 py-4'>
+                                                <div className='text-center space-y-2'>
+                                                    <p className='text-6xl font-black italic tracking-tighter text-white tracking-[-4px]'>{formatTime(currentTime - selectedRoom.startTime)}</p>
+                                                    <p className='text-[8px] font-black tracking-[4px] opacity-40 uppercase'>O'yin davom etmoqda...</p>
+                                                </div>
+                                                <div className='premium-glass p-6 border-white/5 flex justify-between items-center bg-[#39ff14]/5'>
+                                                    <p className='text-[10px] font-black tracking-[2px] opacity-60 uppercase'>Hozirgi hisob:</p>
+                                                    <p className='text-2xl font-black italic'>{calculateCost(selectedRoom, currentTime).toLocaleString()} <span className='text-[10px] opacity-40 italic'>UZS</span></p>
+                                                </div>
+                                                <div className='grid grid-cols-2 gap-4'>
+                                                    <button onClick={() => handleAddBar(selectedRoom.id, 10000)} className='premium-glass p-4 border-white/5 flex flex-col items-center gap-2 group hover:bg-[#39ff14]/10 transition-all'>
+                                                        <Coffee size={20} className='group-hover:text-[#39ff14]' />
+                                                        <span className='text-[8px] font-black uppercase'>BAR +10K</span>
+                                                    </button>
+                                                    <button onClick={() => { if (window.confirm("Xonani o'chirasizmi?")) { setRooms(rooms.filter(r => r.id !== selectedRoom.id)); setSelectedRoom(null); } }} className='premium-glass p-4 border-red-500/20 text-red-500 flex flex-col items-center gap-2'><Trash2 size={20} /><span className='text-[8px] font-black uppercase'>O'CHIRISH</span></button>
+                                                </div>
+                                                <button onClick={() => handleStopSession(selectedRoom)} className='w-full bg-red-500 text-white font-black py-5 rounded-2xl uppercase tracking-[3px] text-xs shadow-[0_0_20px_rgba(239,68,68,0.3)]'>Sessiyani Yakunlash ⏹️</button>
+                                            </div>
+                                        ) : (
+                                            <div className='space-y-8 py-4'>
+                                                <div className='premium-glass p-10 text-center border-dashed border-[#39ff14]/30'>
+                                                    <Gamepad2 size={48} className='mx-auto mb-4 opacity-10' />
+                                                    <p className='text-[10px] font-black tracking-[2px] opacity-40 uppercase'>Xona tayyor holatda</p>
+                                                </div>
+                                                <div className='grid grid-cols-3 gap-2'>
+                                                    <button onClick={() => handleStartRoomEdit(selectedRoom, rooms.findIndex(r => r.id === selectedRoom.id))} className='p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center gap-1'><Settings size={18} /><span className='text-[7px] font-bold uppercase'>Sozlama</span></button>
+                                                    <button onClick={() => toggleBlockRoom(selectedRoom.id)} className='p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center gap-1'><Lock size={18} /><span className='text-[7px] font-bold uppercase'>Blok</span></button>
+                                                    <button onClick={() => { if (window.confirm("Xonani o'chirasizmi?")) { setRooms(rooms.filter(r => r.id !== selectedRoom.id)); setSelectedRoom(null); } }} className='p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center gap-1 text-red-500'><Trash2 size={18} /><span className='text-[7px] font-bold uppercase'>O'chirish</span></button>
+                                                </div>
+                                                <button onClick={() => { handleStartSession(selectedRoom.id); setSelectedRoom(null); }} className='w-full bg-[#39ff14] text-black font-black py-5 rounded-2xl uppercase tracking-[3px] text-xs shadow-[0_0_20px_rgba(57,255,20,0.3)]'>Vaqtni Boshlash ▶️</button>
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        {/* Payment / Debt Modal */}
+                        <AnimatePresence>
+                            {isPaymentModalOpen && selectedRoom && (
+                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='fixed inset-0 z-[200] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-6'>
+                                    <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} className='premium-glass w-full max-w-sm p-8 space-y-6 border-[#39ff14]/20'>
+                                        <div className='text-center space-y-2'>
+                                            <p className='text-[10px] font-black tracking-[4px] opacity-40 uppercase'>Sessiya yakuni</p>
+                                            <h2 className='text-4xl font-black italic tracking-tighter text-[#39ff14]'>{calculateCost(selectedRoom, currentTime).toLocaleString()} UZS</h2>
+                                        </div>
+
+                                        <div className='space-y-4 pt-4'>
+                                            <div className='space-y-1'>
+                                                <p className='text-[8px] font-black tracking-[2px] opacity-40 uppercase pl-2'>Olingan pul:</p>
+                                                <input placeholder='Summa' className='input-luxury' value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)} type='number' />
+                                            </div>
+
+                                            {parseInt(paymentAmount) < calculateCost(selectedRoom, currentTime) && (
+                                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className='space-y-4 pt-4 border-t border-red-500/20'>
+                                                    <p className='text-[9px] font-black tracking-[2px] text-red-500 uppercase text-center'>⚠️ Qolgan summa qarzga yoziladi!</p>
+                                                    <input placeholder='Mijoz ismi' className='input-luxury border-red-500/10' value={clientInfo.name} onChange={e => setClientInfo({ ...clientInfo, name: e.target.value })} />
+                                                    <input placeholder='Telefon raqami' className='input-luxury border-red-500/10' value={clientInfo.phone} onChange={e => setClientInfo({ ...clientInfo, phone: e.target.value })} />
+                                                </motion.div>
+                                            )}
+
+                                            <button
+                                                onClick={() => {
+                                                    const total = calculateCost(selectedRoom, currentTime);
+                                                    handleProcessPayment(selectedRoom, total);
+                                                    setSelectedRoom(null);
+                                                }}
+                                                className='w-full bg-[#39ff14] text-black font-black py-4 rounded-xl uppercase tracking-[2px] mt-6'
+                                            >
+                                                TO'LOVNI YAKUNLASH ✅
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </motion.div>
                 ) : (
                     <motion.div
@@ -902,4 +1061,5 @@ function App() {
         </div>
     );
 }
+
 export default App;
