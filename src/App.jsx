@@ -58,6 +58,7 @@ function App() {
     const [newAdmin, setNewAdmin] = useState({ name: '', phone: '', login: '', pass: '', club: '' });
     const [newClubAdmin, setNewClubAdmin] = useState({ name: '', login: '', pass: '', club: '' });
     const [superAdminTab, setSuperAdminTab] = useState('asosiy');
+    const [clubAdminTab, setClubAdminTab] = useState('xarita');
 
     const holdTimer = useRef(null);
 
@@ -655,78 +656,134 @@ function App() {
                             </button>
                         </div>
 
-                        {/* Stats Strip */}
-                        <div className='px-6 py-4 bg-[#39ff14]/5 flex justify-between items-center border-b border-[#39ff14]/10'>
-                            <div className='flex items-center gap-2'>
-                                <Activity size={14} className='text-[#39ff14]' />
-                                <span className='text-[9px] font-black uppercase tracking-[1px]'>AKTIV XONALAR: <span className='text-white'>8 / 24</span></span>
-                            </div>
-                            <div className='flex items-center gap-2'>
-                                <CreditCard size={14} className='text-[#39ff14]' />
-                                <span className='text-[9px] font-black uppercase tracking-[1px]'>MABLAG': <span className='text-white'>940,000 UZS</span></span>
-                            </div>
-                        </div>
-
-                        {/* Room Grid - Timer Based */}
-                        <div className='flex-1 overflow-y-auto p-4 grid grid-cols-2 gap-3 pb-32'>
-                            {[...Array(24)].map((_, i) => (
-                                <div key={i} className={`premium-glass p-4 border-white/5 relative group transition-all ${i < 8 ? 'bg-[#39ff14]/5' : ''}`}>
-                                    <div className='flex justify-between items-start mb-4'>
-                                        <div className='space-y-1'>
-                                            <p className='text-[7px] text-white/30 font-black tracking-[2px] uppercase'>XONA_ID</p>
-                                            <p className='text-xl font-black italic tracking-tighter uppercase syncopate'>N_{i + 1}</p>
-                                        </div>
-                                        <div className={`w-2 h-2 rounded-full ${i < 8 ? 'bg-[#39ff14] shadow-[0_0_8px_#39ff14]' : 'bg-white/10'}`}></div>
-                                    </div>
-
-                                    <div className='space-y-3'>
-                                        {i < 8 ? (
-                                            <>
-                                                <div className='space-y-1'>
-                                                    <p className='text-[7px] text-[#39ff14] font-black tracking-[1px] uppercase'>O'YINCHI</p>
-                                                    <p className='text-[10px] font-bold truncate opacity-80'>MuxammadAli_07</p>
-                                                </div>
-                                                <div className='p-3 bg-black/40 rounded-xl border border-[#39ff14]/20 flex items-center justify-between'>
-                                                    <Zap size={12} className='text-[#39ff14]' />
-                                                    <span className='text-xs font-black italic tracking-tighter text-[#39ff14]'>01:42:07</span>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <div className='py-6 text-center opacity-10 flex flex-col items-center gap-2'>
-                                                <Gamepad2 size={24} />
-                                                <span className='text-[8px] font-black tracking-[2px] uppercase'>BO'SH</span>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Action Button - Overlay on Hover */}
-                                    <div className='absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-[32px]'>
-                                        <button className='bg-[#39ff14] text-black px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-[2px]'>
-                                            {i < 8 ? 'YOPISH ⏹️' : 'OCHISH ▶️'}
-                                        </button>
-                                    </div>
-                                </div>
+                        {/* Bottom Nav - GameZone HUD Style */}
+                        <div className='fixed bottom-4 left-1/2 -translate-x-1/2 w-[98%] max-w-lg bg-black/90 backdrop-blur-3xl border border-white/10 rounded-full p-2 flex justify-around items-center z-50 shadow-2xl'>
+                            {[
+                                { id: 'asosiy', label: 'Asosiy', icon: <Database size={18} /> },
+                                { id: 'xarita', label: 'Xarita', icon: <Monitor size={18} /> },
+                                { id: 'bar', label: 'Bar', icon: <Zap size={18} /> },
+                                { id: 'qarz', label: 'Qarz', icon: <CreditCard size={18} /> },
+                                { id: 'ops', label: 'Operatsiya', icon: <Activity size={18} /> }
+                            ].map(item => (
+                                <button
+                                    key={item.id}
+                                    onClick={() => setClubAdminTab(item.id)}
+                                    className={`flex flex-col items-center gap-1 py-2 px-1 transition-all ${clubAdminTab === item.id ? 'text-[#39ff14] scale-110' : 'opacity-30'}`}
+                                >
+                                    {item.icon}
+                                    <span className='text-[7px] font-black uppercase tracking-[1px]'>{item.label}</span>
+                                </button>
                             ))}
                         </div>
 
-                        {/* Bottom Nav - GameZone HUD Style */}
-                        <div className='fixed bottom-4 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-black/90 backdrop-blur-2xl border border-white/10 rounded-3xl p-2 flex justify-around items-center z-50 shadow-2xl'>
-                            <button className='flex flex-col items-center gap-1 p-3 text-[#39ff14]'>
-                                <Monitor size={20} />
-                                <span className='text-[7px] font-black uppercase tracking-[1px]'>XONALAR</span>
-                            </button>
-                            <button className='flex flex-col items-center gap-1 p-3 opacity-20'>
-                                <Database size={20} />
-                                <span className='text-[7px] font-black uppercase tracking-[1px]'>JURNAL</span>
-                            </button>
-                            <button className='flex flex-col items-center gap-1 p-3 opacity-20'>
-                                <BarChart3 size={20} />
-                                <span className='text-[7px] font-black uppercase tracking-[1px]'>KASSA</span>
-                            </button>
-                            <button className='flex flex-col items-center gap-1 p-3 opacity-20'>
-                                <Settings size={20} />
-                                <span className='text-[7px] font-black uppercase tracking-[1px]'>SOZLAMALAR</span>
-                            </button>
+                        <div className='flex-1 overflow-y-auto p-4 pb-32'>
+                            <AnimatePresence mode='wait'>
+                                {clubAdminTab === 'xarita' ? (
+                                    <motion.div key='ca-map' initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='grid grid-cols-2 gap-3'>
+                                        {[...Array(24)].map((_, i) => (
+                                            <div key={i} className={`premium-glass p-4 border-white/5 relative group transition-all ${i < 8 ? 'bg-[#39ff14]/5' : ''}`}>
+                                                <div className='flex justify-between items-start mb-4'>
+                                                    <div className='space-y-1'>
+                                                        <p className='text-[7px] text-white/30 font-black tracking-[2px] uppercase'>XONA_ID</p>
+                                                        <p className='text-xl font-black italic tracking-tighter uppercase syncopate'>N_{i + 1}</p>
+                                                    </div>
+                                                    <div className={`w-2 h-2 rounded-full ${i < 8 ? 'bg-[#39ff14] shadow-[0_0_8px_#39ff14]' : 'bg-white/10'}`}></div>
+                                                </div>
+                                                <div className='space-y-3'>
+                                                    {i < 8 ? (
+                                                        <>
+                                                            <p className='text-[10px] font-bold truncate opacity-80'>MuxammadAli_07</p>
+                                                            <div className='p-3 bg-black/40 rounded-xl border border-[#39ff14]/20 flex items-center justify-between'>
+                                                                <Zap size={10} className='text-[#39ff14]' />
+                                                                <span className='text-xs font-black italic tracking-tighter text-[#39ff14]'>01:42:07</span>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <div className='py-6 text-center opacity-10 flex flex-col items-center gap-2'>
+                                                            <Gamepad2 size={24} />
+                                                            <span className='text-[8px] font-black tracking-[2px] uppercase'>BO'SH</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className='absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-[32px]'>
+                                                    <button className='bg-[#39ff14] text-black px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-[2px]'>
+                                                        {i < 8 ? 'YOPISH ⏹️' : 'OCHISH ▶️'}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </motion.div>
+                                ) : clubAdminTab === 'asosiy' ? (
+                                    <motion.div key='ca-dash' initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className='space-y-6'>
+                                        <div className='premium-glass p-8 bg-gradient-to-br from-[#39ff14]/10 to-transparent border-[#39ff14]/20'>
+                                            <p className='text-[10px] font-black tracking-[4px] uppercase text-[#39ff14] mb-4'>KUNLIK_KPI</p>
+                                            <div className='space-y-6'>
+                                                <div className='flex justify-between items-end'>
+                                                    <p className='text-4xl font-black italic tracking-tighter'>940,000</p>
+                                                    <p className='text-[10px] font-bold opacity-30'>UZS</p>
+                                                </div>
+                                                <div className='grid grid-cols-2 gap-4 pt-4 border-t border-white/5'>
+                                                    <div>
+                                                        <p className='text-[8px] opacity-30 font-bold'>BAR SAVDOSI</p>
+                                                        <p className='text-lg font-black italic'>140,000</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className='text-[8px] opacity-30 font-bold'>XONA IJROSI</p>
+                                                        <p className='text-lg font-black italic'>800,000</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ) : clubAdminTab === 'bar' ? (
+                                    <motion.div key='ca-bar' initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className='space-y-4'>
+                                        <div className='premium-glass p-6 border-white/5 flex justify-between items-center'>
+                                            <p className='font-black italic'>Coca-Cola 0.5L</p>
+                                            <div className='flex items-center gap-4'>
+                                                <p className='text-[#39ff14] font-black'>12x</p>
+                                                <button className='px-4 py-2 rounded-lg bg-[#39ff14] text-black text-[10px] font-black'>SOTISH</button>
+                                            </div>
+                                        </div>
+                                        <div className='premium-glass p-6 border-white/5 flex justify-between items-center'>
+                                            <p className='font-black italic'>Lays 90g</p>
+                                            <div className='flex items-center gap-4'>
+                                                <p className='text-[#39ff14] font-black'>5x</p>
+                                                <button className='px-4 py-2 rounded-lg bg-[#39ff14] text-black text-[10px] font-black'>SOTISH</button>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ) : clubAdminTab === 'qarz' ? (
+                                    <motion.div key='ca-qarz' initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='space-y-4'>
+                                        <div className='premium-glass p-6 border-red-500/20'>
+                                            <div className='flex justify-between items-center'>
+                                                <div>
+                                                    <p className='font-black'>Azizxo'ja</p>
+                                                    <p className='text-[10px] text-red-500 font-bold tracking-[2px]'>-45,000 UZS</p>
+                                                </div>
+                                                <button className='p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500'>
+                                                    <CreditCard size={18} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ) : (
+                                    <motion.div key='ca-ops' initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='space-y-4'>
+                                        <div className='premium-glass p-6 border-white/5'>
+                                            <h4 className='text-[10px] font-black tracking-[4px] opacity-30 mb-6'>OXIRGI AMALLAR</h4>
+                                            <div className='space-y-4'>
+                                                <div className='flex items-center justify-between py-2 border-b border-white/5'>
+                                                    <span className='text-xs opacity-60'>Xona N_04 yopildi</span>
+                                                    <span className='text-[9px] font-bold'>14:20</span>
+                                                </div>
+                                                <div className='flex items-center justify-between py-2 border-b border-white/5'>
+                                                    <span className='text-xs opacity-60'>Bar: Cola sotildi</span>
+                                                    <span className='text-[9px] font-bold'>13:55</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </motion.div>
                 ) : (
