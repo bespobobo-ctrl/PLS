@@ -7,9 +7,11 @@ function App() {
     const [holdProgress, setHoldProgress] = useState(0);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [adminUser, setAdminUser] = useState('');
+    const [adminPass, setAdminPass] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-    
+
     const holdTimer = useRef(null);
 
     useEffect(() => {
@@ -30,7 +32,7 @@ function App() {
                 if (window.Telegram?.WebApp?.HapticFeedback) {
                     window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
                 }
-                setView('admin');
+                setView('admin-login');
             }
         }, 100);
     };
@@ -44,21 +46,28 @@ function App() {
         e?.preventDefault();
         setIsLoading(true);
         setErrorMessage('');
-
-        // Simulation of login
         setTimeout(() => {
-            if (username.toLowerCase() === 'admin' && password === 'admin777') {
-                setView('admin');
-                if (window.Telegram?.WebApp?.HapticFeedback) {
-                    window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-                }
-            } else if (username && password) {
+            if (username && password) {
                 setView('player');
-                if (window.Telegram?.WebApp?.HapticFeedback) {
-                    window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-                }
             } else {
-                setErrorMessage('Iltimos, ma\'lumotlarni to\'ldiring');
+                setErrorMessage('Ma\'lumotlarni kiriting');
+            }
+            setIsLoading(false);
+        }, 1200);
+    };
+
+    const handleAdminVerify = (e) => {
+        e?.preventDefault();
+        setIsLoading(true);
+        setErrorMessage('');
+        setTimeout(() => {
+            if (adminUser.toLowerCase() === 'admin' && adminPass === 'admin777') {
+                setView('admin');
+            } else {
+                setErrorMessage('Identifikatsiya xatosi');
+                if (window.Telegram?.WebApp?.HapticFeedback) {
+                    window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+                }
             }
             setIsLoading(false);
         }, 1500);
@@ -75,7 +84,7 @@ function App() {
             <AnimatePresence mode='wait'>
                 {view === 'login' ? (
                     <motion.div
-                        key='login' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        key='login' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 1.1, filter: 'blur(10px)' }}
                         className='relative z-10 w-full h-screen flex flex-col justify-between p-8 pb-14 max-w-lg mx-auto'
                     >
                         <div className='flex justify-between items-center opacity-90'>
@@ -91,7 +100,7 @@ function App() {
 
                             <motion.div
                                 onPointerDown={startHold} onPointerUp={stopHold} onPointerLeave={stopHold}
-                                className='relative overflow-hidden cursor-pointer flex items-center gap-2 px-4 py-2.5 glass-card border-white/5 active:scale-95 transition-transform'
+                                className='relative overflow-hidden cursor-pointer flex items-center gap-2 px-4 py-2.5 glass-card border-white/5 active:scale-95 transition-transform group'
                             >
                                 {holdProgress > 0 && (
                                     <div
@@ -99,7 +108,7 @@ function App() {
                                         style={{ width: `${(holdProgress / 30) * 100}%` }}
                                     ></div>
                                 )}
-                                <ShieldCheck size={14} className={holdProgress > 0 ? 'text-pls-cyan animate-pulse' : 'text-emerald-400'} />
+                                <ShieldCheck size={14} className={holdProgress > 0 ? 'text-pls-cyan animate-pulse' : 'text-emerald-400 group-hover:rotate-12 transition-transform'} />
                                 <span className='text-[10px] font-black uppercase tracking-widest text-emerald-400/90'>Secured</span>
                             </motion.div>
                         </div>
@@ -153,16 +162,6 @@ function App() {
                                     </span>
                                     <div className='absolute inset-0 bg-white/25 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-700 ease-out'></div>
                                 </motion.button>
-                                
-                                <div className='flex justify-center'>
-                                    <button 
-                                        type="button"
-                                        onClick={() => { setUsername('admin'); setPassword(''); }}
-                                        className='text-[9px] font-black uppercase tracking-[4px] text-pls-cyan/40 hover:text-pls-cyan transition-colors'
-                                    >
-                                        Bypass Mode
-                                    </button>
-                                </div>
                             </form>
                         </div>
 
@@ -170,6 +169,49 @@ function App() {
                             <div className='w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent'></div>
                             <span className='text-[10px] font-black uppercase tracking-[5px] text-slate-500'>2024 © PLS GAME NETWORK</span>
                         </div>
+                    </motion.div>
+                ) : view === 'admin-login' ? (
+                    <motion.div
+                        key='admin-login' initial={{ opacity: 0, scale: 0.8, y: 50 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 1.1 }}
+                        className='relative z-20 w-full h-screen flex flex-col items-center justify-center p-8 max-w-lg mx-auto bg-black/60 backdrop-blur-2xl'
+                    >
+                        <div className='absolute top-10 flex flex-col items-center gap-2'>
+                            <div className='w-16 h-16 rounded-full border border-pls-cyan/30 flex items-center justify-center animate-pulse'>
+                                <ShieldCheck size={32} className='text-pls-cyan' />
+                            </div>
+                            <h3 className='unbounded text-xs font-black tracking-[4px] text-pls-cyan animate-pulse mt-4'>ADMIN VERIFICATION</h3>
+                        </div>
+
+                        <form onSubmit={handleAdminVerify} className='w-full space-y-8'>
+                            <div className='space-y-4'>
+                                <div className='relative'>
+                                    <input
+                                        type='text' placeholder='Admin Identifier'
+                                        value={adminUser} onChange={(e) => setAdminUser(e.target.value)}
+                                        className='w-full bg-transparent border-b-2 border-white/10 py-4 text-center unbounded text-lg focus:outline-none focus:border-pls-cyan transition-all uppercase tracking-[5px]'
+                                    />
+                                </div>
+                                <div className='relative'>
+                                    <input
+                                        type='password' placeholder='Secret Hash'
+                                        value={adminPass} onChange={(e) => setAdminPass(e.target.value)}
+                                        className='w-full bg-transparent border-b-2 border-white/10 py-4 text-center unbounded text-lg focus:outline-none focus:border-pls-purple transition-all tracking-[10px]'
+                                    />
+                                </div>
+                                {errorMessage && <p className='text-[10px] text-center text-red-500 font-bold uppercase tracking-[3px]'>{errorMessage}</p>}
+                            </div>
+
+                            <motion.button
+                                whileTap={{ scale: 0.95 }}
+                                className='w-full py-6 bg-white text-black font-black uppercase tracking-[8px] rounded-full text-[12px] hover:bg-pls-cyan transition-all'
+                            >
+                                {isLoading ? 'Verifying...' : 'Authorize Access'}
+                            </motion.button>
+
+                            <button onClick={() => setView('login')} className='w-full text-[9px] font-black uppercase tracking-[4px] text-white/30 hover:text-white transition-colors'>Cancel Connection</button>
+                        </form>
+
+                        <div className='absolute inset-x-0 top-0 h-1 bg-pls-cyan/20 animate-scan pointer-events-none'></div>
                     </motion.div>
                 ) : view === 'admin' ? (
                     <motion.div
@@ -188,7 +230,6 @@ function App() {
                             </button>
                         </div>
 
-                        {/* Stats Grid */}
                         <div className='grid grid-cols-2 gap-3'>
                             <div className='glass-card p-4 border-white/10'>
                                 <Users size={18} className='text-pls-cyan mb-2' />
@@ -202,7 +243,6 @@ function App() {
                             </div>
                         </div>
 
-                        {/* Quick Actions */}
                         <div className='flex flex-col gap-3'>
                             <h3 className='text-[10px] font-black uppercase tracking-[3px] text-pls-cyan pl-1'>System Control</h3>
                             <div className='glass-card p-0 overflow-hidden border-white/5'>
@@ -245,7 +285,6 @@ function App() {
                             </div>
                         </div>
 
-                        {/* Recent Activity */}
                         <div className='flex flex-col gap-3'>
                             <h3 className='text-[10px] font-black uppercase tracking-[3px] text-pls-purple pl-1'>Live Activity</h3>
                             <div className='glass-card p-5 space-y-4 border-white/5'>
@@ -271,7 +310,7 @@ function App() {
                         className='relative z-10 w-full h-screen p-8 flex flex-col items-center justify-center gap-8 max-w-lg mx-auto'
                     >
                         <div className='w-24 h-24 rounded-full border-4 border-pls-cyan flex items-center justify-center relative shadow-[0_0_50px_rgba(0,242,255,0.3)]'>
-                            <motion.div 
+                            <motion.div
                                 animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
                                 className='absolute inset-0 border-t-4 border-transparent border-t-white rounded-full'
                             />
@@ -294,4 +333,3 @@ function App() {
 }
 
 export default App;
-
