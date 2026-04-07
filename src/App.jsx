@@ -29,21 +29,20 @@ function App() {
         ];
     });
 
-    const [clubs, setClubs] = useState(() => {
-        const saved = localStorage.getItem('pls_clubs');
-        return saved ? JSON.parse(saved) : [
-            { name: 'PLS Kokand-1', rooms: 24, dailyRevenue: '850,000' },
-            { name: 'PLS Fergana-2', rooms: 12, dailyRevenue: '420,000' },
-            { name: 'PLS Tashkent-3', rooms: 32, dailyRevenue: '1,200,000' }
-        ];
-    });
+    const PRODUCTS = [
+        { id: 1, name: 'Pepsi 0.5L', price: 8000 },
+        { id: 2, name: 'Coca-Cola 0.5L', price: 8000 },
+        { id: 3, name: 'Flash Energy', price: 12000 },
+        { id: 4, name: 'Chips Lays', price: 15000 },
+        { id: 5, name: 'Sandwich', price: 18000 }
+    ];
 
     const [rooms, setRooms] = useState(() => {
         const saved = localStorage.getItem('pls_rooms');
         return saved ? JSON.parse(saved) : [
-            { id: 1, name: 'N_01', price: '12,000', club: 'PLS Kokand-1', isBlocked: false, isBusy: false, startTime: null, dailyHours: 0, dailyRevenue: 0 },
-            { id: 2, name: 'N_02', price: '12,000', club: 'PLS Kokand-1', isBlocked: false, isBusy: false, startTime: null, dailyHours: 0, dailyRevenue: 0 },
-            { id: 3, name: 'VIP_01', price: '25,000', club: 'PLS Kokand-1', isBlocked: false, isBusy: false, startTime: null, dailyHours: 0, dailyRevenue: 0 }
+            { id: 1, name: 'VIP_01', price: '18,500', club: 'PLS Kokand-1', isBlocked: false, isBusy: false, startTime: null, dailyHours: 0, dailyRevenue: 0, sessionBarTotal: 0, barItems: [] },
+            { id: 2, name: 'ROOM_02', price: '12,000', club: 'PLS Kokand-1', isBlocked: false, isBusy: false, startTime: null, dailyHours: 0, dailyRevenue: 0, sessionBarTotal: 0, barItems: [] },
+            { id: 3, name: 'ROOM_03', price: '12,000', club: 'PLS Kokand-1', isBlocked: false, isBusy: false, startTime: null, dailyHours: 0, dailyRevenue: 0, sessionBarTotal: 0, barItems: [] }
         ];
     });
 
@@ -230,12 +229,16 @@ function App() {
         return timeCost + (room.sessionBarTotal || 0);
     };
 
-    const handleAddBar = (id, amount) => {
-        setRooms(rooms.map(r => r.id === id ? { ...r, sessionBarTotal: (r.sessionBarTotal || 0) + amount } : r));
+    const handleAddBar = (id, amount, itemName) => {
+        setRooms(rooms.map(r => r.id === id ? {
+            ...r,
+            sessionBarTotal: (r.sessionBarTotal || 0) + amount,
+            barItems: [...(r.barItems || []), { name: itemName, price: amount, time: Date.now() }]
+        } : r));
     };
 
     const handleStartSession = (id) => {
-        setRooms(rooms.map(r => r.id === id ? { ...r, isBusy: true, startTime: Date.now(), sessionBarTotal: 0 } : r));
+        setRooms(rooms.map(r => r.id === id ? { ...r, isBusy: true, startTime: Date.now(), sessionBarTotal: 0, barItems: [] } : r));
     };
 
     const handleStopSession = (room) => {
@@ -268,8 +271,9 @@ function App() {
             isBusy: false,
             startTime: null,
             sessionBarTotal: 0,
-            dailyHours: r.dailyHours + elapsedHours,
-            dailyRevenue: r.dailyRevenue + paid
+            barItems: [],
+            dailyHours: (r.dailyHours || 0) + elapsedHours,
+            dailyRevenue: (r.dailyRevenue || 0) + paid
         } : r));
 
         setIsPaymentModalOpen(false);
@@ -840,34 +844,60 @@ function App() {
                                             </div>
                                         )}
 
-                                        <div className='grid grid-cols-2 gap-3'>
-                                            {rooms.filter(r => r.club === clubAdmins.find(ca => ca.login === username)?.club).map((room) => (
+                                        <div className='space-y-4 pb-32'>
+                                            {rooms.filter(r => r.club === clubAdmins.find(ca => ca.login === username)?.club).map((room, i) => (
                                                 <div
                                                     key={room.id}
                                                     onClick={() => !room.isBlocked && setSelectedRoom(room)}
-                                                    className={`premium-glass p-4 border-white/5 relative group transition-all ${room.isBusy ? 'bg-[#39ff14]/5' : room.isBlocked ? 'bg-red-500/5 grayscale' : 'hover:bg-white/5'}`}
+                                                    className={`premium-glass p-6 border-white/5 relative group transition-all ${room.isBusy ? 'bg-[#39ff14]/[0.02]' : 'hover:bg-white/[0.02]'}`}
                                                 >
-                                                    <div className='flex justify-between items-start mb-4'>
-                                                        <div className='space-y-1'>
-                                                            <p className='text-[7px] text-white/30 font-black tracking-[2px] uppercase'>{room.name}</p>
-                                                            <p className='text-xs font-black text-[#39ff14]'>{room.price} UZS</p>
+                                                    <div className='flex justify-between items-start mb-2'>
+                                                        <div>
+                                                            <h3 className='text-3xl font-black italic tracking-tighter uppercase syncopate leading-none'>{room.name}</h3>
+                                                            <p className='text-[10px] font-bold text-white/30 tracking-[1.5px] mt-2'>{room.price} UZS / SOAT</p>
                                                         </div>
-                                                        <div className={`w-2 h-2 rounded-full ${room.isBusy ? 'bg-[#39ff14] shadow-[0_0_8px_#39ff14]' : room.isBlocked ? 'bg-red-500' : 'bg-white/10'}`}></div>
+                                                        <div className='flex items-center gap-1 bg-black/40 p-2 rounded-xl border border-white/5'>
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); handleStartRoomEdit(room, i); }}
+                                                                className='w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors'
+                                                            >
+                                                                <Settings size={14} className='opacity-30' />
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); handleDeleteRoom(room.id); }}
+                                                                className='w-8 h-8 rounded-lg flex items-center justify-center hover:bg-red-500/10 transition-colors text-red-500'
+                                                            >
+                                                                <Trash2 size={14} className='opacity-30' />
+                                                            </button>
+                                                            <ChevronRight size={20} className='ml-2 opacity-10' />
+                                                        </div>
                                                     </div>
-                                                    <div className='space-y-3'>
-                                                        {room.isBusy ? (
-                                                            <div className='p-3 bg-black/40 rounded-xl border border-[#39ff14]/20 flex items-center justify-between'>
-                                                                <Zap size={10} className='text-[#39ff14]' />
-                                                                <span className='text-[10px] font-black italic tracking-tighter text-[#39ff14]'>{formatTime(currentTime - room.startTime)}</span>
+
+                                                    <div className='relative h-[3px] w-full bg-white/5 rounded-full overflow-hidden my-6'>
+                                                        <motion.div
+                                                            initial={{ width: 0 }}
+                                                            animate={{ width: room.isBusy ? '70%' : '0%' }}
+                                                            className='absolute top-0 left-0 h-full bg-[#ff00ff] shadow-[0_0_10px_#ff00ff]'
+                                                        />
+                                                    </div>
+
+                                                    <div className='flex justify-between items-center'>
+                                                        <div className='flex gap-4 items-center'>
+                                                            <div className='flex items-center gap-2'>
+                                                                <div className={`w-2 h-2 rounded-full ${room.isBusy ? 'bg-[#ff00ff] shadow-[0_0_8px_#ff00ff]' : 'bg-white/10'}`}></div>
+                                                                <span className='text-[8px] font-black uppercase tracking-[1.5px] text-white/50'>{room.isBusy ? '1' : '0'} BAND</span>
                                                             </div>
-                                                        ) : (
-                                                            <div className='py-4 text-center opacity-10 flex flex-col items-center gap-2'>
-                                                                <span className='text-[8px] font-black tracking-[2px] uppercase'>{room.isBlocked ? "BLOKLANGAN" : "BO'SH"}</span>
+                                                            <div className='flex items-center gap-2'>
+                                                                <div className='w-2 h-2 rounded-full bg-yellow-500/20'></div>
+                                                                <span className='text-[8px] font-black uppercase tracking-[1.5px] text-white/20'>0 BRON</span>
                                                             </div>
-                                                        )}
-                                                        <div className='pt-2 border-t border-white/5 flex justify-between items-center'>
-                                                            <span className='text-[6px] text-white/30 font-bold uppercase'>Bugun:</span>
-                                                            <span className='text-[7px] font-black text-[#39ff14]'>{(room.dailyHours || 0).toFixed(1)}s | {(room.dailyRevenue || 0).toLocaleString()}</span>
+                                                            <div className='flex items-center gap-2'>
+                                                                <div className={`w-2 h-2 rounded-full ${!room.isBusy && !room.isBlocked ? 'bg-[#39ff14] shadow-[0_0_8px_#39ff14]' : 'bg-white/10'}`}></div>
+                                                                <span className='text-[8px] font-black uppercase tracking-[1.5px] text-white/50'>{!room.isBusy && !room.isBlocked ? '1' : '0'} BO'SH</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className='text-right'>
+                                                            <p className='text-2xl font-black italic text-[#39ff14] tracking-tighter'>{(room.dailyRevenue || 0).toLocaleString()} <span className='text-[10px] opacity-40 font-bold uppercase tracking-[1px] ml-1'>UZS</span></p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -880,10 +910,10 @@ function App() {
                                             <p className='text-[10px] font-black tracking-[4px] uppercase text-[#39ff14] mb-4'>KUNLIK_KPI</p>
                                             <div className='space-y-6'>
                                                 <div className='flex justify-between items-end'>
-                                                    <p className='text-4xl font-black italic tracking-tighter'>
+                                                    <p className='text-6xl font-black italic tracking-tighter text-[#39ff14] shadow-[0_0_20px_rgba(57,255,20,0.2)]'>
                                                         {rooms.filter(r => r.club === clubAdmins.find(ca => ca.login === username)?.club).reduce((acc, r) => acc + (r.dailyRevenue || 0), 0).toLocaleString()}
                                                     </p>
-                                                    <p className='text-[10px] font-bold opacity-30'>UZS</p>
+                                                    <p className='text-sm font-black opacity-30 tracking-[4px] ml-4'>UZS</p>
                                                 </div>
                                                 <div className='grid grid-cols-2 gap-4 pt-4 border-t border-white/5'>
                                                     <div>
@@ -960,57 +990,61 @@ function App() {
                                             </div>
 
                                             {activeModalRoom.isBusy ? (
-                                                <div className='space-y-8 py-4'>
-                                                    <div className='text-center space-y-2'>
+                                                <div className='space-y-6 py-4'>
+                                                    <div className='text-center space-y-1'>
                                                         <p className='text-6xl font-black italic tracking-tighter text-white tracking-[-4px]'>{formatTime(currentTime - activeModalRoom.startTime)}</p>
-                                                        <p className='text-[8px] font-black tracking-[4px] opacity-40 uppercase'>O'yin davom etmoqda...</p>
+                                                        <p className='text-[10px] font-black tracking-[4px] opacity-40 uppercase'>O'YIN DAVOM ETMOQDA</p>
                                                     </div>
-                                                    <div className=' premium-glass p-6 border-white/5 space-y-4 bg-[#39ff14]/5'>
-                                                        <div className='flex justify-between items-center opacity-60'>
-                                                            <p className='text-[9px] font-black uppercase tracking-[1px]'>Vaqt hisobi:</p>
-                                                            <p className='text-xs font-bold'>{(calculateCost(activeModalRoom, currentTime) - (activeModalRoom.sessionBarTotal || 0)).toLocaleString()} UZS</p>
+
+                                                    <div className='premium-glass p-0 border-white/5 bg-white/[0.02] overflow-hidden'>
+                                                        <div className='p-4 border-b border-white/5 bg-white/[0.03]'>
+                                                            <p className='text-[10px] font-black uppercase tracking-[2px] opacity-40'>BAR MASTER 🥤</p>
                                                         </div>
-                                                        <div className='flex justify-between items-center text-[#39ff14]'>
-                                                            <p className='text-[9px] font-black uppercase tracking-[1px]'>Bar xizmati:</p>
-                                                            <p className='text-xs font-bold'>{(activeModalRoom.sessionBarTotal || 0).toLocaleString()} UZS</p>
+                                                        <div className='flex overflow-x-auto p-4 gap-3 no-scrollbar'>
+                                                            {PRODUCTS.map(product => (
+                                                                <button
+                                                                    key={product.id}
+                                                                    onClick={() => {
+                                                                        handleAddBar(activeModalRoom.id, product.price, product.name);
+                                                                        if (window.Telegram?.WebApp?.HapticFeedback) {
+                                                                            window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                                                                        }
+                                                                    }}
+                                                                    className='flex-shrink-0 w-24 premium-glass p-3 text-center border-white/10 hover:bg-[#39ff14]/10 transition-all active:scale-95'
+                                                                >
+                                                                    <p className='text-[8px] font-black uppercase tracking-tight truncate'>{product.name}</p>
+                                                                    <p className='text-[10px] font-black text-[#39ff14] mt-1'>{product.price / 1000}K</p>
+                                                                </button>
+                                                            ))}
                                                         </div>
-                                                        <div className='pt-3 border-t border-white/10 flex justify-between items-center'>
-                                                            <p className='text-[10px] font-black tracking-[2px] opacity-60 uppercase'>JAMI HISOB:</p>
-                                                            <div className='text-right'>
-                                                                <p className='text-2xl font-black italic'>{calculateCost(activeModalRoom, currentTime).toLocaleString()}</p>
-                                                                <p className='text-[8px] opacity-40 font-bold uppercase tracking-[1px]'>UZS</p>
+                                                    </div>
+
+                                                    <div className='premium-glass p-6 border-white/5 space-y-4 bg-[#39ff14]/5'>
+                                                        <div className='flex justify-between items-start'>
+                                                            <div className='space-y-1'>
+                                                                <p className='text-[9px] font-black uppercase tracking-[2px] opacity-40'>HISOB-KITOB:</p>
+                                                                <p className='text-3xl font-black italic tracking-tighter text-[#39ff14]'>
+                                                                    {calculateCost(activeModalRoom, currentTime).toLocaleString()}
+                                                                    <span className='text-[10px] opacity-40 uppercase ml-2'>UZS</span>
+                                                                </p>
+                                                            </div>
+                                                            <div className='text-right opacity-40'>
+                                                                <p className='text-[8px] font-bold uppercase'>VAQT: {((calculateCost(activeModalRoom, currentTime) - (activeModalRoom.sessionBarTotal || 0))).toLocaleString()}</p>
+                                                                <p className='text-[8px] font-bold uppercase'>BAR: {(activeModalRoom.sessionBarTotal || 0).toLocaleString()}</p>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div className='grid grid-cols-2 gap-4'>
-                                                        <button
-                                                            onClick={() => {
-                                                                handleAddBar(activeModalRoom.id, 10000);
-                                                                if (window.Telegram?.WebApp?.HapticFeedback) {
-                                                                    window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-                                                                }
-                                                            }}
-                                                            className='premium-glass p-4 border-white/5 flex flex-col items-center gap-2 group hover:bg-[#39ff14]/10 transition-all active:scale-95'
-                                                        >
-                                                            <Coffee size={20} className='group-hover:text-[#39ff14] transition-colors' />
-                                                            <span className='text-[8px] font-black uppercase tracking-[1px]'>BAR +10K</span>
-                                                        </button>
-                                                        <button onClick={() => { if (window.confirm("Xonani o'chirasizmi?")) { setRooms(rooms.filter(r => r.id !== activeModalRoom.id)); setSelectedRoom(null); } }} className='premium-glass p-4 border-red-500/20 text-red-500 flex flex-col items-center gap-2'><Trash2 size={20} /><span className='text-[8px] font-black uppercase'>O'CHIRISH</span></button>
-                                                    </div>
-                                                    <button onClick={() => handleStopSession(activeModalRoom)} className='w-full bg-red-500 text-white font-black py-5 rounded-2xl uppercase tracking-[3px] text-xs shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:brightness-110 active:scale-[0.98] transition-all'>Sessiyani Yakunlash ⏹️</button>
+
+                                                    <button onClick={() => handleStopSession(activeModalRoom)} className='w-full bg-[#ff00ff] text-white font-black py-5 rounded-2xl uppercase tracking-[4px] text-xs shadow-[0_0_25px_rgba(255,0,255,0.3)] hover:brightness-110 active:scale-[0.98] transition-all'>Sessiyani Yakunlash ⏹️</button>
                                                 </div>
                                             ) : (
                                                 <div className='space-y-8 py-4'>
-                                                    <div className='premium-glass p-10 text-center border-dashed border-[#39ff14]/30'>
-                                                        <Gamepad2 size={48} className='mx-auto mb-4 opacity-10' />
-                                                        <p className='text-[10px] font-black tracking-[2px] opacity-40 uppercase'>Xona tayyor holatda</p>
+                                                    <div className='premium-glass p-12 text-center border-dashed border-[#39ff14]/30 relative overflow-hidden group'>
+                                                        <div className='absolute inset-0 bg-[#39ff14]/5 opacity-0 group-hover:opacity-100 transition-opacity'></div>
+                                                        <Monitor size={48} className='mx-auto mb-4 opacity-10' />
+                                                        <p className='text-[10px] font-black tracking-[4px] opacity-20 uppercase'>XONA QABULGA TAYYOR</p>
                                                     </div>
-                                                    <div className='grid grid-cols-3 gap-2'>
-                                                        <button onClick={() => handleStartRoomEdit(activeModalRoom, rooms.findIndex(r => r.id === activeModalRoom.id))} className='p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center gap-1'><Settings size={18} /><span className='text-[7px] font-bold uppercase'>Sozlama</span></button>
-                                                        <button onClick={() => toggleBlockRoom(activeModalRoom.id)} className='p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center gap-1'><Lock size={18} /><span className='text-[7px] font-bold uppercase'>Blok</span></button>
-                                                        <button onClick={() => { if (window.confirm("Xonani o'chirasizmi?")) { setRooms(rooms.filter(r => r.id !== activeModalRoom.id)); setSelectedRoom(null); } }} className='p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center gap-1 text-red-500'><Trash2 size={18} /><span className='text-[7px] font-bold uppercase'>O'chirish</span></button>
-                                                    </div>
-                                                    <button onClick={() => { handleStartSession(activeModalRoom.id); setSelectedRoom(null); }} className='w-full bg-[#39ff14] text-black font-black py-5 rounded-2xl uppercase tracking-[3px] text-xs shadow-[0_0_20px_rgba(57,255,20,0.3)]'>Vaqtni Boshlash ▶️</button>
+                                                    <button onClick={() => { handleStartSession(activeModalRoom.id); setSelectedRoom(null); }} className='w-full bg-[#39ff14] text-black font-black py-5 rounded-2xl uppercase tracking-[4px] text-xs shadow-[0_0_25px_rgba(57,255,20,0.3)] hover:brightness-110 active:scale-[0.98] transition-all'>VAQTNI BOSHLASH ▶️</button>
                                                 </div>
                                             )}
                                         </motion.div>
