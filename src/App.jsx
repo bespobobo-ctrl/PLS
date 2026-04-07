@@ -38,6 +38,15 @@ function App() {
         ];
     });
 
+    const [rooms, setRooms] = useState(() => {
+        const saved = localStorage.getItem('pls_rooms');
+        return saved ? JSON.parse(saved) : [
+            { id: 1, name: 'N_01', price: '12,000', club: 'PLS Kokand-1', isBlocked: false, isBusy: true },
+            { id: 2, name: 'N_02', price: '12,000', club: 'PLS Kokand-1', isBlocked: false, isBusy: false },
+            { id: 3, name: 'VIP_01', price: '25,000', club: 'PLS Kokand-1', isBlocked: true, isBusy: false }
+        ];
+    });
+
     // Save to LocalStorage whenever state changes
     useEffect(() => {
         localStorage.setItem('pls_super_admins', JSON.stringify(superAdmins));
@@ -51,12 +60,22 @@ function App() {
         localStorage.setItem('pls_clubs', JSON.stringify(clubs));
     }, [clubs]);
 
+    useEffect(() => {
+        localStorage.setItem('pls_rooms', JSON.stringify(rooms));
+    }, [rooms]);
+
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isClubAddModalOpen, setIsClubAddModalOpen] = useState(false);
+    const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
+
     const [editIndex, setEditIndex] = useState(null);
     const [clubEditIndex, setClubEditIndex] = useState(null);
+    const [roomEditIndex, setRoomEditIndex] = useState(null);
+
     const [newAdmin, setNewAdmin] = useState({ name: '', phone: '', login: '', pass: '', club: '' });
     const [newClubAdmin, setNewClubAdmin] = useState({ name: '', login: '', pass: '', club: '' });
+    const [newRoom, setNewRoom] = useState({ name: '', price: '', isBlocked: false });
+
     const [superAdminTab, setSuperAdminTab] = useState('asosiy');
     const [clubAdminTab, setClubAdminTab] = useState('xarita');
 
@@ -180,12 +199,6 @@ function App() {
         }
     };
 
-    const handleStartClubEdit = (admin, index) => {
-        setNewClubAdmin(admin);
-        setClubEditIndex(index);
-        setIsClubAddModalOpen(true);
-    };
-
     const handleDeleteSuperAdmin = (index) => {
         if (window.confirm('Haqiqatdan ham ushbu super adminni o\'chirmoqchimisiz?')) {
             setSuperAdmins(superAdmins.filter((_, i) => i !== index));
@@ -196,6 +209,45 @@ function App() {
         setNewAdmin(admin);
         setEditIndex(index);
         setIsAddModalOpen(true);
+    };
+
+    const handleStartClubEdit = (admin, index) => {
+        setNewClubAdmin(admin);
+        setClubEditIndex(index);
+        setIsClubAddModalOpen(true);
+    };
+
+    const handleSaveRoom = (currentClub) => {
+        if (!newRoom.name || !newRoom.price) return;
+        const roomData = { ...newRoom, id: Date.now(), club: currentClub, isBusy: false };
+
+        if (roomEditIndex !== null) {
+            const updated = [...rooms];
+            updated[roomEditIndex] = { ...updated[roomEditIndex], ...newRoom };
+            setRooms(updated);
+        } else {
+            setRooms([...rooms, roomData]);
+        }
+
+        setNewRoom({ name: '', price: '', isBlocked: false });
+        setIsRoomModalOpen(false);
+        setRoomEditIndex(null);
+    };
+
+    const handleDeleteRoom = (id) => {
+        if (window.confirm('Haqiqatdan ham ushbu xonani o\'chirmoqchimisiz?')) {
+            setRooms(rooms.filter(r => r.id !== id));
+        }
+    };
+
+    const handleStartRoomEdit = (room, index) => {
+        setNewRoom(room);
+        setRoomEditIndex(index);
+        setIsRoomModalOpen(true);
+    };
+
+    const toggleBlockRoom = (id) => {
+        setRooms(rooms.map(r => r.id === id ? { ...r, isBlocked: !r.isBlocked } : r));
     };
 
     return (
@@ -679,39 +731,77 @@ function App() {
                         <div className='flex-1 overflow-y-auto p-4 pb-32'>
                             <AnimatePresence mode='wait'>
                                 {clubAdminTab === 'xarita' ? (
-                                    <motion.div key='ca-map' initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='grid grid-cols-2 gap-3'>
-                                        {[...Array(24)].map((_, i) => (
-                                            <div key={i} className={`premium-glass p-4 border-white/5 relative group transition-all ${i < 8 ? 'bg-[#39ff14]/5' : ''}`}>
-                                                <div className='flex justify-between items-start mb-4'>
-                                                    <div className='space-y-1'>
-                                                        <p className='text-[7px] text-white/30 font-black tracking-[2px] uppercase'>XONA_ID</p>
-                                                        <p className='text-xl font-black italic tracking-tighter uppercase syncopate'>N_{i + 1}</p>
-                                                    </div>
-                                                    <div className={`w-2 h-2 rounded-full ${i < 8 ? 'bg-[#39ff14] shadow-[0_0_8px_#39ff14]' : 'bg-white/10'}`}></div>
+                                    <motion.div key='ca-map' initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='space-y-6 pb-20'>
+                                        {/* Add Room Functional HUD */}
+                                        <button
+                                            onClick={() => {
+                                                setRoomEditIndex(null);
+                                                setNewRoom({ name: '', price: '', isBlocked: false });
+                                                setIsRoomModalOpen(!isRoomModalOpen);
+                                            }}
+                                            className='w-full bg-[#39ff14]/10 border border-[#39ff14]/30 text-[#39ff14] py-5 rounded-2xl font-black text-[11px] tracking-[3px] uppercase hover:bg-[#39ff14]/20 transition-all'
+                                        >
+                                            {isRoomModalOpen ? 'YOPISH' : "+ XONA QO'SHISH"}
+                                        </button>
+
+                                        {isRoomModalOpen && (
+                                            <div className='premium-glass p-6 space-y-4 border-[#39ff14]/20'>
+                                                <input placeholder='Xona nomi (masalan: N_01)' className='input-luxury' value={newRoom.name} onChange={e => setNewRoom({ ...newRoom, name: e.target.value })} />
+                                                <input placeholder='Soatlik narxi (masalan: 12,000)' className='input-luxury' value={newRoom.price} onChange={e => setNewRoom({ ...newRoom, price: e.target.value })} />
+                                                <div className='flex items-center gap-3 px-2'>
+                                                    <input type='checkbox' id='block-room' checked={newRoom.isBlocked} onChange={e => setNewRoom({ ...newRoom, isBlocked: e.target.checked })} className='w-5 h-5 accent-[#39ff14]' />
+                                                    <label htmlFor='block-room' className='text-[10px] font-bold uppercase tracking-[1px] opacity-60'>Vaqtincha bloklash</label>
                                                 </div>
-                                                <div className='space-y-3'>
-                                                    {i < 8 ? (
-                                                        <>
-                                                            <p className='text-[10px] font-bold truncate opacity-80'>MuxammadAli_07</p>
+                                                <button onClick={() => handleSaveRoom(clubAdmins.find(ca => ca.login === username)?.club)} className='w-full bg-[#39ff14] text-black font-bold py-3 rounded-xl uppercase tracking-[1px]'>
+                                                    {roomEditIndex !== null ? 'Yangilash' : 'Saqlash'}
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        <div className='grid grid-cols-2 gap-3 pb-20'>
+                                            {rooms.filter(r => r.club === clubAdmins.find(ca => ca.login === username)?.club).map((room, i) => (
+                                                <div key={room.id} className={`premium-glass p-4 border-white/5 relative group transition-all ${room.isBusy ? 'bg-[#39ff14]/5' : room.isBlocked ? 'bg-red-500/5 grayscale' : ''}`}>
+                                                    <div className='flex justify-between items-start mb-4'>
+                                                        <div className='space-y-1'>
+                                                            <div className='flex items-center gap-2'>
+                                                                <p className='text-[7px] text-white/30 font-black tracking-[2px] uppercase'>XONA_ID</p>
+                                                                {room.isBlocked && <Lock size={8} className='text-red-500' />}
+                                                            </div>
+                                                            <p className='text-xl font-black italic tracking-tighter uppercase syncopate'>{room.name}</p>
+                                                        </div>
+                                                        <div className={`w-2 h-2 rounded-full ${room.isBusy ? 'bg-[#39ff14] shadow-[0_0_8px_#39ff14]' : room.isBlocked ? 'bg-red-500 shadow-[0_0_8px_red]' : 'bg-white/10'}`}></div>
+                                                    </div>
+
+                                                    <div className='space-y-3'>
+                                                        <div>
+                                                            <p className='text-[10px] font-black tracking-[1px] text-[#39ff14]/60'>{room.price} UZS <span className='text-[7px] opacity-40 italic'>/soat</span></p>
+                                                        </div>
+                                                        {room.isBusy ? (
                                                             <div className='p-3 bg-black/40 rounded-xl border border-[#39ff14]/20 flex items-center justify-between'>
                                                                 <Zap size={10} className='text-[#39ff14]' />
                                                                 <span className='text-xs font-black italic tracking-tighter text-[#39ff14]'>01:42:07</span>
                                                             </div>
-                                                        </>
-                                                    ) : (
-                                                        <div className='py-6 text-center opacity-10 flex flex-col items-center gap-2'>
-                                                            <Gamepad2 size={24} />
-                                                            <span className='text-[8px] font-black tracking-[2px] uppercase'>BO'SH</span>
+                                                        ) : (
+                                                            <div className='py-4 text-center opacity-10 flex flex-col items-center gap-2'>
+                                                                <span className='text-[8px] font-black tracking-[2px] uppercase'>{room.isBlocked ? "BLOKLANGAN" : "BO'SH"}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Control Overlay */}
+                                                    <div className='absolute inset-0 bg-black/95 backdrop-blur-md flex flex-col items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity rounded-[32px]'>
+                                                        <div className='flex gap-2 mb-2'>
+                                                            <button onClick={() => handleStartRoomEdit(room, rooms.findIndex(r => r.id === room.id))} className='p-2 rounded-xl bg-white/5 border border-white/10'><Settings size={14} /></button>
+                                                            <button onClick={() => toggleBlockRoom(room.id)} className={`p-2 rounded-xl border ${room.isBlocked ? 'bg-red-500/20 border-red-500/40 text-red-500' : 'bg-white/5 border-white/10 text-white/40'}`}><Lock size={14} /></button>
+                                                            <button onClick={() => handleDeleteRoom(room.id)} className='p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500'><Trash2 size={14} /></button>
                                                         </div>
-                                                    )}
+                                                        <button className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-[2px] ${room.isBlocked ? 'bg-white/5 text-white/20' : 'bg-[#39ff14] text-black'}`} disabled={room.isBlocked}>
+                                                            {room.isBusy ? 'YOPISH ⏹️' : 'OCHISH ▶️'}
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <div className='absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-[32px]'>
-                                                    <button className='bg-[#39ff14] text-black px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-[2px]'>
-                                                        {i < 8 ? 'YOPISH ⏹️' : 'OCHISH ▶️'}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </div>
                                     </motion.div>
                                 ) : clubAdminTab === 'asosiy' ? (
                                     <motion.div key='ca-dash' initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className='space-y-6'>
