@@ -834,7 +834,7 @@ function App() {
                                                     <input type='checkbox' id='block-room' checked={newRoom.isBlocked} onChange={e => setNewRoom({ ...newRoom, isBlocked: e.target.checked })} className='w-5 h-5 accent-[#39ff14]' />
                                                     <label htmlFor='block-room' className='text-[10px] font-bold uppercase tracking-[1px] opacity-60'>Vaqtincha bloklash</label>
                                                 </div>
-                                                <button onClick={() => handleSaveRoom(clubAdmins.find(ca => ca.login === username)?.club)} className='w-full bg-[#39ff14] text-black font-bold py-3 rounded-xl uppercase tracking-[1px]'>
+                                                <button onClick={() => handleSaveRoom(clubAdmins.find(ca => ca.login === username)?.club || '')} className='w-full bg-[#39ff14] text-black font-bold py-3 rounded-xl uppercase tracking-[1px]'>
                                                     {roomEditIndex !== null ? 'Yangilash' : 'Saqlash'}
                                                 </button>
                                             </div>
@@ -867,7 +867,7 @@ function App() {
                                                         )}
                                                         <div className='pt-2 border-t border-white/5 flex justify-between items-center'>
                                                             <span className='text-[6px] text-white/30 font-bold uppercase'>Bugun:</span>
-                                                            <span className='text-[7px] font-black text-[#39ff14]'>{room.dailyHours.toFixed(1)}s | {room.dailyRevenue.toLocaleString()}</span>
+                                                            <span className='text-[7px] font-black text-[#39ff14]'>{(room.dailyHours || 0).toFixed(1)}s | {(room.dailyRevenue || 0).toLocaleString()}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -881,7 +881,7 @@ function App() {
                                             <div className='space-y-6'>
                                                 <div className='flex justify-between items-end'>
                                                     <p className='text-4xl font-black italic tracking-tighter'>
-                                                        {rooms.filter(r => r.club === clubAdmins.find(ca => ca.login === username)?.club).reduce((acc, r) => acc + r.dailyRevenue, 0).toLocaleString()}
+                                                        {rooms.filter(r => r.club === clubAdmins.find(ca => ca.login === username)?.club).reduce((acc, r) => acc + (r.dailyRevenue || 0), 0).toLocaleString()}
                                                     </p>
                                                     <p className='text-[10px] font-bold opacity-30'>UZS</p>
                                                 </div>
@@ -889,7 +889,7 @@ function App() {
                                                     <div>
                                                         <p className='text-[8px] opacity-30 font-bold uppercase'>AMIY QARZLAR</p>
                                                         <p className='text-lg font-black italic text-red-500'>
-                                                            {debts.filter(d => d.club === clubAdmins.find(ca => ca.login === username)?.club).reduce((acc, d) => acc + d.amount, 0).toLocaleString()}
+                                                            {debts.filter(d => d.club === clubAdmins.find(ca => ca.login === username)?.club).reduce((acc, d) => acc + (d.amount || 0), 0).toLocaleString()}
                                                         </p>
                                                     </div>
                                                     <div>
