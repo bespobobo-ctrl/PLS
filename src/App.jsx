@@ -50,7 +50,7 @@ function App() {
             if (username && password) {
                 setView('player');
             } else {
-                setErrorMessage('Ma\'lumotlarni kiriting');
+                setErrorMessage('MA\'LUMOTLARNI KIRITING');
             }
             setIsLoading(false);
         }, 1200);
@@ -64,7 +64,7 @@ function App() {
             if (adminUser.toLowerCase() === 'admin' && adminPass === 'admin777') {
                 setView('admin');
             } else {
-                setErrorMessage('Identifikatsiya xatosi');
+                setErrorMessage('IDENTIFIKATSIYA XATOSI');
                 if (window.Telegram?.WebApp?.HapticFeedback) {
                     window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
                 }
@@ -74,231 +74,216 @@ function App() {
     };
 
     return (
-        <div className='min-h-screen relative bg-[#050210] text-white font-outfit overflow-hidden selection:bg-pls-cyan/30'>
-            <div className='fixed inset-0 z-0 overflow-hidden'>
-                <img src='/club-v2.png' className='w-full h-full object-cover scale-[1.05]' alt='BG' />
-                <div className='absolute inset-0 z-0 bg-gradient-to-b from-[#050210]/40 via-[#050210]/75 to-[#050210]'></div>
-                <div className='mesh-gradient'></div>
+        <div className='min-h-screen relative bg-[#05040a] text-white font-outfit overflow-hidden selection:bg-pls-cyan/30'>
+            {/* Background Layers */}
+            <div className='fixed inset-0 z-0 overflow-hidden pointer-events-none'>
+                <img src='/club-v2.png' className='w-full h-full object-cover opacity-30 grayscale blur-[2px] scale-110' alt='BG' />
+                <div className='absolute inset-0 bg-gradient-to-b from-[#05040a]/80 via-[#05040a]/40 to-[#05040a]'></div>
             </div>
+
+            <div className='grid-overlay'></div>
+            <div className='scanline'></div>
 
             <AnimatePresence mode='wait'>
                 {view === 'login' ? (
                     <motion.div
-                        key='login' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 1.1, filter: 'blur(10px)' }}
+                        key='login' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
                         className='relative z-10 w-full h-screen flex flex-col justify-between p-8 pb-14 max-w-lg mx-auto'
                     >
-                        <div className='flex justify-between items-center opacity-90'>
-                            <div className='flex items-center gap-3'>
-                                <div className='w-11 h-11 glass-card flex items-center justify-center border-white/20'>
-                                    <Gamepad2 size={22} className='text-pls-cyan' />
+                        {/* Header */}
+                        <div className='flex justify-between items-start pt-4'>
+                            <div className='flex items-center gap-4'>
+                                <div className='w-12 h-12 flex items-center justify-center relative'>
+                                    <div className='absolute inset-0 border border-pls-cyan/30 rotate-45 animate-spin-slow'></div>
+                                    <Gamepad2 size={24} className='text-pls-cyan' />
                                 </div>
                                 <div className='flex flex-col'>
-                                    <span className='unbounded text-[15px] leading-none font-black tracking-[5px] text-white uppercase'>PLS</span>
-                                    <span className='text-[10px] text-pls-cyan font-black uppercase tracking-[3px] leading-none mt-1'>Kokand</span>
+                                    <span className='syncopate text-xl font-black tracking-[4px] text-white leading-none'>PLS</span>
+                                    <span className='text-[9px] text-pls-cyan font-black uppercase tracking-[3px] mt-1 opacity-70'>KOKAND ARENA</span>
                                 </div>
                             </div>
 
                             <motion.div
                                 onPointerDown={startHold} onPointerUp={stopHold} onPointerLeave={stopHold}
-                                className='relative overflow-hidden cursor-pointer flex items-center gap-2 px-4 py-2.5 glass-card border-white/5 active:scale-95 transition-transform group'
+                                className='industrial-card px-4 py-3 flex items-center gap-3 cursor-pointer active:scale-95 transition-all overflow-hidden'
                             >
                                 {holdProgress > 0 && (
                                     <div
-                                        className='absolute left-0 bottom-0 h-1 bg-pls-cyan transition-all duration-100'
+                                        className='absolute left-0 bottom-0 h-0.5 bg-pls-cyan transition-all duration-100 shadow-[0_0_10px_#00f2ff]'
                                         style={{ width: `${(holdProgress / 30) * 100}%` }}
                                     ></div>
                                 )}
-                                <ShieldCheck size={14} className={holdProgress > 0 ? 'text-pls-cyan animate-pulse' : 'text-emerald-400 group-hover:rotate-12 transition-transform'} />
-                                <span className='text-[10px] font-black uppercase tracking-widest text-emerald-400/90'>Secured</span>
+                                <ShieldCheck size={14} className={holdProgress > 0 ? 'text-pls-cyan animate-pulse' : 'text-emerald-400'} />
+                                <span className='text-[9px] font-black uppercase tracking-[2px] text-white/80'>Secured</span>
                             </motion.div>
                         </div>
 
-                        <div className='mb-4'>
-                            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className='flex flex-col gap-3 mb-12 text-center'>
-                                <h2 className='text-7xl font-black italic unbounded tracking-[-3px] leading-none uppercase'>
-                                    <span className='block text-transparent bg-clip-text bg-gradient-to-r from-[#ff3c41] via-[#9d3cff] to-[#00f2ff] drop-shadow-2xl'>ARENA</span>
+                        {/* Center Logo */}
+                        <div className='mb-2'>
+                            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className='flex flex-col gap-2 mb-12 text-center'>
+                                <h2 className='text-8xl font-black italic syncopate tracking-[-6px] leading-none uppercase relative'>
+                                    <span className='relative z-10 block text-transparent bg-clip-text bg-gradient-to-r from-white via-white/80 to-white/40'>ARENA</span>
+                                    <div className='absolute -inset-2 bg-pls-cyan/5 blur-3xl rounded-full'></div>
                                 </h2>
-                                <p className='text-slate-400 text-[11px] tracking-widest uppercase font-black opacity-50 flex items-center justify-center gap-2'>
-                                    <Zap size={10} className='text-pls-cyan' /> Player Session Authorization
+                                <p className='text-pls-cyan text-[9px] tracking-[4px] uppercase font-black opacity-40 mt-2'>
+                                    SYSTEM AUTH REQUEST [2026]
                                 </p>
                             </motion.div>
 
-                            <form onSubmit={handleLogin} className='glass-card p-10 flex flex-col gap-10 shadow-[0_40px_100px_-20px_rgba(0,0,0,1)]'>
-                                <div className='space-y-4'>
-                                    <div className='relative group'>
-                                        <div className='absolute left-5 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:opacity-100 group-focus-within:text-pls-cyan transition-all duration-300'>
-                                            <User size={19} />
-                                        </div>
+                            {/* Login Form */}
+                            <form onSubmit={handleLogin} className='industrial-card p-12 flex flex-col gap-10'>
+                                <div className='space-y-6'>
+                                    <div className='relative'>
+                                        <div className='absolute left-0 top-0 w-2 h-2 border-t border-l border-pls-cyan/40'></div>
                                         <input
-                                            type='text' placeholder='Username'
+                                            type='text' placeholder='OPERATOR IDENT'
                                             value={username} onChange={(e) => setUsername(e.target.value)}
-                                            className='w-full bg-white/[0.04] border border-white/5 rounded-[26px] py-5 px-6 pl-14 text-[13px] font-bold focus:outline-none focus:border-pls-cyan/40 focus:bg-white/[0.08] transition-all text-white placeholder:text-slate-700'
+                                            className='input-tech pl-4'
                                         />
                                     </div>
 
-                                    <div className='relative group'>
-                                        <div className='absolute left-5 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:opacity-100 group-focus-within:text-pls-cyan transition-all duration-300'>
-                                            <Lock size={18} />
-                                        </div>
+                                    <div className='relative'>
+                                        <div className='absolute left-0 top-0 w-2 h-2 border-t border-l border-pls-purple/40'></div>
                                         <input
-                                            type='password' placeholder='Password'
+                                            type='password' placeholder='ACCESS CODE'
                                             value={password} onChange={(e) => setPassword(e.target.value)}
-                                            className='w-full bg-white/[0.04] border border-white/5 rounded-[26px] py-5 px-6 pl-14 text-[13px] font-bold focus:outline-none focus:border-pls-cyan/40 focus:bg-white/[0.08] transition-all text-white placeholder:text-slate-700'
+                                            className='input-tech pl-4'
                                         />
                                     </div>
                                     {errorMessage && (
-                                        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-[10px] text-red-500 font-bold uppercase tracking-widest text-center'>{errorMessage}</motion.p>
+                                        <p className='text-[10px] text-red-500 font-bold uppercase tracking-[3px] text-center'>{errorMessage}</p>
                                     )}
                                 </div>
 
-                                <motion.button
-                                    type="submit"
-                                    whileTap={{ scale: 0.94 }}
-                                    disabled={isLoading}
-                                    className='group relative w-full py-6 bg-gradient-to-r from-[#00f2ff] to-[#9d3cff] text-black font-extrabold rounded-[30px] text-[15px] uppercase tracking-[5px] shadow-[0_20px_70px_-10px_rgba(0,242,255,0.45)] overflow-hidden transition-all hover:brightness-110'
+                                <button
+                                    type="submit" disabled={isLoading}
+                                    className='btn-premium w-full py-6 text-[14px]'
                                 >
-                                    <span className='relative z-10 flex items-center justify-center gap-3'>
-                                        {isLoading ? 'Connecting...' : 'Join Arena'} <ArrowRight size={22} className='group-hover:translate-x-2 transition-transform' />
-                                    </span>
-                                    <div className='absolute inset-0 bg-white/25 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-700 ease-out'></div>
-                                </motion.button>
+                                    {isLoading ? 'INITIALIZING...' : 'AUTHORIZE SESSION'}
+                                </button>
                             </form>
                         </div>
 
-                        <div className='flex justify-center flex-col items-center gap-4 opacity-40 mt-4'>
-                            <div className='w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent'></div>
-                            <span className='text-[10px] font-black uppercase tracking-[5px] text-slate-500'>2024 © PLS GAME NETWORK</span>
+                        {/* Footer */}
+                        <div className='flex justify-between items-center opacity-30 mt-6 pt-6 border-t border-white/5'>
+                            <span className='text-[8px] font-black uppercase tracking-[3px]'>NEURAL ENGINE v4.2</span>
+                            <span className='text-[8px] font-black uppercase tracking-[3px]'>2024 © PLS NETWORK</span>
                         </div>
                     </motion.div>
                 ) : view === 'admin-login' ? (
                     <motion.div
-                        key='admin-login' initial={{ opacity: 0, scale: 0.8, y: 50 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 1.1 }}
-                        className='relative z-20 w-full h-screen flex flex-col items-center justify-center p-8 max-w-lg mx-auto bg-black/60 backdrop-blur-2xl'
+                        key='admin-login' initial={{ opacity: 0, scale: 1.1 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, filter: 'blur(20px)' }}
+                        className='relative z-20 w-full h-screen flex flex-col items-center justify-center p-8 max-w-lg mx-auto bg-black'
                     >
-                        <div className='absolute top-10 flex flex-col items-center gap-2'>
-                            <div className='w-16 h-16 rounded-full border border-pls-cyan/30 flex items-center justify-center animate-pulse'>
-                                <ShieldCheck size={32} className='text-pls-cyan' />
+                        <div className='industrial-card p-12 w-full flex flex-col items-center gap-12 border-t-2 border-t-pls-cyan animate-pulse-slow'>
+                            <div className='flex flex-col items-center gap-4'>
+                                <div className='w-20 h-20 rounded-none border border-pls-cyan/20 flex items-center justify-center relative overflow-hidden'>
+                                    <div className='absolute inset-0 bg-pls-cyan/5 animate-pulse'></div>
+                                    <ShieldCheck size={40} className='text-pls-cyan drop-shadow-[0_0_10px_rgba(0,242,255,1)]' />
+                                </div>
+                                <h3 className='syncopate text-[12px] font-black tracking-[6px] text-pls-cyan mt-4'>RESTRICTED ACCESS</h3>
                             </div>
-                            <h3 className='unbounded text-xs font-black tracking-[4px] text-pls-cyan animate-pulse mt-4'>ADMIN VERIFICATION</h3>
+
+                            <form onSubmit={handleAdminVerify} className='w-full space-y-10'>
+                                <div className='space-y-6'>
+                                    <div className='relative'>
+                                        <p className='text-[8px] font-black text-pls-cyan/40 uppercase mb-2 tracking-[2px] ml-2'>Identity.Node</p>
+                                        <input
+                                            type='text' placeholder='ID_HEX'
+                                            value={adminUser} onChange={(e) => setAdminUser(e.target.value)}
+                                            className='input-tech text-center tracking-[4px] uppercase text-lg h-16 border-white/5'
+                                        />
+                                    </div>
+                                    <div className='relative'>
+                                        <p className='text-[8px] font-black text-pls-purple/40 uppercase mb-2 tracking-[2px] ml-2'>Cipher.Stream</p>
+                                        <input
+                                            type='password' placeholder='********'
+                                            value={adminPass} onChange={(e) => setAdminPass(e.target.value)}
+                                            className='input-tech text-center tracking-[8px] text-lg h-16 border-white/5'
+                                        />
+                                    </div>
+                                    {errorMessage && <p className='text-[10px] text-center text-red-500 font-bold uppercase tracking-[2px]'>{errorMessage}</p>}
+                                </div>
+
+                                <button
+                                    type="submit" disabled={isLoading}
+                                    className='btn-premium w-full py-7 text-[15px]'
+                                >
+                                    {isLoading ? 'DECRYPTING...' : 'CONFIRM IDENTITY'}
+                                </button>
+
+                                <button type="button" onClick={() => setView('login')} className='w-full text-[9px] font-black uppercase tracking-[4px] text-white/20 hover:text-white transition-colors mt-4'>Abort Connection</button>
+                            </form>
                         </div>
-
-                        <form onSubmit={handleAdminVerify} className='w-full space-y-8'>
-                            <div className='space-y-4'>
-                                <div className='relative'>
-                                    <input
-                                        type='text' placeholder='Admin Identifier'
-                                        value={adminUser} onChange={(e) => setAdminUser(e.target.value)}
-                                        className='w-full bg-transparent border-b-2 border-white/10 py-4 text-center unbounded text-lg focus:outline-none focus:border-pls-cyan transition-all uppercase tracking-[5px]'
-                                    />
-                                </div>
-                                <div className='relative'>
-                                    <input
-                                        type='password' placeholder='Secret Hash'
-                                        value={adminPass} onChange={(e) => setAdminPass(e.target.value)}
-                                        className='w-full bg-transparent border-b-2 border-white/10 py-4 text-center unbounded text-lg focus:outline-none focus:border-pls-purple transition-all tracking-[10px]'
-                                    />
-                                </div>
-                                {errorMessage && <p className='text-[10px] text-center text-red-500 font-bold uppercase tracking-[3px]'>{errorMessage}</p>}
-                            </div>
-
-                            <motion.button
-                                whileTap={{ scale: 0.95 }}
-                                className='w-full py-6 bg-white text-black font-black uppercase tracking-[8px] rounded-full text-[12px] hover:bg-pls-cyan transition-all'
-                            >
-                                {isLoading ? 'Verifying...' : 'Authorize Access'}
-                            </motion.button>
-
-                            <button onClick={() => setView('login')} className='w-full text-[9px] font-black uppercase tracking-[4px] text-white/30 hover:text-white transition-colors'>Cancel Connection</button>
-                        </form>
-
-                        <div className='absolute inset-x-0 top-0 h-1 bg-pls-cyan/20 animate-scan pointer-events-none'></div>
                     </motion.div>
                 ) : view === 'admin' ? (
                     <motion.div
-                        key='admin' initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                        key='admin' initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                         className='relative z-10 w-full h-screen p-6 pb-20 flex flex-col gap-6 max-w-lg mx-auto overflow-y-auto'
                     >
-                        <div className='flex justify-between items-center bg-[#050210]/50 backdrop-blur-xl sticky top-0 z-50 py-4 border-b border-white/5'>
-                            <div className='flex items-center gap-3'>
-                                <div className='w-8 h-8 rounded-full bg-pls-cyan flex items-center justify-center shadow-[0_0_15px_rgba(0,242,255,0.5)]'>
-                                    <Settings size={16} className='text-black' />
+                        <div className='flex justify-between items-center bg-[#05040a]/80 backdrop-blur-3xl sticky top-0 z-50 py-6 border-b border-white/5'>
+                            <div className='flex items-center gap-4'>
+                                <div className='w-10 h-10 border border-pls-cyan/20 flex items-center justify-center'>
+                                    <BarChart3 size={18} className='text-pls-cyan' />
                                 </div>
-                                <h1 className='unbounded text-sm font-black italic tracking-tighter text-white uppercase'>ADMIN DASHBOARD</h1>
+                                <h1 className='syncopate text-sm font-black tracking-tighter text-white uppercase'>ADMIN DASHBOARD</h1>
                             </div>
-                            <button onClick={() => setView('login')} className='px-4 py-2 glass-card text-[9px] uppercase font-black tracking-widest text-[#ff3c41] border-[#ff3c41]/30'>
-                                <LogOut size={12} className='inline mr-1' /> Exit
+                            <button onClick={() => setView('login')} className='px-5 py-2.5 industrial-card text-[10px] uppercase font-black tracking-[2px] text-[#ff3c41] border-[#ff3c41]/20'>
+                                EXIT.SYS
                             </button>
                         </div>
 
-                        <div className='grid grid-cols-2 gap-3'>
-                            <div className='glass-card p-4 border-white/10'>
-                                <Users size={18} className='text-pls-cyan mb-2' />
-                                <h4 className='text-[18px] font-black'>14 / 20</h4>
-                                <p className='text-[9px] uppercase font-bold text-slate-500 tracking-wider'>Active Players</p>
+                        <div className='grid grid-cols-2 gap-4'>
+                            <div className='industrial-card p-6 border-white/5'>
+                                <Users size={20} className='text-pls-cyan mb-3' />
+                                <h4 className='syncopate text-[22px] font-black'>14 / 20</h4>
+                                <p className='text-[9px] uppercase font-bold text-slate-500 tracking-[2px]'>ACTIVE_NODES</p>
                             </div>
-                            <div className='glass-card p-4 border-white/10'>
-                                <Monitor size={18} className='text-pls-purple mb-2' />
-                                <h4 className='text-[18px] font-black'>82%</h4>
-                                <p className='text-[9px] uppercase font-bold text-slate-500 tracking-wider'>Load Level</p>
-                            </div>
-                        </div>
-
-                        <div className='flex flex-col gap-3'>
-                            <h3 className='text-[10px] font-black uppercase tracking-[3px] text-pls-cyan pl-1'>System Control</h3>
-                            <div className='glass-card p-0 overflow-hidden border-white/5'>
-                                <button className='w-full flex items-center justify-between p-5 hover:bg-white/5 transition-colors border-b border-white/5'>
-                                    <div className='flex items-center gap-4'>
-                                        <div className='w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center'>
-                                            <CreditCard size={18} className='text-emerald-400' />
-                                        </div>
-                                        <div className='text-left'>
-                                            <p className='text-[12px] font-bold'>Balans To'ldirish</p>
-                                            <p className='text-[9px] text-slate-500 uppercase'>Manage user balances</p>
-                                        </div>
-                                    </div>
-                                    <ChevronRight size={16} className='text-slate-600' />
-                                </button>
-                                <button className='w-full flex items-center justify-between p-5 hover:bg-white/5 transition-colors border-b border-white/5'>
-                                    <div className='flex items-center gap-4'>
-                                        <div className='w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center'>
-                                            <Activity size={18} className='text-pls-cyan' />
-                                        </div>
-                                        <div className='text-left'>
-                                            <p className='text-[12px] font-bold'>Xonalar Nazorati</p>
-                                            <p className='text-[9px] text-slate-500 uppercase'>Real-time PC Monitoring</p>
-                                        </div>
-                                    </div>
-                                    <ChevronRight size={16} className='text-slate-600' />
-                                </button>
-                                <button className='w-full flex items-center justify-between p-5 hover:bg-white/5 transition-colors'>
-                                    <div className='flex items-center gap-4'>
-                                        <div className='w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center'>
-                                            <Database size={18} className='text-pls-purple' />
-                                        </div>
-                                        <div className='text-left'>
-                                            <p className='text-[12px] font-bold'>Hisobotlar</p>
-                                            <p className='text-[9px] text-slate-500 uppercase'>Generate income reports</p>
-                                        </div>
-                                    </div>
-                                    <ChevronRight size={16} className='text-slate-600' />
-                                </button>
+                            <div className='industrial-card p-6 border-white/5'>
+                                <Monitor size={20} className='text-pls-purple mb-3' />
+                                <h4 className='syncopate text-[22px] font-black'>82%</h4>
+                                <p className='text-[9px] uppercase font-bold text-slate-500 tracking-[2px]'>SYSTEM_LOAD</p>
                             </div>
                         </div>
 
-                        <div className='flex flex-col gap-3'>
-                            <h3 className='text-[10px] font-black uppercase tracking-[3px] text-pls-purple pl-1'>Live Activity</h3>
-                            <div className='glass-card p-5 space-y-4 border-white/5'>
+                        <div className='flex flex-col gap-4'>
+                            <h3 className='text-[10px] font-black uppercase tracking-[4px] text-pls-cyan opacity-40 pl-1'>CONTROL INTERFACE</h3>
+                            <div className='flex flex-col gap-3'>
                                 {[
-                                    { user: 'shox_pro', action: 'Session started - PC #04', time: '2m ago', color: 'text-pls-cyan' },
-                                    { user: 'admin_bek', action: 'Balance topup - $15.00', time: '12m ago', color: 'text-emerald-400' },
-                                    { user: 'dark_rider', action: 'Session ended - PC #12', time: '24m ago', color: 'text-[#ff3c41]' }
+                                    { name: 'BALANS NAZORATI', icon: CreditCard, color: 'text-emerald-400', desc: 'Manage user wallets' },
+                                    { name: 'ARENA MONITOR', icon: Activity, color: 'text-pls-cyan', desc: 'Real-time PC status' },
+                                    { name: 'DATA REPORTS', icon: Database, color: 'text-pls-purple', desc: 'Profit analytics' }
                                 ].map((item, i) => (
-                                    <div key={i} className='flex justify-between items-start border-b border-white/[0.03] pb-3 last:border-0 last:pb-0'>
-                                        <div>
-                                            <p className='text-[11px] font-bold'>{item.user}</p>
-                                            <p className={`text-[9px] ${item.color} uppercase font-medium mt-0.5`}>{item.action}</p>
+                                    <button key={i} className='industrial-card w-full flex items-center justify-between p-6 hover:bg-white/[0.03] transition-colors'>
+                                        <div className='flex items-center gap-5'>
+                                            <div className='w-12 h-12 border border-white/5 flex items-center justify-center bg-white/[0.02]'>
+                                                <item.icon size={20} className={item.color} />
+                                            </div>
+                                            <div className='text-left'>
+                                                <p className='syncopate text-[12px] font-black'>{item.name}</p>
+                                                <p className='text-[9px] text-slate-600 uppercase font-bold tracking-[1px]'>{item.desc}</p>
+                                            </div>
                                         </div>
-                                        <span className='text-[9px] text-slate-500 font-bold'>{item.time}</span>
+                                        <ChevronRight size={18} className='text-slate-700' />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className='flex flex-col gap-4'>
+                            <h3 className='text-[10px] font-black uppercase tracking-[4px] text-pls-purple opacity-40 pl-1'>LOG_STREAM</h3>
+                            <div className='industrial-card p-6 space-y-6'>
+                                {[
+                                    { user: 'SHOX_PRO', action: 'START_SESSION - NODE_04', time: '2M', color: 'text-pls-cyan' },
+                                    { user: 'ADMIN_BEK', action: 'WALLET_TOPUP - $15.00', time: '12M', color: 'text-emerald-400' },
+                                    { user: 'DARK_RIDER', action: 'TERMINATE_SYS - NODE_12', time: '24M', color: 'text-red-500' }
+                                ].map((item, i) => (
+                                    <div key={i} className='flex justify-between items-start border-b border-white/[0.05] pb-4 last:border-0 last:pb-0'>
+                                        <div>
+                                            <p className='text-[11px] font-bold tracking-[1px]'>{item.user}</p>
+                                            <p className={`text-[9px] ${item.color} font-black mt-1`}>{item.action}</p>
+                                        </div>
+                                        <span className='text-[9px] text-slate-600 font-bold'>{item.time}_AGO</span>
                                     </div>
                                 ))}
                             </div>
@@ -306,25 +291,22 @@ function App() {
                     </motion.div>
                 ) : (
                     <motion.div
-                        key='player' initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-                        className='relative z-10 w-full h-screen p-8 flex flex-col items-center justify-center gap-8 max-w-lg mx-auto'
+                        key='player' initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                        className='relative z-10 w-full h-screen p-8 flex flex-col items-center justify-center gap-12 max-w-lg mx-auto'
                     >
-                        <div className='w-24 h-24 rounded-full border-4 border-pls-cyan flex items-center justify-center relative shadow-[0_0_50px_rgba(0,242,255,0.3)]'>
-                            <motion.div
-                                animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                                className='absolute inset-0 border-t-4 border-transparent border-t-white rounded-full'
-                            />
-                            <ShieldCheck size={40} className='text-pls-cyan' />
+                        <div className='w-32 h-32 border-2 border-pls-cyan/30 flex items-center justify-center relative scale-110'>
+                            <div className='absolute -inset-4 border border-pls-cyan/10 animate-spin-slow'></div>
+                            <ShieldCheck size={48} className='text-pls-cyan drop-shadow-[0_0_15px_rgba(0,242,255,1)]' />
                         </div>
-                        <div className='text-center space-y-2'>
-                            <h2 className='unbounded text-2xl font-black italic'>XUSH KELIBSIZ!</h2>
-                            <p className='text-slate-400 text-xs font-bold uppercase tracking-widest'>Sessiya muvaffaqiyatli faollashtirildi</p>
+                        <div className='text-center space-y-4'>
+                            <h2 className='syncopate text-3xl font-black tracking-[-1px]'>SESSION_LIVE</h2>
+                            <p className='text-slate-500 text-[10px] font-bold uppercase tracking-[4px]'>Authorization Successful</p>
                         </div>
-                        <div className='glass-card p-6 w-full text-center space-y-4'>
-                            <p className='text-[10px] text-slate-500 uppercase tracking-[2px] font-black'>Sizning identifikatoringiz:</p>
-                            <p className='unbounded text-pls-cyan text-lg font-black'>#{username.toUpperCase()}</p>
+                        <div className='industrial-card p-8 w-full text-center space-y-4'>
+                            <p className='text-[9px] text-slate-600 uppercase tracking-[3px] font-black'>OPERATOR_ID</p>
+                            <p className='syncopate text-pls-cyan text-xl font-black animate-pulse'>{username.toUpperCase()}</p>
                         </div>
-                        <button onClick={() => setView('login')} className='text-xs font-black uppercase tracking-[5px] text-slate-500 hover:text-white transition-colors'>Ortga qaytish</button>
+                        <button onClick={() => setView('login')} className='text-[10px] font-black uppercase tracking-[6px] text-slate-600 hover:text-white transition-colors'>LEAVE ARENA</button>
                     </motion.div>
                 )}
             </AnimatePresence>
