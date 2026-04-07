@@ -1,25 +1,28 @@
-@import 'tailwindcss';
-
-@theme {
-  --color-pls-cyan: #00f2ff;
-  --color-pls-purple: #9d3cff;
-  --color-pls-red: #ff3c41;
-  --color-pls-green: #3cff8e;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Outfit:wght@300;400;600;800&display=swap');
 
 :root {
-  --bg: #05020a;
-  --card: rgba(10, 10, 15, 0.4);
-  --border: rgba(255, 255, 255, 0.08);
+  --bg: #050210;
+  --glass: rgba(15, 15, 30, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.08);
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+@layer base {
+  body { @apply bg-black text-white font-outfit overflow-hidden; }
+}
 
-body { background: var(--bg); color: #fff; font-family: 'Outfit', sans-serif; overflow: hidden; height: 100vh; }
-
-.glass { background: var(--card); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid var(--border); border-radius: 32px; }
-.neon-glow { box-shadow: 0 0 20px rgba(0, 242, 255, 0.15); }
-.unbounded { font-family: 'Unbounded', cursive; }
-.bg-overlay { position: fixed; inset: 0; background: linear-gradient(180deg, rgba(5, 2, 10, 0.4) 0%, rgba(5, 2, 10, 0.95) 100%); z-index: 1; }
+@layer components {
+  .glass-card {
+    @apply backdrop-blur-[40px] bg-white/[0.03] border border-white/10 rounded-[40px];
+    box-shadow: 0 40px 100px -20px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05);
+  }
+  .neon-glow {
+    box-shadow: 0 0 40px -10px theme('colors.pls-cyan');
+  }
+  .bg-overlay {
+    @apply fixed inset-0 z-0 bg-gradient-to-b from-black/20 via-black/60 to-[#050210];
+  }
+}

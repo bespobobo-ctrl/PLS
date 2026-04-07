@@ -6,6 +6,10 @@ export default {
     ],
     theme: {
         extend: {
+            fontFamily: {
+                unbounded: ['Unbounded', 'cursive'],
+                outfit: ['Outfit', 'sans-serif'],
+            },
             colors: {
                 'pls-cyan': '#00f2ff',
                 'pls-purple': '#9d3cff',
