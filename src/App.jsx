@@ -17,8 +17,10 @@ function App() {
     // Persistent State for Main Admin
     const getInitialState = (key, defaultValue) => {
         try {
-            // v32 - Minimalist BW Bar UI
-            const BOT_URL = 'https://pls-taupe.vercel.app/?v=v32';
+            // v33 - Dual-Section Bar (SOTUV & OMBOR)
+            const BOT_URL = 'https://pls-taupe.vercel.app/?v=v33';
+            const stored = localStorage.getItem(key);
+            const parsed = JSON.parse(stored);
             return (parsed && (Array.isArray(parsed) || typeof parsed === 'object')) ? parsed : defaultValue;
         } catch (e) {
             return defaultValue;
@@ -102,7 +104,11 @@ function App() {
     const [sessionTotal, setSessionTotal] = useState(0);
 
     const [superAdminTab, setSuperAdminTab] = useState('asosiy');
-    const [clubAdminTab, setClubAdminTab] = useState('xarita');
+    const [clubAdminTab, setClubAdminTab] = useState('rooms');
+    const [barSubTab, setBarSubTab] = useState('sotuv'); // sotuv or ombor
+    const [showAddProduct, setShowAddProduct] = useState(false);
+    const [editingProduct, setEditingProduct] = useState(null);
+    const [newProduct, setNewProduct] = useState({ name: '', price: '', stock: '', category: 'Ichimliklar', image: '/images/pepsi.png' });
     const [barCategory, setBarCategory] = useState('Hammasi');
 
     const holdTimer = useRef(null);
@@ -1020,53 +1026,102 @@ function App() {
                                         </div>
                                     </motion.div>
                                 ) : clubAdminTab === 'bar' ? (
-                                    <motion.div key='ca-bar' initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='space-y-8 pb-40'>
-                                        {/* Minimalist Categories */}
-                                        <div className='flex gap-3 overflow-x-auto no-scrollbar py-4 px-4 bg-black/20'>
-                                            {['Hammasi', 'Ichimliklar', 'Energetiklar', 'Gazaklar', 'Taomlar'].map(cat => (
-                                                <button
-                                                    key={cat}
-                                                    onClick={() => setBarCategory(cat)}
-                                                    className={`cat-btn ${barCategory === cat ? 'cat-btn-active' : 'cat-btn-inactive'}`}
-                                                >
-                                                    {cat}
-                                                </button>
-                                            ))}
+                                    <motion.div key='ca-bar' initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='space-y-4 pb-40'>
+                                        {/* Sub-Tabs Switcher */}
+                                        <div className='sub-tab-container'>
+                                            <button onClick={() => setBarSubTab('sotuv')} className={`sub-tab-btn ${barSubTab === 'sotuv' ? 'sub-tab-active' : 'sub-tab-inactive'}`}>
+                                                <ShoppingCart size={14} /> SOTUV
+                                            </button>
+                                            <button onClick={() => setBarSubTab('ombor')} className={`sub-tab-btn ${barSubTab === 'ombor' ? 'sub-tab-active' : 'sub-tab-inactive'}`}>
+                                                <Database size={14} /> OMBOR
+                                            </button>
                                         </div>
 
-                                        <div className='bar-grid'>
-                                            {inventory
-                                                .filter(p => barCategory === 'Hammasi' || p.category === barCategory)
-                                                .map(product => {
-                                                    const club = clubAdmins.find(ca => ca.login === username)?.club;
-                                                    return (
-                                                        <div key={product.id} className='minimal-card'>
-                                                            <div className='item-img-box'>
-                                                                <img src={product.image} alt={product.name} />
-                                                            </div>
-                                                            <div className='item-info'>
-                                                                <p className='text-[11px] font-bold uppercase tracking-wider truncate mb-1'>{product.name}</p>
-                                                                <div className='flex justify-between items-center'>
-                                                                    <p className='text-[13px] font-black italic'>{product.price.toLocaleString()} UZS</p>
-                                                                    <span className='stock-badge'>{product.stock} dona</span>
+                                        {barSubTab === 'sotuv' ? (
+                                            <>
+                                                {/* Minimalist Categories */}
+                                                <div className='flex gap-2 overflow-x-auto no-scrollbar py-2 px-4'>
+                                                    {['Hammasi', 'Ichimliklar', 'Energetiklar', 'Gazaklar', 'Taomlar'].map(cat => (
+                                                        <button
+                                                            key={cat}
+                                                            onClick={() => setBarCategory(cat)}
+                                                            className={`cat-btn ${barCategory === cat ? 'cat-btn-active' : 'cat-btn-inactive'}`}
+                                                        >
+                                                            {cat}
+                                                        </button>
+                                                    ))}
+                                                </div>
+
+                                                <div className='bar-grid'>
+                                                    {inventory
+                                                        .filter(p => barCategory === 'Hammasi' || p.category === barCategory)
+                                                        .map(product => {
+                                                            const club = clubAdmins.find(ca => ca.login === username)?.club;
+                                                            return (
+                                                                <div key={product.id} className='minimal-card'>
+                                                                    <div className='item-img-box'>
+                                                                        <img src={product.image} alt={product.name} />
+                                                                    </div>
+                                                                    <div className='item-info'>
+                                                                        <p className='text-[11px] font-bold uppercase tracking-wider truncate mb-1'>{product.name}</p>
+                                                                        <div className='flex justify-between items-center'>
+                                                                            <p className='text-[13px] font-black italic'>{product.price.toLocaleString()} UZS</p>
+                                                                            <span className='stock-badge'>{product.stock} dona</span>
+                                                                        </div>
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                handleDirectSale(product.id, club);
+                                                                                if (window.Telegram?.WebApp?.HapticFeedback) {
+                                                                                    window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                                                                                }
+                                                                            }}
+                                                                            disabled={product.stock <= 0}
+                                                                            className='btn-sell-minimal'
+                                                                        >
+                                                                            Sotish
+                                                                        </button>
+                                                                    </div>
                                                                 </div>
-                                                                <button
-                                                                    onClick={() => {
-                                                                        handleDirectSale(product.id, club);
-                                                                        if (window.Telegram?.WebApp?.HapticFeedback) {
-                                                                            window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-                                                                        }
-                                                                    }}
-                                                                    disabled={product.stock <= 0}
-                                                                    className='btn-sell-minimal'
-                                                                >
-                                                                    Sotish
-                                                                </button>
+                                                            );
+                                                        })}
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className='inventory-list'>
+                                                <div className='flex justify-between items-center mb-6 px-1'>
+                                                    <h4 className='text-[10px] font-black tracking-[4px] opacity-30 uppercase'>Ombor Boshqaruvi</h4>
+                                                    <button onClick={() => setShowAddProduct(true)} className='bg-white text-black text-[9px] font-black px-4 py-2 rounded-xl flex items-center gap-2 uppercase'>
+                                                        <Plus size={14} /> Qo'shish
+                                                    </button>
+                                                </div>
+
+                                                <div className='space-y-3'>
+                                                    {inventory.map(item => (
+                                                        <div key={item.id} className='inventory-item-row'>
+                                                            <div className='flex items-center gap-4'>
+                                                                <div className='w-12 h-12 rounded-xl bg-white/5 p-2'>
+                                                                    <img src={item.image} alt="" className='w-full h-full object-contain' />
+                                                                </div>
+                                                                <div>
+                                                                    <p className='text-[11px] font-black uppercase tracking-wide'>{item.name}</p>
+                                                                    <p className='text-[10px] font-bold text-[#39ff14]'>{item.price.toLocaleString()} UZS</p>
+                                                                </div>
+                                                            </div>
+                                                            <div className='flex items-center gap-6'>
+                                                                <div className='text-right'>
+                                                                    <p className='text-[8px] font-bold opacity-30 uppercase'>Stock</p>
+                                                                    <p className='text-[12px] font-black'>{item.stock}</p>
+                                                                </div>
+                                                                <div className='flex gap-2'>
+                                                                    <button onClick={() => { setEditingProduct(item); setShowAddProduct(true); }} className='action-btn btn-edit'><Settings size={16} /></button>
+                                                                    <button onClick={() => setInventory(inventory.filter(p => p.id !== item.id))} className='action-btn btn-delete'><X size={16} /></button>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    );
-                                                })}
-                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </motion.div>
                                 ) : clubAdminTab === 'qarz' ? (
                                     <motion.div key='ca-qarz' initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='space-y-4'>
