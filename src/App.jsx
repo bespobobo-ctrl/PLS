@@ -5,7 +5,7 @@ import {
     Monitor, ArrowRight, Lock, Unlock, Clock, CreditCard, Users,
     BarChart3, ShoppingCart, Database, Zap, PieChart, AlertTriangle,
     Package, TrendingUp, History, UserCheck, ShieldCheck, Briefcase, Phone, UserPlus, Key, Edit3, Calendar, Play, Square, UserMinus,
-    PauseCircle, Coffee, CheckCircle2, ChevronDown, ChevronUp, Wallet, TrendingDown, ArrowUpRight, BarChart, Boxes, LayoutGrid, Eye, EyeOff, ExternalLink, ListChecks, Info, ChevronLeft, Layout as LayoutIcon, Receipt
+    PauseCircle, Coffee, CheckCircle2, ChevronDown, ChevronUp, Wallet, TrendingDown, ArrowUpRight, BarChart, Boxes, LayoutGrid, Eye, EyeOff, ExternalLink, ListChecks, Info, ChevronLeft, Layout as LayoutIcon, Receipt, LogOut
 } from 'lucide-react';
 
 const getInitialState = (key, defaultValue) => {
@@ -124,6 +124,15 @@ const App = () => {
 
         setRooms(prev => (prev || []).map(r => r.id === checkoutRoom?.id ? { ...r, isBusy: false, startTime: null, items: [] } : r));
         setCheckoutRoom(null); setFinalStats(null); setPaidAmount(''); setDebtUser({ name: '', phone: '' });
+    };
+
+    const handleLogout = () => {
+        if (window.confirm('Tizimdan chiqishni xohlaysizmi?')) {
+            setView('login');
+            setUsername('');
+            localStorage.setItem('view', 'login');
+            localStorage.setItem('username', '');
+        }
     };
 
     const renderClubAsosiy = () => (
@@ -272,7 +281,10 @@ const App = () => {
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                         <header className='px-7 py-5 flex justify-between items-center bg-black/80 backdrop-blur-2xl border-b border-white/5 sticky top-0 z-50'>
                             <div className='flex items-center gap-3'><div className='w-8 h-8 rounded-xl bg-[#ffcf4b] flex items-center justify-center shadow-md'><Activity size={16} className='text-black' /></div><div><h2 className='text-[13px] font-black italic uppercase tracking-tighter text-white/90'>{currentAdminData?.name}</h2><p className='text-[7px] opacity-20 uppercase font-black tracking-[3px]'>{currentAdminData?.club}</p></div></div>
-                            <p className='text-[10px] font-black gold-text tabular-nums italic tracking-wider'>{new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}</p>
+                            <div className='flex items-center gap-4'>
+                                <p className='text-[10px] font-black gold-text tabular-nums italic tracking-wider'>{new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}</p>
+                                <button onClick={handleLogout} className='p-2 bg-red-500/10 text-red-500/60 rounded-xl active:scale-90 transition-all border border-red-500/10'><LogOut size={16} /></button>
+                            </div>
                         </header>
                         <main className='max-w-[480px] mx-auto'>{activeTab === 'asosiy' ? renderClubAsosiy() : activeTab === 'bar' ? renderClubBar() : activeTab === 'history' ? renderClubHistory() : renderClubXarita()}</main>
                     </motion.div>
