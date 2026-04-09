@@ -17,8 +17,8 @@ function App() {
     // Persistent State for Main Admin
     const getInitialState = (key, defaultValue) => {
         try {
-            // v39 - Force Cache Refresh & Direct Modal Trigger
-            const BOT_URL = 'https://pls-taupe.vercel.app/?v=v39';
+            // v40 - Modal Restored & Fixed
+            const BOT_URL = 'https://pls-taupe.vercel.app/?v=v40';
             const API_URL = 'http://161.35.196.164:3001/api';
             const stored = localStorage.getItem(key);
             const parsed = JSON.parse(stored);
@@ -1408,6 +1408,85 @@ function App() {
                                         </div>
                                     </motion.div>
                                 </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        {/* Product Management Modal */}
+                        <AnimatePresence>
+                            {showAddProduct && (
+                                <div className='modal-overlay !z-[1000]'>
+                                    <motion.div initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 100, opacity: 0 }} className='modal-content !max-w-[420px]'>
+                                        <div className='flex justify-between items-center mb-8'>
+                                            <h3 className='text-xl font-black uppercase tracking-widest'>{editingProduct ? 'Tahrirlash' : 'Yangi Mahsulot'}</h3>
+                                            <button onClick={() => { setShowAddProduct(false); setEditingProduct(null); }} className='w-10 h-10 rounded-full bg-white/5 flex items-center justify-center'><X size={20} /></button>
+                                        </div>
+
+                                        <div className='space-y-6'>
+                                            <div className='grid grid-cols-2 gap-2'>
+                                                {['Ichimliklar', 'Energetiklar', 'Gazaklar', 'Taomlar'].map(c => (
+                                                    <button
+                                                        key={c}
+                                                        onClick={() => editingProduct ? setEditingProduct({ ...editingProduct, category: c }) : setNewProduct({ ...newProduct, category: c })}
+                                                        className={`py-3 rounded-xl border text-[10px] font-bold transition-all ${(editingProduct ? editingProduct.category === c : newProduct.category === c) ? 'bg-white text-black border-white' : 'border-white/10 text-white/40 bg-white/[0.02]'}`}
+                                                    >
+                                                        {c}
+                                                    </button>
+                                                ))}
+                                            </div>
+
+                                            <input
+                                                type="text"
+                                                className='input-luxury-small !h-14'
+                                                placeholder="Mahsulot nomi"
+                                                value={editingProduct ? editingProduct.name : newProduct.name}
+                                                onChange={(e) => editingProduct ? setEditingProduct({ ...editingProduct, name: e.target.value }) : setNewProduct({ ...newProduct, name: e.target.value })}
+                                            />
+
+                                            <div className='grid grid-cols-2 gap-4'>
+                                                <input
+                                                    type="number"
+                                                    className='input-luxury-small !h-14'
+                                                    placeholder="Narxi"
+                                                    value={editingProduct ? editingProduct.price : newProduct.price}
+                                                    onChange={(e) => editingProduct ? setEditingProduct({ ...editingProduct, price: Number(e.target.value) }) : setNewProduct({ ...newProduct, price: Number(e.target.value) })}
+                                                />
+                                                <input
+                                                    type="number"
+                                                    className='input-luxury-small !h-14'
+                                                    placeholder="Soni"
+                                                    value={editingProduct ? editingProduct.stock : newProduct.stock}
+                                                    onChange={(e) => editingProduct ? setEditingProduct({ ...editingProduct, stock: Number(e.target.value) }) : setNewProduct({ ...newProduct, stock: Number(e.target.value) })}
+                                                />
+                                            </div>
+
+                                            <button
+                                                onClick={() => {
+                                                    if (editingProduct) {
+                                                        setInventory(prev => prev.map(p => p.id === editingProduct.id ? editingProduct : p));
+                                                    } else {
+                                                        const p = {
+                                                            ...newProduct,
+                                                            id: Date.now(),
+                                                            image: newProduct.category === 'Ichimliklar' ? '/images/pepsi.png' :
+                                                                newProduct.category === 'Energetiklar' ? '/images/energy.png' :
+                                                                    newProduct.category === 'Gazaklar' ? '/images/chips.png' : '/images/sandwich.png'
+                                                        };
+                                                        setInventory(prev => [...prev, p]);
+                                                    }
+                                                    setShowAddProduct(false);
+                                                    setEditingProduct(null);
+                                                    setNewProduct({ name: '', price: '', stock: '', category: 'Ichimliklar', image: '/images/pepsi.png' });
+                                                    if (window.Telegram?.WebApp?.HapticFeedback) {
+                                                        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                                                    }
+                                                }}
+                                                className='btn-sell-minimal !h-16'
+                                            >
+                                                Saqlash
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                </div>
                             )}
                         </AnimatePresence>
                     </motion.div>
