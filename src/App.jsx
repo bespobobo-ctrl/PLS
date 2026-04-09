@@ -34,11 +34,11 @@ function App() {
     ]));
 
     const [inventory, setInventory] = useState(() => getInitialState('pls_inventory', [
-        { id: 1, name: 'Pepsi 0.5L', price: 8000, stock: 24 },
-        { id: 2, name: 'Coca-Cola 0.5L', price: 8000, stock: 24 },
-        { id: 3, name: 'Flash Energy', price: 12000, stock: 12 },
-        { id: 4, name: 'Chips Lays', price: 15000, stock: 10 },
-        { id: 5, name: 'Sandwich', price: 18000, stock: 5 }
+        { id: 1, name: 'Pepsi 0.5L', price: 8000, stock: 24, category: 'Ichimliklar', image: '/images/pepsi.png' },
+        { id: 2, name: 'Flash Energy', price: 12000, stock: 12, category: 'Energetiklar', image: '/images/energy.png' },
+        { id: 3, name: 'Coca-Cola 0.5L', price: 8000, stock: 24, category: 'Ichimliklar', image: '/images/pepsi.png' },
+        { id: 4, name: 'Chips Lays', price: 15000, stock: 10, category: 'Gazaklar', image: '/images/chips.png' },
+        { id: 5, name: 'Sandwich', price: 18000, stock: 5, category: 'Taomlar', image: '/images/sandwich.png' }
     ]));
 
     const [sales, setSales] = useState(() => getInitialState('pls_sales', []));
@@ -102,6 +102,7 @@ function App() {
 
     const [superAdminTab, setSuperAdminTab] = useState('asosiy');
     const [clubAdminTab, setClubAdminTab] = useState('xarita');
+    const [barCategory, setBarCategory] = useState('Hammasi');
 
     const holdTimer = useRef(null);
 
@@ -1018,56 +1019,88 @@ function App() {
                                         </div>
                                     </motion.div>
                                 ) : clubAdminTab === 'bar' ? (
-                                    <motion.div key='ca-bar' initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='space-y-6 pb-32 px-2'>
-                                        <div className='flex justify-between items-center px-2'>
-                                            <h4 className='text-[10px] font-black tracking-[4px] opacity-30 uppercase'>Ombor & To'g'ridan-to'g'ri Sotuv</h4>
-                                            <button onClick={() => setInventory(inventory.map(p => ({ ...p, stock: p.stock + 10 })))} className='text-[8px] font-black text-[#39ff14] opacity-30 hover:opacity-100 uppercase tracking-[2px] transition-all'>+ Hammasini To'ldirish</button>
+                                    <motion.div key='ca-bar' initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='space-y-8 pb-40 px-2'>
+                                        {/* Premium Category HUD */}
+                                        <div className='flex gap-2 overflow-x-auto no-scrollbar py-2 px-1'>
+                                            {['Hammasi', 'Ichimliklar', 'Energetiklar', 'Gazaklar', 'Taomlar'].map(cat => (
+                                                <button
+                                                    key={cat}
+                                                    onClick={() => setBarCategory(cat)}
+                                                    className={`category-pill ${barCategory === cat ? 'category-pill-active' : 'category-pill-inactive'}`}
+                                                >
+                                                    {cat}
+                                                </button>
+                                            ))}
                                         </div>
 
-                                        <div className='grid grid-cols-1 gap-3'>
-                                            {inventory.map(product => {
-                                                const club = clubAdmins.find(ca => ca.login === username)?.club;
-                                                return (
-                                                    <div key={product.id} className='premium-glass p-5 border-white/5 bg-white/[0.01] flex items-center justify-between group overflow-hidden relative'>
-                                                        <div className='flex items-center gap-4 relative z-10'>
-                                                            <div className='w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center'>
-                                                                <Coffee size={20} className={product.stock <= 5 ? 'text-red-500 animate-pulse' : 'opacity-20'} />
+                                        <div className='flex justify-between items-center px-4'>
+                                            <div className='space-y-1'>
+                                                <h4 className='text-[10px] font-black tracking-[4px] opacity-30 uppercase'>Premum Ombor</h4>
+                                                <p className='text-[8px] text-[#39ff14] font-black uppercase tracking-[2px]'>Aktiv mahsulotlar: {inventory.length}</p>
+                                            </div>
+                                            <button onClick={() => setInventory(inventory.map(p => ({ ...p, stock: p.stock + 10 })))} className='bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-[8px] font-black text-white hover:bg-white/10 transition-all uppercase tracking-[2px]'>+ To'ldirish</button>
+                                        </div>
+
+                                        <div className='grid grid-cols-2 gap-4 px-2'>
+                                            {inventory
+                                                .filter(p => barCategory === 'Hammasi' || p.category === barCategory)
+                                                .map(product => {
+                                                    const club = clubAdmins.find(ca => ca.login === username)?.club;
+                                                    const stockPercent = (product.stock / 50) * 100;
+
+                                                    return (
+                                                        <div key={product.id} className='bar-card'>
+                                                            <div className='bar-card-img-container'>
+                                                                <img src={product.image} alt={product.name} className='bar-card-img' />
+                                                                <div className='absolute top-3 right-3 bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full'>
+                                                                    <p className='text-[10px] font-black text-[#39ff14]'>{product.price.toLocaleString()} <span className='text-[7px] opacity-40 italic'>UZS</span></p>
+                                                                </div>
+                                                                {product.stock <= 5 && (
+                                                                    <div className='absolute bottom-3 left-3 bg-red-500/80 px-2 py-0.5 rounded-md'>
+                                                                        <p className='text-[7px] font-black text-white uppercase tracking-[1px]'>Tugamoqda</p>
+                                                                    </div>
+                                                                )}
                                                             </div>
-                                                            <div>
-                                                                <p className='text-[13px] font-black italic tracking-wide uppercase'>{product.name}</p>
-                                                                <p className='text-[9px] font-bold text-[#39ff14] opacity-80'>{product.price.toLocaleString()} UZS</p>
-                                                                <div className='flex items-center gap-2 mt-1'>
-                                                                    <div className='w-24 h-1 bg-white/5 rounded-full overflow-hidden'>
+
+                                                            <div className='bar-card-footer'>
+                                                                <div>
+                                                                    <p className='text-[11px] font-black italic tracking-wide uppercase truncate'>{product.name}</p>
+                                                                    <p className='text-[8px] font-bold text-white/30 uppercase mt-0.5'>{product.category}</p>
+                                                                </div>
+
+                                                                <div className='space-y-1.5'>
+                                                                    <div className='flex justify-between items-center'>
+                                                                        <span className='text-[7px] font-black uppercase opacity-20'>Ombor Holati</span>
+                                                                        <span className={`text-[8px] font-black ${product.stock <= 5 ? 'text-red-500 animate-pulse' : 'text-white/40'}`}>{product.stock} dona</span>
+                                                                    </div>
+                                                                    <div className='neon-progress-container'>
                                                                         <motion.div
                                                                             initial={{ width: 0 }}
-                                                                            animate={{ width: `${Math.min(100, (product.stock / 50) * 100)}%` }}
-                                                                            className={`h-full ${product.stock <= 5 ? 'bg-red-500' : 'bg-[#39ff14]'}`}
-                                                                        ></motion.div>
+                                                                            animate={{ width: `${Math.min(100, stockPercent)}%` }}
+                                                                            className={`neon-progress-bar ${product.stock <= 5 ? 'neon-progress-red' : 'neon-progress-blue'}`}
+                                                                        />
                                                                     </div>
-                                                                    <span className={`text-[8px] font-black ${product.stock <= 5 ? 'text-red-500' : 'opacity-30'}`}>{product.stock} dona</span>
+                                                                </div>
+
+                                                                <div className='flex gap-2 pt-2'>
+                                                                    <button
+                                                                        onClick={() => handleRestock(product.id, 1)}
+                                                                        className='flex-1 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center hover:bg-white/10 transition-all group/btn'
+                                                                    >
+                                                                        <Database size={14} className='opacity-30 group-hover/btn:opacity-100' />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleDirectSale(product.id, club)}
+                                                                        disabled={product.stock <= 0}
+                                                                        className={`flex-[3] h-10 rounded-xl font-black text-[9px] uppercase tracking-[1.5px] transition-all flex items-center justify-center gap-2 ${product.stock <= 0 ? 'bg-white/5 opacity-10 cursor-not-allowed' : 'bg-white text-black shadow-[0_10px_20px_rgba(255,255,255,0.1)] hover:scale-[1.02] active:scale-[0.98]'}`}
+                                                                    >
+                                                                        Sotish
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                         </div>
-
-                                                        <div className='flex items-center gap-2 relative z-10'>
-                                                            <button
-                                                                onClick={() => handleRestock(product.id, 10)}
-                                                                className='w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center hover:bg-white/10 transition-all opacity-40 hover:opacity-100'
-                                                                title='Omborga qoʻshish'
-                                                            >
-                                                                <Database size={16} />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleDirectSale(product.id, club)}
-                                                                disabled={product.stock <= 0}
-                                                                className={`px-4 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-[1px] transition-all flex items-center gap-2 ${product.stock <= 0 ? 'bg-white/5 opacity-10' : 'bg-blue-500 text-white shadow-[0_5px_15px_rgba(59,130,246,0.3)] hover:brightness-110 active:scale-95'}`}
-                                                            >
-                                                                <Zap size={12} /> Sotish
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
+                                                    );
+                                                })}
                                         </div>
                                     </motion.div>
                                 ) : clubAdminTab === 'qarz' ? (
@@ -1193,11 +1226,15 @@ function App() {
                                                                             window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
                                                                         }
                                                                     }}
-                                                                    className={`premium-glass p-0 h-16 flex flex-col items-center justify-center gap-0.5 border-white/5 transition-all group ${product.stock <= 0 ? 'opacity-20 grayscale pointer-events-none' : 'hover:border-[#39ff14]/30 hover:bg-[#39ff14]/[0.02] active:scale-[0.94]'}`}
+                                                                    className={`premium-glass p-0 h-20 flex flex-col items-center justify-center gap-1 border-white/5 transition-all group ${product.stock <= 0 ? 'opacity-20 grayscale pointer-events-none' : 'hover:border-[#39ff14]/30 hover:bg-white/[0.04] active:scale-[0.94]'}`}
                                                                 >
-                                                                    <p className='text-[7px] font-bold opacity-30 group-hover:opacity-100 uppercase tracking-tighter px-1 truncate w-full text-center'>{product.name}</p>
-                                                                    <p className='text-[10px] font-black text-[#39ff14]'>{product.price / 1000}K</p>
-                                                                    <p className='text-[6px] opacity-20 font-black'>{product.stock} dona</p>
+                                                                    <div className='w-8 h-8 rounded-lg overflow-hidden border border-white/5'>
+                                                                        <img src={product.image} alt="" className='w-full h-full object-cover opacity-80' />
+                                                                    </div>
+                                                                    <div className='text-center'>
+                                                                        <p className='text-[7px] font-bold opacity-30 group-hover:opacity-100 uppercase tracking-tighter px-1 truncate w-20'>{product.name}</p>
+                                                                        <p className='text-[8px] font-black text-[#39ff14]'>{product.price / 1000}K</p>
+                                                                    </div>
                                                                 </button>
                                                             ))}
                                                         </div>

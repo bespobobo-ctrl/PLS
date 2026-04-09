@@ -116,6 +116,51 @@ body {
   .neon-pulse {
     animation: neon-pulse-green 2s infinite;
   }
+
+  /* BAR SPECIFIC PREMIUM UI */
+  .category-pill {
+    @apply px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-[2px] transition-all duration-300 border border-white/5;
+  }
+
+  .category-pill-active {
+    @apply bg-white text-black border-white shadow-[0_10px_20px_rgba(255, 255, 255, 0.2)];
+  }
+
+  .category-pill-inactive {
+    @apply bg-white/5 text-white/40 hover:bg-white/10;
+  }
+
+  .bar-card {
+    @apply premium-glass p-0 border-white/5 bg-gradient-to-b from-white/[0.04] to-transparent hover:border-white/20 transition-all duration-500 group;
+  }
+
+  .bar-card-img-container {
+    @apply relative w-full aspect-square rounded-t-[32px] overflow-hidden bg-black/40;
+  }
+
+  .bar-card-img {
+    @apply w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100;
+  }
+
+  .bar-card-footer {
+    @apply p-5 space-y-3;
+  }
+
+  .neon-progress-container {
+    @apply w-full h-1.5 bg-black/40 rounded-full overflow-hidden border border-white/5;
+  }
+
+  .neon-progress-bar {
+    @apply h-full rounded-full transition-all duration-1000;
+  }
+
+  .neon-progress-blue {
+    @apply bg-gradient-to-r from-blue-600 to-cyan-400 shadow-[0_0_10px_rgba(6, 182, 212, 0.5)];
+  }
+
+  .neon-progress-red {
+    @apply bg-gradient-to-r from-red-600 to-rose-400 shadow-[0_0_10px_rgba(244, 63, 94, 0.5)];
+  }
 }
 
 /* Sophisticated Animations */

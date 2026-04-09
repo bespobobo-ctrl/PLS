@@ -1,5 +1,11 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const { Telegraf, Markup } = require('telegraf');
+
+if (!process.env.BOT_TOKEN) {
+    console.error('❌ BOT_TOKEN is missing in .env file!');
+    process.exit(1);
+}
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
@@ -16,8 +22,10 @@ bot.start((ctx) => {
 bot.help((ctx) => ctx.reply('Agar muammo bo\'lsa, adminga murojaat qiling: @admin_username'));
 
 // 🚀 Launch
-bot.launch().then(() => {
-    console.log('✅ PLS Game Club Bot is online!');
+bot.telegram.deleteWebhook({ drop_pending_updates: true }).then(() => {
+    return bot.launch();
+}).then(() => {
+    console.log(`✅ PLS Game Club Bot is online as @${bot.botInfo.username}`);
 }).catch((err) => {
     console.error('❌ Bot error:', err);
 });
