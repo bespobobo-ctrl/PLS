@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // Version: 1.0.1 - Premium Bar UI
-import { User, Lock, ArrowRight, Gamepad2, ShieldCheck, Zap, Settings, BarChart3, Database, Users, Monitor, CreditCard, Activity, LogOut, ChevronRight, Trash2, X, Coffee } from 'lucide-react';
+import { User, Lock, ArrowRight, Gamepad2, ShieldCheck, Zap, Settings, BarChart3, Database, Users, Monitor, CreditCard, Activity, LogOut, ChevronRight, Trash2, X, Coffee, ShoppingCart, Plus } from 'lucide-react';
 
 function App() {
     const [view, setView] = useState('login');
