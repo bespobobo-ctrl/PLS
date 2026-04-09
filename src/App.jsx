@@ -60,18 +60,29 @@ const App = () => {
         return () => clearInterval(timer);
     }, []);
 
+    // Global persistence for users and history (always save)
+    useEffect(() => {
+        localStorage.setItem('clubAdmins', JSON.stringify(clubAdmins || []));
+    }, [clubAdmins]);
+
+    useEffect(() => {
+        localStorage.setItem('superAdmins', JSON.stringify(superAdmins || []));
+    }, [superAdmins]);
+
+    useEffect(() => {
+        localStorage.setItem('glavniyHistory', JSON.stringify(glavniyHistory || []));
+    }, [glavniyHistory]);
+
+    // Dashboard specific persistence
     useEffect(() => {
         if (view === 'login') return;
         localStorage.setItem('rooms', JSON.stringify(rooms || []));
-        localStorage.setItem('clubAdmins', JSON.stringify(clubAdmins || []));
-        localStorage.setItem('superAdmins', JSON.stringify(superAdmins || []));
-        localStorage.setItem('glavniyHistory', JSON.stringify(glavniyHistory || []));
         localStorage.setItem('salesLog', JSON.stringify(salesLog || []));
         localStorage.setItem('historyEntries', JSON.stringify(historyEntries || []));
         localStorage.setItem('inventory', JSON.stringify(inventory || []));
         localStorage.setItem('view', JSON.stringify(view));
         localStorage.setItem('username', JSON.stringify(username));
-    }, [rooms, clubAdmins, superAdmins, glavniyHistory, salesLog, historyEntries, inventory, view, username]);
+    }, [rooms, salesLog, historyEntries, inventory, view, username]);
 
     const addToGlavniyHistory = (text) => {
         const entry = { id: Date.now(), text, timestamp: Date.now(), dateStr: new Date().toLocaleString() };
@@ -80,9 +91,10 @@ const App = () => {
 
     const currentAdminData = useMemo(() => {
         if (view === 'glavniyAdminDashboard') return { name: 'GLAVNIY ADMIN', club: 'EMPIRE', role: 'GLAVNIY' };
-        const sAdmin = (superAdmins || []).find(a => a.login === username);
+        const sAdmin = (superAdmins || []).find(a => a.login?.toLowerCase() === username?.toLowerCase());
         if (sAdmin) return { ...sAdmin, role: 'SUPER' };
-        return (clubAdmins || []).find(a => a.login === username) || { name: 'ADMIN', club: 'PLS', role: 'ADMIN' };
+        const cAdmin = (clubAdmins || []).find(a => a.login?.toLowerCase() === username?.toLowerCase());
+        return cAdmin || { name: 'ADMIN', club: 'PLS', role: 'ADMIN' };
     }, [clubAdmins, superAdmins, username, view]);
 
     const activeRooms = useMemo(() => (rooms || []).filter(r => r?.club === currentAdminData?.club), [rooms, currentAdminData]);
@@ -109,13 +121,19 @@ const App = () => {
     }, [salesLog, superAdmins, clubAdmins]);
 
     const handleLogin = () => {
-        if (showHiddenLogin && username === '4567' && pass === '4567') {
-            setView('glavniyAdminDashboard'); setUsername('GLAVNIY'); setPass(''); return;
+        const uLower = username?.trim().toLowerCase();
+        const pTrim = pass?.trim();
+
+        if (showHiddenLogin && uLower === '4567' && pTrim === '4567') {
+            setView('glavniyAdminDashboard'); setUsername('4567'); setPass(''); return;
         }
-        const sAdmin = (superAdmins || []).find(a => a.login === username && a.pass === pass);
+
+        const sAdmin = (superAdmins || []).find(a => a.login?.toLowerCase() === uLower && a.pass === pTrim);
         if (sAdmin) { setView('superAdminDashboard'); setPass(''); setUsername(sAdmin.login); return; }
-        const cAdmin = (clubAdmins || []).find(a => a.login === username && a.pass === pass);
+
+        const cAdmin = (clubAdmins || []).find(a => a.login?.toLowerCase() === uLower && a.pass === pTrim);
         if (cAdmin) { setView('clubDashboard'); setPass(''); setUsername(cAdmin.login); return; }
+
         alert('ID yoki Parol noto\'g\'ri!');
     };
 
@@ -126,70 +144,37 @@ const App = () => {
             window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');
         }, 2000);
     };
-    const endPress = () => {
-        clearTimeout(pressTimer.current);
-        setIsPressingLock(false);
-    };
+    const endPress = () => { clearTimeout(pressTimer.current); setIsPressingLock(false); };
 
     const renderGlavniyDashboard = () => (
         <div className='p-6 space-y-6 pb-40 animate-fade-in'>
+            <div className='flex gap-2 p-1 bg-white/5 rounded-2xl border border-white/5'>
+                {[{ id: 'dashboard', l: 'Status' }, { id: 'superAdmins', l: 'Adminlar' }, { id: 'history', l: 'Istorya' }].map(t => (
+                    <button key={t.id} onClick={() => setGlavniyTab(t.id)} className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase transition-all ${glavniyTab === t.id ? 'bg-[#ffcf4b] text-black shadow-lg shadow-[#ffcf4b]/20' : 'text-white/30'}`}>{t.l}</button>
+                ))}
+            </div>
             {glavniyTab === 'dashboard' && (
                 <div className='space-y-6'>
-                    <div className='bg-gradient-to-br from-[#ffcf4b]/20 to-transparent p-7 rounded-[2.5rem] border border-[#ffcf4b]/10'>
-                        <p className='text-[10px] font-black opacity-30 uppercase tracking-[4px] mb-3'>TOTAL_EMPIRE_REVENUE</p>
-                        <h2 className='text-4xl font-black italic gold-text tracking-tighter mb-8 tabular-nums'>{empireStats.totalMonth.toLocaleString()} <span className='text-[10px] NOT-italic opacity-20'>UZS / OY</span></h2>
-                        <div className='grid grid-cols-2 gap-4 pt-6 border-t border-white/5'>
-                            <div><p className='text-[7px] font-black opacity-20 uppercase mb-1'>BUGUN</p><p className='text-sm font-black text-white/80'>{empireStats.totalDay.toLocaleString()}</p></div>
-                            <div className='text-right'><p className='text-[7px] font-black opacity-20 uppercase mb-1'>YILLIK</p><p className='text-sm font-black gold-text'>{empireStats.totalYear.toLocaleString()}</p></div>
-                        </div>
-                    </div>
-                    <div className='grid grid-cols-2 gap-3.5'>
-                        <div className='bg-white/5 p-6 rounded-[2rem] border border-white/5 text-center'><p className='text-[8px] opacity-20 font-black mb-1 uppercase'>SUPER ADMINLAR</p><p className='text-2xl font-black gold-text italic'>{empireStats.superCount}</p></div>
-                        <div className='bg-white/5 p-6 rounded-[2rem] border border-white/5 text-center'><p className='text-[8px] opacity-20 font-black mb-1 uppercase'>CLUB ADMINLAR</p><p className='text-2xl font-black italic opacity-60'>{empireStats.clubCount}</p></div>
-                    </div>
+                    <div className='bg-gradient-to-br from-[#ffcf4b]/10 to-transparent p-7 rounded-[2.5rem] border border-[#ffcf4b]/5 overflow-hidden'><p className='text-[10px] font-black opacity-30 uppercase tracking-[4px] mb-3'>SISTEMA_DAROMADI</p><h2 className='text-3xl font-black italic gold-text tracking-tighter mb-8 tabular-nums'>{empireStats.totalMonth.toLocaleString()} <span className='text-[10px] NOT-italic opacity-20'>UZS / OY</span></h2><div className='grid grid-cols-2 gap-4 pt-6 border-t border-white/5'><div><p className='text-[7px] font-black opacity-20 uppercase mb-1'>BUGUN</p><p className='text-sm font-black text-white/80'>{empireStats.totalDay.toLocaleString()}</p></div><div className='text-right'><p className='text-[7px] font-black opacity-20 uppercase mb-1'>YILLIK</p><p className='text-sm font-black gold-text'>{empireStats.totalYear.toLocaleString()}</p></div></div></div>
+                    <div className='grid grid-cols-2 gap-3.5'><div className='bg-white/5 p-6 rounded-[2rem] border border-white/5 text-center'><p className='text-[8px] opacity-20 font-black mb-1 uppercase'>SUPERLAR</p><p className='text-2xl font-black gold-text italic'>{empireStats.superCount}</p></div><div className='bg-white/5 p-6 rounded-[2rem] border border-white/5 text-center'><p className='text-[8px] opacity-20 font-black mb-1 uppercase'>KLUBLAR</p><p className='text-2xl font-black italic opacity-30'>{empireStats.clubCount}</p></div></div>
                 </div>
             )}
             {glavniyTab === 'superAdmins' && (
                 <div className='space-y-4'>
-                    <button onClick={() => setShowSuperAdminModal(true)} className='w-full py-5 bg-white/5 border border-dashed border-white/10 rounded-2xl text-[10px] font-black uppercase text-[#ffcf4b] active:scale-95 transition-all'>+ YANGI SUPER ADMIN</button>
+                    <button onClick={() => setShowSuperAdminModal(true)} className='w-full py-5 bg-white/5 border border-dashed border-white/10 rounded-2xl text-[10px] font-black uppercase text-[#ffcf4b] active:scale-95 transition-all'>+ SUPER ADMIN QO'SHISH</button>
                     {(superAdmins || []).map((sa, idx) => (
-                        <div key={idx} className='bg-white/5 border border-white/5 p-5 rounded-[2rem] space-y-4'>
-                            <div className='flex justify-between items-center'>
-                                <div className='flex items-center gap-4'><div className='w-11 h-11 rounded-2xl bg-[#ffcf4b] flex items-center justify-center text-black'><Zap size={20} /></div><div><h4 className='text-[12px] font-black uppercase text-white/80'>{sa.name}</h4><p className='text-[8px] opacity-20 font-black uppercase'>{sa.phone}</p></div></div>
-                                <button onClick={() => { if (window.confirm('O\'chirilsinmi?')) { setSuperAdmins(p => p.filter(x => x.login !== sa.login)); addToGlavniyHistory(`Super Admin o'chirildi: ${sa.name}`); } }} className='p-3 text-red-500/20 active:text-red-500 transition-colors'><Trash2 size={16} /></button>
-                            </div>
-                            <div className='grid grid-cols-2 gap-2'>
-                                <div className='bg-black/30 p-3 rounded-xl border border-white/5 text-center'><p className='text-[6px] opacity-20 font-black uppercase mb-0.5'>LOGIN</p><p className='text-[10px] font-black opacity-60'>{sa.login}</p></div>
-                                <div className='bg-black/30 p-3 rounded-xl border border-white/5 text-center'><p className='text-[6px] opacity-20 font-black uppercase mb-0.5'>PAROL</p><p className='text-[10px] font-black gold-text'>{sa.pass}</p></div>
-                            </div>
-                        </div>
+                        <div key={idx} className='bg-white/5 border border-white/5 p-5 rounded-[2rem] space-y-4'><div className='flex justify-between items-center'><div className='flex items-center gap-4'><div className='w-11 h-11 rounded-2xl bg-[#ffcf4b] flex items-center justify-center text-black'><Zap size={20} /></div><div><h4 className='text-[12px] font-black uppercase text-white/80'>{sa.name}</h4><p className='text-[8px] opacity-20 font-black uppercase'>{sa.phone}</p></div></div><button onClick={() => { if (window.confirm('O\'chirilsinmi?')) { setSuperAdmins(p => p.filter(x => x.login !== sa.login)); addToGlavniyHistory(`Super Admin o'chirildi: ${sa.name}`); } }} className='p-3 text-red-500/20 active:text-red-500 transition-colors'><Trash2 size={16} /></button></div><div className='grid grid-cols-2 gap-2'><div className='bg-black/30 p-3 rounded-xl border border-white/5 text-center'><p className='text-[6px] opacity-20 font-black uppercase mb-0.5'>LOGIN</p><p className='text-[10px] font-black opacity-60'>{sa.login}</p></div><div className='bg-black/30 p-3 rounded-xl border border-white/5 text-center'><p className='text-[6px] opacity-20 font-black uppercase mb-0.5'>PAROL</p><p className='text-[10px] font-black gold-text'>{sa.pass}</p></div></div></div>
                     ))}
                 </div>
             )}
-            {glavniyTab === 'history' && (
-                <div className='space-y-3'>{(glavniyHistory || []).map(h => (<div key={h.id} className='bg-white/5 border border-white/5 p-4 rounded-2xl flex justify-between items-center'><div className='flex-1'><p className='text-[10px] font-medium text-white/60'>{h.text}</p></div><p className='text-[7px] opacity-10 font-black ml-4 uppercase text-right'>{h.dateStr}</p></div>))}</div>
-            )}
+            {glavniyTab === 'history' && (<div className='space-y-3'>{(glavniyHistory || []).map(h => (<div key={h.id} className='bg-white/5 border border-white/5 p-4 rounded-2xl flex justify-between items-center'><div className='flex-1'><p className='text-[10px] font-medium text-white/60'>{h.text}</p></div><p className='text-[7px] opacity-10 font-black ml-4 uppercase text-right'>{h.dateStr}</p></div>))}</div>)}
         </div>
     );
 
     const renderSuperAdminDashboard = () => (
         <div className='p-6 space-y-6 pb-40 animate-fade-in'>
             <div className='bg-[#ffcf4b]/5 p-8 rounded-[2.5rem] border border-[#ffcf4b]/10'><div className='flex justify-between items-end'><div><p className='text-[10px] font-black opacity-20 uppercase tracking-[4px] mb-2'>SUPER_ADMIN_MODE</p><h2 className='text-3xl font-black italic gold-text tracking-tighter'>{currentAdminData.name}</h2></div><div className='w-12 h-12 rounded-2xl bg-[#ffcf4b] flex items-center justify-center text-black'><ShieldCheck size={24} /></div></div></div>
-            <div className='space-y-4'>
-                <p className='text-[9px] font-black opacity-20 uppercase tracking-[4px] px-2'>CLUB ADMINLARINI BOSHQARISH</p>
-                <button onClick={() => setShowAdminModal(true)} className='w-full py-5 bg-white/5 border border-dashed border-white/10 rounded-2xl text-[10px] font-black uppercase text-[#ffcf4b] active:scale-95 transition-all'>+ YANGI CLUB ADMINI</button>
-                <div className='space-y-3.5'>
-                    {(clubAdmins || []).filter(a => a.creatorId === username).map((admin, idx) => (
-                        <div key={idx} className='bg-white/5 border border-white/5 p-5 rounded-2xl space-y-4'>
-                            <div className='flex justify-between items-center'>
-                                <div className='flex items-center gap-4'><div className='w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-[#ffcf4b]/40'><User size={18} /></div><div><h4 className='text-[11px] font-black uppercase text-white/80'>{admin.name}</h4><p className='text-[8px] opacity-20 font-black uppercase'>{admin.club}</p></div></div>
-                                <button onClick={() => { if (window.confirm('O\'chirilsinmi?')) setClubAdmins(p => p.filter(a => a.login !== admin.login)); }} className='p-3 text-red-500/20 active:text-red-500 transition-colors'><Trash2 size={16} /></button>
-                            </div>
-                            <div className='grid grid-cols-2 gap-2'><div className='bg-black/40 p-3 rounded-xl text-center'><p className='text-[6px] opacity-20 font-black uppercase'>ID</p><p className='text-[9px] font-black'>{admin.login}</p></div><div className='bg-black/40 p-3 rounded-xl text-center'><p className='text-[6px] opacity-20 font-black uppercase'>PS</p><p className='text-[9px] font-black gold-text'>{admin.pass}</p></div></div>
-                        </div>
-                    ))}
-                </div>
-            </div>
+            <div className='space-y-4'><p className='text-[9px] font-black opacity-20 uppercase tracking-[4px] px-2'>CLUB ADMINLARINI BOSHQARISH</p><button onClick={() => setShowAdminModal(true)} className='w-full py-5 bg-white/5 border border-dashed border-white/10 rounded-2xl text-[10px] font-black uppercase text-[#ffcf4b] active:scale-95 transition-all'>+ YANGI CLUB ADMINI</button><div className='space-y-3.5'>{(clubAdmins || []).filter(a => a.creatorId === username).map((admin, idx) => (<div key={idx} className='bg-white/5 border border-white/5 p-5 rounded-2xl space-y-4'><div className='flex justify-between items-center'><div className='flex items-center gap-4'><div className='w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-[#ffcf4b]/40'><User size={18} /></div><div><h4 className='text-[11px] font-black uppercase text-white/80'>{admin.name}</h4><p className='text-[8px] opacity-20 font-black uppercase'>{admin.club}</p></div></div><button onClick={() => { if (window.confirm('O\'chirilsinmi?')) setClubAdmins(p => p.filter(a => a.login !== admin.login)); }} className='p-3 text-red-500/20 active:text-red-500 transition-colors'><Trash2 size={16} /></button></div><div className='grid grid-cols-2 gap-2'><div className='bg-black/40 p-3 rounded-xl text-center'><p className='text-[6px] opacity-20 font-black uppercase'>ID</p><p className='text-[9px] font-black'>{admin.login}</p></div><div className='bg-black/40 p-3 rounded-xl text-center'><p className='text-[6px] opacity-20 font-black uppercase'>PS</p><p className='text-[9px] font-black gold-text'>{admin.pass}</p></div></div></div>))}</div></div>
         </div>
     );
 
@@ -198,55 +183,26 @@ const App = () => {
             <AnimatePresence mode='wait'>
                 {view === 'login' ? (
                     <div className='flex flex-col items-center justify-center min-h-screen p-10'>
-                        <motion.div
-                            onMouseDown={startPress} onMouseUp={endPress} onTouchStart={startPress} onTouchEnd={endPress}
-                            animate={{
-                                scale: isPressingLock ? 1.2 : 1,
-                                backgroundColor: showHiddenLogin ? '#ffcf4b' : isPressingLock ? '#ffcf4b' : 'rgba(255,255,255,0.05)',
-                                color: showHiddenLogin || isPressingLock ? '#000' : '#ffcf4b'
-                            }}
-                            className='w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-10 shadow-2xl transition-colors cursor-pointer'
-                        >
-                            {showHiddenLogin ? <Terminal size={28} /> : <Lock size={28} />}
-                        </motion.div>
-                        <motion.h2
-                            animate={{ color: showHiddenLogin ? '#ffcf4b' : 'rgba(255,207,75,0.8)' }}
-                            className='text-2xl font-black italic mb-10 tracking-tighter'
-                        >
-                            {showHiddenLogin ? 'GLAVNIY_ACCESS' : 'PLS_SYSTEM'}
-                        </motion.h2>
+                        <motion.div onMouseDown={startPress} onMouseUp={endPress} onTouchStart={startPress} onTouchEnd={endPress} animate={{ scale: isPressingLock ? 1.2 : 1, backgroundColor: showHiddenLogin ? '#ffcf4b' : isPressingLock ? '#ffcf4b' : 'rgba(255,255,255,0.05)', color: showHiddenLogin || isPressingLock ? '#000' : '#ffcf4b' }} className='w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-10 shadow-2xl transition-colors cursor-pointer'>{showHiddenLogin ? <Terminal size={28} /> : <Lock size={28} />}</motion.div>
+                        <motion.h2 animate={{ color: showHiddenLogin ? '#ffcf4b' : 'rgba(255,207,75,0.8)' }} className='text-2xl font-black italic mb-10 tracking-tighter'>{showHiddenLogin ? 'GLAVNIY_ACCESS' : 'PLS_SYSTEM'}</motion.h2>
                         <div className='w-full max-w-[280px] space-y-3.5'>
                             <input type="text" placeholder={showHiddenLogin ? "ADMIN_ID" : "ID"} className={`bg-white/5 border h-14 w-full text-center rounded-2xl text-sm font-black uppercase tracking-widest placeholder:opacity-10 outline-none transition-all ${showHiddenLogin ? 'border-[#ffcf4b]' : 'border-white/10'}`} value={username} onChange={(e) => setUsername(e.target.value)} />
                             <input type="password" placeholder={showHiddenLogin ? "ADMIN_PASS" : "PAROL"} className={`bg-white/5 border h-14 w-full text-center rounded-2xl text-sm font-black uppercase tracking-widest placeholder:opacity-10 outline-none transition-all ${showHiddenLogin ? 'border-[#ffcf4b]' : 'border-white/10'}`} value={pass} onChange={(e) => setPass(e.target.value)} />
-                            <button onClick={handleLogin} className='mt-8 py-4 w-full text-xs font-black uppercase rounded-2xl bg-[#ffcf4b] text-black shadow-lg active:scale-95 transition-all'>TIZIMGA KIRISH</button>
+                            <button onClick={handleLogin} className='mt-8 py-4 w-full text-xs font-black uppercase rounded-2xl bg-[#ffcf4b] text-black shadow-lg shadow-[#ffcf4b]/20 active:scale-95 transition-all'>TIZIMGA KIRISH</button>
                         </div>
                     </div>
                 ) : (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                         <header className='px-7 py-5 flex justify-between items-center bg-black/80 backdrop-blur-2xl border-b border-white/5 sticky top-0 z-50'>
-                            <div className='flex items-center gap-3'><div className='w-8 h-8 rounded-xl bg-[#ffcf4b] flex items-center justify-center shadow-md'>{view === 'glavniyAdminDashboard' ? <Globe size={16} className='text-black' /> : <Activity size={16} className='text-black' />}</div><div><h2 className='text-[13px] font-black italic uppercase tracking-tighter text-white/90'>{currentAdminData?.name}</h2><p className='text-[7px] opacity-20 uppercase font-black tracking-[3px]'>{currentAdminData?.club}</p></div></div>
-                            <div className='flex items-center gap-4'>
-                                <p className='text-[10px] font-black gold-text tabular-nums italic tracking-wider'>{new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}</p>
-                                <button onClick={() => { if (window.confirm('Chiqasizmi?')) { setView('login'); setUsername(''); setPass(''); setShowHiddenLogin(false); localStorage.setItem('view', 'login'); } }} className='p-2 bg-red-500/10 text-red-500/60 rounded-xl border border-red-500/10'><LogOut size={16} /></button>
-                            </div>
+                            <div className='flex items-center gap-3'><div className='w-8 h-8 rounded-xl bg-[#ffcf4b] flex items-center justify-center shadow-md'>{view === 'glavniyAdminDashboard' ? <Globe size={16} className='text-black' /> : <Activity size={16} className='text-black' />}</div><div><h2 className='text-[13px] font-black italic uppercase tracking-tighter text-white/90'>{currentAdminData?.name}</h2><p className='text-[7px] opacity-20 uppercase font-black tracking-[3px]'>{currentAdminData?.club || 'SYSTEM'}</p></div></div>
+                            <button onClick={() => { if (window.confirm('Chiqasizmi?')) { setView('login'); setUsername(''); setPass(''); setShowHiddenLogin(false); localStorage.setItem('view', 'login'); } }} className='p-2 bg-red-500/10 text-red-500/60 rounded-xl border border-red-500/10'><LogOut size={16} /></button>
                         </header>
-                        <main className='max-w-[480px] mx-auto'>
-                            {view === 'glavniyAdminDashboard' ? renderGlavniyDashboard() : view === 'superAdminDashboard' ? renderSuperAdminDashboard() : <div className='p-6 space-y-5 pb-40 animate-fade-in'><div className='relative p-7 rounded-[2rem] bg-gradient-to-br from-[#ffcf4b]/10 to-transparent border border-[#ffcf4b]/5 overflow-hidden'><p className='text-[9px] font-black opacity-30 uppercase tracking-[3px] mb-1'>KUNLIK KASSA</p><h2 className='text-4xl font-black italic gold-text tracking-tighter tabular-nums'>{empireStats.totalDay.toLocaleString()} <span className='text-[10px] opacity-20 NOT-italic'>UZS</span></h2></div><div className='pt-2 text-center py-20 opacity-20 font-black text-[10px] uppercase tracking-[5px]'>CLUB PANEL ACTIVE</div></div>}
-                        </main>
+                        <main className='max-w-[480px] mx-auto'>{view === 'glavniyAdminDashboard' ? renderGlavniyDashboard() : view === 'superAdminDashboard' ? renderSuperAdminDashboard() : <div className='p-6 py-40 text-center'><Activity className='mx-auto mb-4 opacity-10' size={48} /><p className='opacity-20 font-black text-[10px] uppercase tracking-[5px]'>CLUB PANEL ACTIVE</p></div>}</main>
                     </motion.div>
                 )}
             </AnimatePresence>
-            {view === 'glavniyAdminDashboard' && (
-                <div className='fixed bottom-8 left-0 right-0 flex justify-center z-50 px-8'>
-                    <nav className='bg-white/5 backdrop-blur-3xl border border-white/5 p-1.5 rounded-[2.5rem] flex items-center shadow-2xl w-full max-w-[360px]'>
-                        {[{ id: 'dashboard', i: Layers, l: 'Asosiy' }, { id: 'superAdmins', i: UserCheck, l: 'Admin' }, { id: 'history', i: History, l: 'Log' }].map((t) => (
-                            <button key={t.id} onClick={() => setGlavniyTab(t.id)} className={`relative flex-1 py-3.5 flex flex-col items-center justify-center gap-1 transition-all ${glavniyTab === t.id ? 'text-[#ffcf4b]' : 'text-white/20'}`}><t.i size={20} /><span className={glavniyTab === t.id ? 'text-[7px] font-black uppercase tracking-[2px]' : 'hidden'}>{t.l}</span>{glavniyTab === t.id && <motion.div layoutId='nav-glow' className='absolute -bottom-1 w-1 h-1 bg-[#ffcf4b] rounded-full shadow-[0_0_8px_#ffcf4b]' />}</button>
-                        ))}
-                    </nav>
-                </div>
-            )}
             <AnimatePresence>
-                {showSuperAdminModal && (<div className='modal-overlay'><motion.div className='modal-content !p-8 !rounded-[2.5rem]'><h2 className='text-lg font-black italic gold-text text-center mb-8 uppercase'>YANGI SUPER ADMIN</h2><div className='space-y-4'><input type="text" placeholder="ISMI" className='bg-white/5 border border-white/10 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newSuperAdmin.name} onChange={(e) => setNewSuperAdmin({ ...newSuperAdmin, name: e.target.value })} /><input type="text" placeholder="TEL" className='bg-white/5 border border-white/10 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newSuperAdmin.phone} onChange={(e) => setNewSuperAdmin({ ...newSuperAdmin, phone: e.target.value })} /><input type="text" placeholder="LOGIN" className='bg-white/5 border border-white/10 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newSuperAdmin.login} onChange={(e) => setNewSuperAdmin({ ...newSuperAdmin, login: e.target.value })} /><input type="password" placeholder="PAROL" className='bg-white/5 border border-white/10 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newSuperAdmin.pass} onChange={(e) => setNewSuperAdmin({ ...newSuperAdmin, pass: e.target.value })} /><div className='flex flex-col gap-2 pt-4'><button onClick={() => { setSuperAdmins([...superAdmins, newSuperAdmin]); addToGlavniyHistory(`Yangi Super Admin qo'shildi: ${newSuperAdmin.name}`); setShowSuperAdminModal(false); }} className='py-4.5 bg-[#ffcf4b] text-black font-black text-[10px] uppercase rounded-2xl'>TASDIQLASH</button><button onClick={() => setShowSuperAdminModal(false)} className='py-2 text-[9px] opacity-20 font-black uppercase'>BEKOR QILISH</button></div></div></motion.div></div>)}
+                {showSuperAdminModal && (<div className='modal-overlay'><motion.div className='modal-content !p-8 !rounded-[2.5rem]'><h2 className='text-lg font-black italic gold-text text-center mb-8 uppercase'>YANGI SUPER ADMIN</h2><div className='space-y-4'><input type="text" placeholder="ISMI" className='bg-white/5 border border-white/10 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newSuperAdmin.name} onChange={(e) => setNewSuperAdmin({ ...newSuperAdmin, name: e.target.value })} /><input type="text" placeholder="TEL" className='bg-white/5 border border-white/10 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newSuperAdmin.phone} onChange={(e) => setNewSuperAdmin({ ...newSuperAdmin, phone: e.target.value })} /><input type="text" placeholder="LOGIN" className='bg-white/5 border border-white/10 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newSuperAdmin.login} onChange={(e) => setNewSuperAdmin({ ...newSuperAdmin, login: e.target.value })} /><input type="password" placeholder="PAROL" className='bg-white/5 border border-white/10 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newSuperAdmin.pass} onChange={(e) => setNewSuperAdmin({ ...newSuperAdmin, pass: e.target.value })} /><div className='flex flex-col gap-2 pt-4'><button onClick={() => { setSuperAdmins([...superAdmins, newSuperAdmin]); addToGlavniyHistory(`Yangi Super Admin: ${newSuperAdmin.name}`); setShowSuperAdminModal(false); }} className='py-4.5 bg-[#ffcf4b] text-black font-black text-[10px] uppercase rounded-2xl'>QO'SHISH</button><button onClick={() => setShowSuperAdminModal(false)} className='py-2 text-[9px] opacity-20 font-black uppercase'>BEKOR QILISH</button></div></div></motion.div></div>)}
                 {showAdminModal && (<div className='modal-overlay'><motion.div className='modal-content !p-8 !rounded-[2.5rem]'><h2 className='text-lg font-black italic gold-text text-center mb-8 uppercase'>CLUB ADMIN QO'SHISH</h2><div className='space-y-4'><input type="text" placeholder="ISMI" className='bg-white/5 border border-white/5 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newAdmin.name} onChange={(e) => setNewAdmin({ ...newAdmin, name: e.target.value })} /><input type="text" placeholder="LOGIN" className='bg-white/5 border border-white/5 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newAdmin.login} onChange={(e) => setNewAdmin({ ...newAdmin, login: e.target.value })} /><input type="password" placeholder="PAROL" className='bg-white/5 border border-white/5 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newAdmin.pass} onChange={(e) => setNewAdmin({ ...newAdmin, pass: e.target.value })} /><input type="text" placeholder="KLUB NOMI" className='bg-white/5 border border-white/5 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newAdmin.club} onChange={(e) => setNewAdmin({ ...newAdmin, club: e.target.value })} /><div className='flex flex-col gap-2 pt-4'><button onClick={() => { setClubAdmins([...clubAdmins, { ...newAdmin, creatorId: username }]); addToGlavniyHistory(`Super Admin(${username}) yangi klub uladi: ${newAdmin.club}`); setShowAdminModal(false); }} className='py-4.5 bg-[#ffcf4b] text-black font-black text-[10px] uppercase rounded-2xl'>QO'SHISH</button><button onClick={() => setShowAdminModal(false)} className='py-2 text-[9px] opacity-20 font-black uppercase'>BEKOR QILISH</button></div></div></motion.div></div>)}
             </AnimatePresence>
         </div>
