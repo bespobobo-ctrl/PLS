@@ -17,8 +17,8 @@ function App() {
     // Persistent State for Main Admin
     const getInitialState = (key, defaultValue) => {
         try {
-            // v33 - Dual-Section Bar (SOTUV & OMBOR)
-            const BOT_URL = 'https://pls-taupe.vercel.app/?v=v33';
+            // v35 - Professional Bar Management
+            const BOT_URL = 'https://pls-taupe.vercel.app/?v=v35';
             const stored = localStorage.getItem(key);
             const parsed = JSON.parse(stored);
             return (parsed && (Array.isArray(parsed) || typeof parsed === 'object')) ? parsed : defaultValue;
@@ -572,7 +572,7 @@ function App() {
 
                                             return (
                                                 <>
-                                                    {/* � KPI OVERVIEW */}
+                                                    {/*  KPI OVERVIEW */}
                                                     <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                                                         <div className='premium-glass p-8 bg-gradient-to-br from-[#39ff14]/10 to-transparent border-[#39ff14]/20 flex justify-between items-center'>
                                                             <div>
