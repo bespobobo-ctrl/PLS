@@ -90,22 +90,25 @@ const App = () => {
             const day = 24 * 60 * 60 * 1000;
             const week = 7 * day;
             const month = 30 * day;
+            const year = 365 * day;
 
             const dailyCompleted = clubLog.filter(s => (nowTime - s.timestamp) < day).reduce((acc, s) => acc + s.amount, 0);
             const weekly = clubLog.filter(s => (nowTime - s.timestamp) < week).reduce((acc, s) => acc + s.amount, 0);
             const monthly = clubLog.filter(s => (nowTime - s.timestamp) < month).reduce((acc, s) => acc + s.amount, 0);
+            const yearly = clubLog.filter(s => (nowTime - s.timestamp) < year).reduce((acc, s) => acc + s.amount, 0);
 
             const runningRevenue = (activeRooms || []).filter(r => r?.isBusy).reduce((acc, r) => acc + calculateSession(r).total, 0);
             const totalDebt = (debts || []).filter(d => d?.club === currentAdminData?.club).reduce((acc, d) => acc + (d?.amount || 0), 0);
 
             return {
                 daily: dailyCompleted + runningRevenue,
-                weekly,
-                monthly,
+                weekly: weekly + runningRevenue,
+                monthly: monthly + runningRevenue,
+                yearly: yearly + runningRevenue,
                 busy: activeRooms.filter(r => r?.isBusy).length,
                 totalDept: totalDebt
             };
-        } catch { return { daily: 0, weekly: 0, monthly: 0, busy: 0, totalDept: 0 }; }
+        } catch { return { daily: 0, weekly: 0, monthly: 0, yearly: 0, busy: 0, totalDept: 0 }; }
     }, [salesLog, debts, currentAdminData?.club, activeRooms, now]);
 
     const confirmCheckout = () => {
@@ -118,26 +121,27 @@ const App = () => {
 
     const renderClubAsosiy = () => (
         <div className='p-4 space-y-4 pb-28'>
-            <div className='gold-glass !p-6 bg-gradient-to-br from-[#ffcf4b]/20 to-transparent border-[#ffcf4b]/20 shadow-xl'>
-                <div className='flex items-center gap-2 mb-1'><span className='w-2 h-2 rounded-full bg-green-500 animate-pulse'></span><p className='text-[9px] font-black opacity-40 uppercase tracking-[4px]'>BUGUNGI KASSA</p></div>
+            <div className='gold-glass !p-5 bg-gradient-to-br from-[#ffcf4b]/20 to-transparent border-[#ffcf4b]/20 shadow-xl'>
+                <div className='flex items-center gap-2 mb-1'><span className='w-2 h-2 rounded-full bg-green-500 animate-pulse'></span><p className='text-[8px] font-black opacity-40 uppercase tracking-[4px]'>BUGUNGI KASSA</p></div>
                 <h2 className='text-4xl font-black italic gold-text tracking-tighter tabular-nums'>{analytics.daily.toLocaleString()} <span className='text-xs opacity-40'>UZS</span></h2>
             </div>
 
-            <div className='grid grid-cols-2 gap-3'>
-                <div className='gold-glass !p-4 border-white/5'><p className='text-[8px] opacity-40 uppercase font-black mb-1'>HAFTALIK SAVDO</p><p className='text-base font-black italic'>{analytics.weekly.toLocaleString()}</p></div>
-                <div className='gold-glass !p-4 border-white/5'><p className='text-[8px] opacity-40 uppercase font-black mb-1'>OYLIK SAVDO</p><p className='text-base font-black italic'>{analytics.monthly.toLocaleString()}</p></div>
+            <div className='grid grid-cols-3 gap-2'>
+                <div className='gold-glass !p-3 border-white/5 text-center'><p className='text-[7px] opacity-40 uppercase font-black mb-1'>HAFTALIK</p><p className='text-xs font-black'>{analytics.weekly.toLocaleString()}</p></div>
+                <div className='gold-glass !p-3 border-white/5 text-center'><p className='text-[7px] opacity-40 uppercase font-black mb-1'>OYLIK</p><p className='text-xs font-black'>{analytics.monthly.toLocaleString()}</p></div>
+                <div className='gold-glass !p-3 border-white/5 text-center'><p className='text-[7px] opacity-40 uppercase font-black mb-1'>YILLIK</p><p className='text-xs font-black text-[#ffcf4b]'>{analytics.yearly.toLocaleString()}</p></div>
             </div>
 
             <div className='space-y-2'>
-                <p className='text-[9px] font-black opacity-40 uppercase px-1 tracking-widest flex items-center gap-2'><Monitor size={10} /> JONLI MONITORING</p>
+                <p className='text-[9px] font-black opacity-40 uppercase px-1 tracking-widest flex items-center gap-2'><Monitor size={10} /> OCHIY XONALAR MONITORINGI</p>
                 {(activeRooms || []).filter(r => r?.isBusy).map(r => {
                     const s = calculateSession(r);
-                    return (<div key={r.id} onClick={() => setActiveTab('xarita')} className='gold-glass !p-4 flex justify-between items-center bg-black/40 border-white/5 active:scale-95 transition-all text-sm'><div><p className='font-black italic uppercase'>{r.name}</p><p className='text-[8px] font-black gold-text'>{s.time} • {s.startStr}</p></div><p className='font-black'>{s.total.toLocaleString()} UZS</p></div>);
+                    return (<div key={r.id} onClick={() => setActiveTab('xarita')} className='gold-glass !p-4 flex justify-between items-center bg-black/40 border-white/5 active:scale-95 transition-all text-sm'><div><p className='font-black italic uppercase'>{r.name}</p><p className='text-[8px] font-black gold-text'>{s.time} • Ochildi: {s.startStr}</p></div><p className='font-black'>{s.total.toLocaleString()} UZS</p></div>);
                 })}
             </div>
 
             <div className='gold-glass !p-5 border-red-500/20 bg-red-500/5'>
-                <div className='flex justify-between items-center mb-4'><div className='flex items-center gap-2'><Users size={16} className='text-red-500' /><p className='text-[9px] font-black uppercase opacity-60'>QARZLAR RO'YXATI</p></div><p className='text-xs font-black text-red-500'>{analytics.totalDept.toLocaleString()} UZS</p></div>
+                <div className='flex justify-between items-center mb-4'><div className='flex items-center gap-2'><Users size={16} className='text-red-500' /><p className='text-[9px] font-black uppercase opacity-60'>QARZLAR</p></div><p className='text-xs font-black text-red-500'>{analytics.totalDept.toLocaleString()} UZS</p></div>
                 {(debts || []).filter(d => d?.club === currentAdminData?.club).slice(0, 5).map(d => (<div key={d.id} className='flex justify-between items-center p-3 bg-black/40 rounded-xl mb-2 border border-white/5 text-[10px]'><p className='font-black uppercase'>{d.name}</p><p className='font-black text-red-500'>-{d.amount.toLocaleString()}</p></div>))}
             </div>
         </div>
@@ -145,24 +149,24 @@ const App = () => {
 
     const renderClubXarita = () => (
         <div className='p-4 space-y-4 pb-28'>
-            <button onClick={() => { setEditingRoom(null); setShowAddRoom(true); }} className='w-full py-4 bg-[#ffcf4b] text-black font-black text-xs uppercase rounded-xl shadow-lg'>+ YANGI XONA QO'SHISH</button>
+            <button onClick={() => { setEditingRoom(null); setShowAddRoom(true); }} className='w-full py-4 bg-[#ffcf4b] text-black font-black text-xs uppercase rounded-xl shadow-lg'>+ YANGI XONA</button>
             <div className='grid grid-cols-1 gap-4'>
                 {(activeRooms || []).map(room => {
                     const session = calculateSession(room); const isExp = expRooms[room?.id];
                     return (
                         <div key={room.id} className={`gold-glass transition-all ${room.isBusy ? 'ring-1 ring-[#ffcf4b]/20 bg-black/60 shadow-2xl' : room.isSuspended ? 'opacity-40 grayscale border-red-500/20' : 'opacity-80'}`}>
                             <div className='p-4 border-b border-white/5 flex justify-between items-center' onClick={() => room.isBusy && setExpRooms(p => ({ ...p, [room.id]: !isExp }))}>
-                                <div className='flex items-center gap-3'><div className={`w-2.5 h-2.5 rounded-full ${room.isBusy ? 'bg-[#ffcf4b] animate-pulse' : room.isSuspended ? 'bg-red-500' : 'bg-white/10'}`}></div><div><h3 className='text-lg font-black italic uppercase tracking-tighter'>{room.name}</h3><p className='text-[8px] font-black opacity-40 uppercase'>{room.isBusy ? `OCHILGAN: ${session.startStr}` : 'READY'}</p></div></div>
+                                <div className='flex items-center gap-3'><div className={`w-2 h-2 rounded-full ${room.isBusy ? 'bg-[#ffcf4b] animate-pulse' : room.isSuspended ? 'bg-red-500' : 'bg-white/10'}`}></div><div><h3 className='text-lg font-black italic uppercase tracking-tighter'>{room.name}</h3><p className='text-[8px] font-black opacity-40 uppercase'>{room.isBusy ? `OCHILGAN: ${session.startStr}` : 'READY'}</p></div></div>
                                 <div className='flex gap-1.5' onClick={e => e.stopPropagation()}>
                                     <button onClick={() => setRooms(p => p.map(r => r.id === room.id ? { ...r, isSuspended: !r.isSuspended, isBusy: false } : r))} className={`p-2.5 rounded-xl transition-all ${room.isSuspended ? 'bg-red-500 text-white' : 'bg-white/5 text-white/30'}`}><PauseCircle size={18} /></button>
                                     <button onClick={() => { setEditingRoom(room); setShowAddRoom(true); }} className='p-2.5 bg-white/5 rounded-xl text-white/30'><Edit3 size={18} /></button>
-                                    <button onClick={() => { if (window.confirm('O\'chirrilsinmi?')) setRooms(p => p.filter(r => r.id !== room.id)); }} className='p-2.5 bg-red-500/10 rounded-xl text-red-500/50'><Trash2 size={18} /></button>
+                                    <button onClick={() => { if (window.confirm('O\'chirilsinmi?')) setRooms(p => p.filter(r => r.id !== room.id)); }} className='p-2.5 bg-red-500/10 rounded-xl text-red-500/50'><Trash2 size={18} /></button>
                                 </div>
                             </div>
                             {room.isBusy && (
                                 <div className={`p-4 ${isExp ? 'space-y-4' : 'flex justify-between items-center'}`}>
                                     <div className='flex flex-col'><p className='text-[7px] font-black opacity-30 uppercase'>Duration</p><p className={`${isExp ? 'text-3xl' : 'text-lg'} font-black gold-text italic tabular-nums`}>{session.time}</p></div>
-                                    {!isExp && <div className='text-right'><p className='text-[7px] font-black opacity-30 uppercase'>Subtotal</p><p className='text-lg font-black tabular-nums'>{session.total.toLocaleString()} UZS</p></div>}
+                                    {!isExp && <div className='text-right'><p className='text-[7px] font-black opacity-30 uppercase'>Total</p><p className='text-lg font-black tabular-nums'>{session.total.toLocaleString()} UZS</p></div>}
                                     {isExp && (
                                         <div className='pt-4 border-t border-white/10 space-y-4'>
                                             <div className='flex justify-between items-center'><p className='text-lg font-black gold-text italic tabular-nums'>{session.total.toLocaleString()} <span className='text-[8px]'>UZS</span></p><button onClick={() => setSelectedRoomForBar(room)} className='bg-[#ffcf4b] text-black px-4 py-1.5 rounded-full text-[9px] font-black uppercase shadow-lg shadow-[#ffcf4b]/20'>+ BAR</button></div>
@@ -172,7 +176,7 @@ const App = () => {
                                     )}
                                 </div>
                             )}
-                            {!room.isBusy && !room.isSuspended && (<div className='px-4 pb-4 pt-1'><button onClick={() => setRooms(p => p.map(r => r.id === room.id ? { ...r, isBusy: true, startTime: Date.now(), items: [] } : r))} className='w-full py-4 bg-white/5 rounded-xl text-white font-black uppercase text-[10px] border border-white/5'>Sessiyani boshlash</button></div>)}
+                            {!room.isBusy && !room.isSuspended && (<div className='px-4 pb-4 pt-1'><button onClick={() => setRooms(p => p.map(r => r.id === room.id ? { ...r, isBusy: true, startTime: Date.now(), items: [] } : r))} className='w-full py-4 bg-white/5 rounded-xl text-white font-black uppercase text-[10px] border border-white/5'>Ochish</button></div>)}
                         </div>
                     );
                 })}
@@ -191,7 +195,7 @@ const App = () => {
             ) : (
                 <div className='space-y-3'>
                     <button onClick={() => setShowInventoryModal(true)} className='w-full py-4 bg-white/5 rounded-xl font-black text-[9px] uppercase border border-white/10'>+ YANGI MAHSULOT</button>
-                    {(inventory || []).map(item => (<div key={item.id} className='gold-glass !p-4 flex justify-between items-center text-xs'><div className='flex items-center gap-3'><div className='w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[#ffcf4b]'><Package size={16} /></div><div><h4 className='font-black'>{item.name}</h4><p className='text-[8px] opacity-30'>Mavjud: {item.stock} ta</p></div></div><button onClick={() => setInventory(p => p.filter(i => i.id !== item.id))} className='p-2 bg-red-500/10 rounded-xl text-red-500'><Trash2 size={14} /></button></div>))}
+                    {(inventory || []).map(item => (<div key={item.id} className='gold-glass !p-4 flex justify-between items-center text-xs'><div className='flex items-center gap-3'><div className='w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[#ffcf4b]'><Package size={16} /></div><div><h4 className='font-black'>{item.name}</h4><p className='text-[8px] opacity-30'>Qoldiq: {item.stock} ta</p></div></div><button onClick={() => setInventory(p => p.filter(i => i.id !== item.id))} className='p-2 bg-red-500/10 rounded-xl text-red-500'><Trash2 size={14} /></button></div>))}
                 </div>
             )}
         </div>
@@ -218,7 +222,7 @@ const App = () => {
                 )}
             </AnimatePresence>
 
-            {/* Navigation (Full) */}
+            {/* Navigation (Optimized) */}
             {view !== 'login' && (
                 <div className='fixed bottom-4 left-4 right-4 bg-black/90 backdrop-blur-3xl border border-white/5 p-4 rounded-[2rem] flex justify-around z-50 shadow-2xl'>
                     <button onClick={() => setActiveTab('asosiy')} className={`flex flex-col items-center gap-1.5 ${activeTab === 'asosiy' ? 'text-[#ffcf4b] scale-105' : 'text-white/20'}`}><BarChart size={24} /><span className='text-[8px] font-black uppercase'>Asosiy</span></button>
@@ -227,11 +231,11 @@ const App = () => {
                 </div>
             )}
 
-            {/* Checkout Modal (COMPACT SLIM - THE ONE YOU LIKED) */}
+            {/* Checkout Modal (Ultra-Compact) */}
             <AnimatePresence>
                 {checkoutRoom && finalStats && (
                     <div className='modal-overlay'><motion.div initial={{ scale: 0.95, y: 10, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }} className='modal-content !p-5 !max-w-[92%] border border-white/10'>
-                        <h2 className='text-lg font-black italic gold-text text-center mb-5 uppercase tracking-widest'>HISOB-KITOBLAR</h2>
+                        <h2 className='text-base font-black italic gold-text text-center mb-5 uppercase tracking-widest'>HISOBLASH</h2>
                         <div className='grid grid-cols-2 gap-2 mb-4'>
                             <div className='gold-glass !p-2.5 border-white/5 text-center'><p className='text-[6px] opacity-40 uppercase font-black'>BOSHLANDI</p><p className='text-sm font-black italic'>{finalStats.startStr}</p></div>
                             <div className='gold-glass !p-2.5 border-white/5 text-center'><p className='text-[6px] opacity-40 uppercase font-black'>TUGADI</p><p className='text-sm font-black italic gold-text'>{finalStats.endStr}</p></div>
@@ -245,14 +249,15 @@ const App = () => {
                             {(finalStats.total - Number(paidAmount) > 0 && Number(paidAmount) > 0) && (<div className='space-y-1.5 p-3 bg-red-500/5 rounded-xl border border-red-500/10'><input type="text" placeholder="MIJOZ ISMI" className='input-luxury-small h-9 text-[10px]' value={debtUser.name} onChange={(e) => setDebtUser({ ...debtUser, name: e.target.value })} /><input type="text" placeholder="TEL" className='input-luxury-small h-9 text-[10px]' value={debtUser.phone} onChange={(e) => setDebtUser({ ...debtUser, phone: e.target.value })} /></div>)}
                         </div>
                         <div className='flex flex-col gap-2'>
-                            <button onClick={confirmCheckout} className='py-4.5 bg-[#ffcf4b] text-black text-xs font-black uppercase rounded-xl active:scale-95 shadow-lg'>TO'LOVNI TASDIQLASH</button>
+                            <button onClick={confirmCheckout} className='py-4.5 bg-[#ffcf4b] text-black text-xs font-black uppercase rounded-xl active:scale-95 shadow-lg'>TASDIQLASH</button>
                             <button onClick={() => setCheckoutRoom(null)} className='py-2 text-[8px] opacity-20 font-black uppercase'>BEKOR QILISH</button>
                         </div>
                     </motion.div></div>
                 )}
+                {/* Modals are kept compact and professional */}
                 {showInventoryModal && (<div className='modal-overlay'><motion.div className='modal-content !p-6'><h2 className='text-xl font-black gold-text mb-6 text-center uppercase'>MAHSULOT</h2><div className='space-y-4'><input type="text" placeholder="NOMI" className='input-luxury-small h-14' value={newItem.name} onChange={(e) => setNewItem({ ...newItem, name: e.target.value })} /><div className='grid grid-cols-2 gap-3'><input type="number" placeholder="NARXI" className='input-luxury-small h-14' value={newItem.price} onChange={(e) => setNewItem({ ...newItem, price: Number(e.target.value) })} /><input type="number" placeholder="SKLAD" className='input-luxury-small h-14' value={newItem.stock} onChange={(e) => setNewItem({ ...newItem, stock: Number(e.target.value) })} /></div><button onClick={() => { setInventory([...inventory, { ...newItem, id: Date.now(), sold: 0 }]); setShowInventoryModal(false); }} className='w-full py-5 bg-[#ffcf4b] text-black font-black uppercase rounded-2xl'>SAQLASH</button></div></motion.div></div>)}
-                {selectedRoomForBar && (<div className='modal-overlay'><motion.div className='modal-content !p-6'><div className='flex justify-between items-center mb-6'><p className='text-sm font-black italic gold-text'>BAR SERVICE</p><button onClick={() => setSelectedRoomForBar(null)} className='p-2 bg-white/5 rounded-full'><X size={16} /></button></div><div className='grid grid-cols-2 gap-2.5 max-h-[50vh] overflow-y-auto pr-1'>{(inventory || []).map(item => (<button key={item.id} disabled={item.stock <= 0} onClick={() => { setRooms(prev => prev.map(r => r.id === selectedRoomForBar.id ? { ...r, items: [...(r.items || []), { ...item, quantity: 1 }] } : r)); setInventory(p => p.map(i => i.id === item.id ? { ...i, stock: i.stock - 1, sold: (i.sold || 0) + 1 } : i)); setSelectedRoomForBar(null); }} className='gold-glass !p-4 h-[100px] text-left text-[9px] font-black uppercase active:scale-95 disabled:opacity-20 flex flex-col justify-between'><span>{item.name}</span><span className='gold-text'>{item.price.toLocaleString()} UZS</span></button>))}</div></motion.div></div>)}
-                {showAddRoom && (<div className='modal-overlay'><motion.div className='modal-content !p-6'><h2 className='text-lg font-black italic text-center mb-6 uppercase'>XONA MA'LUMOTLARI</h2><div className='space-y-4'><input type="text" placeholder="XONA NOMI" className='input-luxury-small h-14' value={editingRoom ? editingRoom.name : newRoom.name} onChange={(e) => editingRoom ? setEditingRoom({ ...editingRoom, name: e.target.value }) : setNewRoom({ ...newRoom, name: e.target.value })} /><input type="number" placeholder="SOATIGA NARX" className='input-luxury-small h-14' value={editingRoom ? editingRoom.price : newRoom.price} onChange={(e) => editingRoom ? setEditingRoom({ ...editingRoom, price: Number(e.target.value) }) : setNewRoom({ ...newRoom, price: Number(e.target.value) })} /><button onClick={() => { if (editingRoom) { setRooms(rooms.map(r => r.id === editingRoom.id ? editingRoom : r)); setEditingRoom(null); } else { setRooms([...rooms, { ...newRoom, id: Date.now(), club: currentAdminData.club, isBusy: false, isSuspended: false }]); } setShowAddRoom(false); }} className='w-full py-5 bg-[#ffcf4b] text-black font-black uppercase rounded-2xl shadow-xl'>SAQLASH</button></div></motion.div></div>)}
+                {selectedRoomForBar && (<div className='modal-overlay'><motion.div className='modal-content !p-6'><div className='flex justify-between items-center mb-6'><p className='text-sm font-black italic gold-text uppercase'>BAR XIZMATI</p><button onClick={() => setSelectedRoomForBar(null)} className='p-2 bg-white/5 rounded-full'><X size={16} /></button></div><div className='grid grid-cols-2 gap-2.5 max-h-[50vh] overflow-y-auto'>{(inventory || []).map(item => (<button key={item.id} disabled={item.stock <= 0} onClick={() => { setRooms(prev => prev.map(r => r.id === selectedRoomForBar.id ? { ...r, items: [...(r.items || []), { ...item, quantity: 1 }] } : r)); setInventory(p => p.map(i => i.id === item.id ? { ...i, stock: i.stock - 1, sold: (i.sold || 0) + 1 } : i)); setSelectedRoomForBar(null); }} className='gold-glass !p-3 h-[90px] text-left text-[8px] font-black uppercase active:scale-95 disabled:opacity-20 flex flex-col justify-between'><span>{item.name}</span><span className='gold-text'>{item.price.toLocaleString()}</span></button>))}</div></motion.div></div>)}
+                {showAddRoom && (<div className='modal-overlay'><motion.div className='modal-content !p-6'><h2 className='text-lg font-black italic text-center mb-6 uppercase'>XONA QO'SHISH</h2><div className='space-y-4'><input type="text" placeholder="NOMI" className='input-luxury-small h-14' value={editingRoom ? editingRoom.name : newRoom.name} onChange={(e) => editingRoom ? setEditingRoom({ ...editingRoom, name: e.target.value }) : setNewRoom({ ...newRoom, name: e.target.value })} /><input type="number" placeholder="NARXI (SOAT)" className='input-luxury-small h-14' value={editingRoom ? editingRoom.price : newRoom.price} onChange={(e) => editingRoom ? setEditingRoom({ ...editingRoom, price: Number(e.target.value) }) : setNewRoom({ ...newRoom, price: Number(e.target.value) })} /><button onClick={() => { if (editingRoom) { setRooms(rooms.map(r => r.id === editingRoom.id ? editingRoom : r)); setEditingRoom(null); } else { setRooms([...rooms, { ...newRoom, id: Date.now(), club: currentAdminData.club, isBusy: false, isSuspended: false }]); } setShowAddRoom(false); }} className='w-full py-5 bg-[#ffcf4b] text-black font-black uppercase rounded-2xl shadow-xl'>SAQLASH</button></div></motion.div></div>)}
             </AnimatePresence>
         </div>
     );
