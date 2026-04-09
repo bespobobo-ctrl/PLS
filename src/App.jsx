@@ -1043,7 +1043,7 @@ function App() {
                                                 <div className='absolute top-2 right-4 opacity-20'><Activity size={24} className='text-[#ffcf4b]' /></div>
                                                 <p className='text-[8px] font-black tracking-[3px] uppercase opacity-40 mb-2'>BUGUNGI_TUSHUM</p>
                                                 <p className='text-3xl gold-text italic tracking-tighter'>
-                                                    {Number((rooms || []).filter(r => r && r.club === clubAdmins.find(ca => ca.login === username)?.club).reduce((acc, r) => acc + (Number(r.dailyRevenue) || 0), 0)).toLocaleString()}
+                                                    {Number((rooms || []).filter(r => r && r.club === clubAdmins.find(ca => ca?.login === username)?.club).reduce((acc, r) => acc + (Number(r?.dailyRevenue) || 0), 0)).toLocaleString()}
                                                 </p>
                                                 <p className='text-[8px] font-bold opacity-30 mt-1 uppercase'>UZS</p>
                                             </div>
@@ -1052,7 +1052,7 @@ function App() {
                                                 <div className='absolute top-2 right-4 opacity-20'><Zap size={24} className='text-[#ffcf4b]' /></div>
                                                 <p className='text-[8px] font-black tracking-[3px] uppercase opacity-40 mb-2'>AKTIV_KONSOL</p>
                                                 <p className='text-4xl gold-text italic tracking-tighter'>
-                                                    {rooms.filter(r => r.club === clubAdmins.find(ca => ca.login === username)?.club && r.isBusy).length}
+                                                    {rooms.filter(r => r && r.club === clubAdmins.find(ca => ca?.login === username)?.club && r.isBusy).length}
                                                 </p>
                                                 <p className='text-[8px] font-bold opacity-30 mt-1 uppercase'>ONLINE</p>
                                             </div>
@@ -1070,7 +1070,7 @@ function App() {
                                                 <div className='absolute top-2 right-4 opacity-20'><AlertTriangle size={24} className='text-red-500' /></div>
                                                 <p className='text-[8px] font-black tracking-[3px] uppercase opacity-40 mb-2 text-red-500/50'>QARZDORLIK</p>
                                                 <p className='text-xl font-black italic tracking-tighter text-red-500'>
-                                                    {debts.filter(d => d.club === clubAdmins.find(ca => ca.login === username)?.club).reduce((acc, d) => acc + (d.amount || 0), 0).toLocaleString()}
+                                                    {debts.filter(d => d && d.club === clubAdmins.find(ca => ca?.login === username)?.club).reduce((acc, d) => acc + (d?.amount || 0), 0).toLocaleString()}
                                                 </p>
                                                 <p className='text-[8px] font-bold opacity-30 mt-1 uppercase'>UZS</p>
                                             </div>
