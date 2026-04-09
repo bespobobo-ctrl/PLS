@@ -17,8 +17,9 @@ function App() {
     // Persistent State for Main Admin
     const getInitialState = (key, defaultValue) => {
         try {
-            // v36 - Fixed Inventory Persistence & Modal
-            const BOT_URL = 'https://pls-taupe.vercel.app/?v=v36';
+            // v37 - Real-time Server Sync
+            const BOT_URL = 'https://pls-taupe.vercel.app/?v=v37';
+            const API_URL = 'https://vps-4241680.fastvps-server.com:3001/api'; // Update this to your real backend URL
             const stored = localStorage.getItem(key);
             const parsed = JSON.parse(stored);
             return (parsed && (Array.isArray(parsed) || typeof parsed === 'object')) ? parsed : defaultValue;
@@ -120,14 +121,48 @@ function App() {
 
     const holdTimer = useRef(null);
 
+    // Server Sync Logic
+    const syncData = async (data) => {
+        try {
+            await fetch(`${API_URL}/sync`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+        } catch (e) { console.error('Sync failed:', e); }
+    };
+
+    // Initial Load
     useEffect(() => {
-        if (window.Telegram?.WebApp) {
-            window.Telegram.WebApp.ready();
-            window.Telegram.WebApp.expand();
-            window.Telegram.WebApp.enableClosingConfirmation();
-            window.Telegram.WebApp.headerColor = '#030308';
-        }
+        const loadInitialData = async () => {
+            try {
+                const res = await fetch(`${API_URL}/data`);
+                const data = await res.json();
+                if (data.inventory) setInventory(data.inventory);
+                if (data.rooms) setRooms(data.rooms);
+                if (data.sales) setSales(data.sales);
+                if (data.debts) setDebts(data.debts);
+                if (data.sessions) setSessions(data.sessions);
+            } catch (e) { console.error('Initial load failed:', e); }
+        };
+        loadInitialData();
     }, []);
+
+    // Effect to sync every change
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            syncData({
+                superAdmins,
+                clubAdmins,
+                rooms,
+                inventory,
+                debts,
+                sessions,
+                sales
+            });
+        }, 1000);
+        return () => clearTimeout(timer);
+    }, [superAdmins, clubAdmins, rooms, inventory, debts, sessions, sales]);
 
     const startHold = () => {
         let progress = 0;
