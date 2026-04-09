@@ -96,27 +96,27 @@ const App = () => {
             const clubLog = (salesLog || []).filter(s => s?.club === currentAdminData?.club);
             const nowTime = Date.now();
             const day = 24 * 60 * 60 * 1000; const week = 7 * day; const month = 30 * day; const year = 365 * day;
-
             const dailySales = clubLog.filter(s => (nowTime - s.timestamp) < day);
             const dailyBar = dailySales.filter(s => s?.type === 'BAR').reduce((acc, s) => acc + s.amount, 0);
             const dailyRoom = dailySales.filter(s => s?.type === 'ROOM' || !s?.type).reduce((acc, s) => acc + s.amount, 0);
-
             const weekly = clubLog.filter(s => (nowTime - s.timestamp) < week).reduce((acc, s) => acc + s.amount, 0);
             const monthly = clubLog.filter(s => (nowTime - s.timestamp) < month).reduce((acc, s) => acc + s.amount, 0);
             const yearly = clubLog.filter(s => (nowTime - s.timestamp) < year).reduce((acc, s) => acc + s.amount, 0);
-
             const activeRev = (activeRooms || []).filter(r => r?.isBusy).reduce((acc, r) => acc + calculateSession(r).total, 0);
             const totalD = (debts || []).filter(d => d?.club === currentAdminData?.club).reduce((acc, d) => acc + (d?.amount || 0), 0);
-
             return { daily: dailyRoom + dailyBar + activeRev, dailyBar, dailyRoom: dailyRoom + activeRev, weekly: weekly + activeRev, monthly: monthly + activeRev, yearly: yearly + activeRev, totalDept: totalD, totalR: activeRooms.length, busyR: activeRooms.filter(r => r.isBusy).length, freeR: activeRooms.filter(r => !r.isBusy && !r.isSuspended).length };
         } catch { return { daily: 0, dailyBar: 0, dailyRoom: 0, weekly: 0, monthly: 0, yearly: 0, totalDept: 0, totalR: 0, busyR: 0, freeR: 0 }; }
     }, [salesLog, debts, currentAdminData?.club, activeRooms, now]);
 
     const confirmCheckout = () => {
         const stats = finalStats; const paid = Number(paidAmount) || 0;
+        const endTimeStr = formatTimeShort(now);
         if (paid > 0) setSalesLog(p => [...(p || []), { id: Date.now(), amount: paid, timestamp: Date.now(), club: checkoutRoom?.club, type: 'ROOM' }]);
         if ((stats?.total || 0) - paid > 0) setDebts(p => [...(p || []), { id: Date.now(), name: debtUser.name || 'Mijoz', phone: debtUser.phone || '', amount: stats.total - paid, date: new Date().toLocaleString(), timestamp: Date.now(), club: checkoutRoom?.club }]);
-        addToHistory('SESS', checkoutRoom.name, `Xona yopildi: ${stats.total.toLocaleString()} UZS`);
+
+        // Detailed History Log
+        addToHistory('SESS', checkoutRoom.name, `Seans yakunlandi: ${stats.startStr} dan ${endTimeStr} gacha. Jami: ${stats.total.toLocaleString()} UZS`);
+
         setRooms(prev => (prev || []).map(r => r.id === checkoutRoom?.id ? { ...r, isBusy: false, startTime: null, items: [] } : r));
         setCheckoutRoom(null); setFinalStats(null); setPaidAmount(''); setDebtUser({ name: '', phone: '' });
     };
@@ -172,7 +172,7 @@ const App = () => {
                     {dates.map(dStr => {
                         const dateObj = new Date(dStr); const isSel = selectedHistoryDate === dStr;
                         return (
-                            <button key={dStr} onClick={() => setSelectedHistoryDate(dStr)} className={`shrink-0 w-12 h-16 rounded-2xl flex flex-col items-center justify-center transition-all border ${isSel ? 'bg-[#ffcf4b] border-[#ffcf4b] text-black shadow-lg shadow-[#ffcf4b]/10' : 'bg-white/5 border-white/5 text-white/30'}`}>
+                            <button key={dStr} onClick={() => setSelectedHistoryDate(dStr)} className={`shrink-0 w-12 h-16 rounded-2xl flex flex-col items-center justify-center transition-all border ${isSel ? 'bg-[#ffcf4b] border-[#ffcf4b] text-black shadow-lg shadow-[#ffcf4b]/10' : 'bg-white/5 border border-white/5 text-white/30'}`}>
                                 <span className='text-[7px] font-black uppercase opacity-60 mb-0.5'>{dateObj.toLocaleDateString('uz-UZ', { weekday: 'short' })}</span>
                                 <span className='text-sm font-black italic'>{dateObj.getDate()}</span>
                             </button>
@@ -186,6 +186,7 @@ const App = () => {
                             <div className='flex-1 py-0.5'><div className='flex justify-between items-start mb-0.5'><h4 className='text-[10px] font-black uppercase text-white/70'>{e.title}</h4><span className='text-[8px] opacity-20 font-black'>{formatTimeShort(e.timestamp)}</span></div><p className='text-[9px] opacity-30 leading-relaxed'>{e.desc}</p></div>
                         </div>
                     ))}
+                    {filteredEntries.length === 0 && <p className='text-center py-24 text-[10px] opacity-20 font-black uppercase'>MAHLUMOT TOPILMADI</p>}
                 </div>
             </div>
         );
@@ -220,6 +221,7 @@ const App = () => {
                     </div>
                 );
             })}</div>
+
             <button onClick={() => { setEditingRoom(null); setShowAddRoom(true); }} className='fixed right-8 bottom-32 w-12 h-12 bg-[#ffcf4b] rounded-2xl flex items-center justify-center text-black shadow-xl shadow-[#ffcf4b]/10 active:scale-90 transition-all z-50'><Plus size={24} strokeWidth={3} /></button>
         </div>
     );
@@ -308,7 +310,7 @@ const App = () => {
                     </motion.div></div>
                 )}
                 {showAddRoom && (<div className='modal-overlay'><motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className='modal-content !p-8 !rounded-[2.5rem] border border-white/5'><h2 className='text-lg font-black italic uppercase gold-text text-center mb-8 tracking-tighter'>SOZLAMALAR</h2><div className='space-y-4'><input type="text" placeholder="XONA NOMI" className='bg-white/5 border border-white/5 h-14 w-full text-center rounded-2xl text-[11px] font-black uppercase outline-none' value={editingRoom ? editingRoom.name : newRoom.name} onChange={(e) => editingRoom ? setEditingRoom({ ...editingRoom, name: e.target.value }) : setNewRoom({ ...newRoom, name: e.target.value })} /><input type="number" placeholder="NARXI (SOATIGA)" className='bg-white/5 border border-white/5 h-14 w-full text-center rounded-2xl text-[11px] font-black uppercase outline-none' value={editingRoom ? editingRoom.price : newRoom.price} onChange={(e) => editingRoom ? setEditingRoom({ ...editingRoom, price: Number(e.target.value) }) : setNewRoom({ ...newRoom, price: Number(e.target.value) })} /><div className='flex flex-col gap-2 pt-4'><button onClick={() => { if (editingRoom) { setRooms(rooms.map(r => r.id === editingRoom.id ? editingRoom : r)); setEditingRoom(null); } else { setRooms([...rooms, { ...newRoom, id: Date.now(), club: currentAdminData.club, isBusy: false, isSuspended: false }]); } setShowAddRoom(false); }} className='py-4.5 bg-[#ffcf4b] text-black font-black text-[10px] uppercase rounded-2xl shadow-xl active:scale-95 transition-all'>SAQLASH</button><button onClick={() => setShowAddRoom(false)} className='py-2 text-[9px] opacity-20 font-black uppercase'>BEKOR QILISH</button></div></div></motion.div></div>)}
-                {showInventoryModal && (<div className='modal-overlay'><motion.div className='modal-content !p-8 !rounded-[2.5rem]'><h2 className='text-lg font-black gold-text text-center mb-8 uppercase tracking-tighter'>YANGI MAHSULOT</h2><div className='space-y-4'><input type="text" placeholder="NOMI" className='bg-white/5 border border-white/5 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newItem.name} onChange={(e) => setNewItem({ ...newItem, name: e.target.value })} /><div className='grid grid-cols-2 gap-4'><input type="number" placeholder="NARXI" className='bg-white/5 border border-white/5 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newItem.price} onChange={(e) => setNewItem({ ...newItem, price: Number(e.target.value) })} /><input type="number" placeholder="SONI" className='bg-white/5 border border-white/5 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newItem.stock} onChange={(e) => setNewItem({ ...newItem, stock: Number(e.target.value) })} /></div><div className='flex flex-col gap-2 pt-4'><button onClick={() => { setInventory([...inventory, { ...newItem, id: Date.now(), sold: 0 }]); setShowInventoryModal(false); }} className='py-4.5 bg-[#ffcf4b] text-black font-black text-[10px] uppercase rounded-2xl active:scale-95 transition-all'>QO'SHISH</button><button onClick={() => setShowInventoryModal(false)} className='py-2 text-[9px] opacity-20 font-black uppercase'>BEKOR QILISH</button></div></div></motion.div></div>)}
+                {showInventoryModal && (<div className='modal-overlay'><motion.div className='modal-content !p-8 !rounded-[2.5rem]'><h2 className='text-lg font-black gold-text text-center mb-8 uppercase tracking-tighter'>YANGI MAHSULOT</h2><div className='space-y-4'><input type="text" placeholder="NOMI" className='bg-white/5 border border-white/10 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newItem.name} onChange={(e) => setNewItem({ ...newItem, name: e.target.value })} /><div className='grid grid-cols-2 gap-4'><input type="number" placeholder="NARXI" className='bg-white/5 border border-white/10 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newItem.price} onChange={(e) => setNewItem({ ...newItem, price: Number(e.target.value) })} /><input type="number" placeholder="SONI" className='bg-white/5 border border-white/10 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newItem.stock} onChange={(e) => setNewItem({ ...newItem, stock: Number(e.target.value) })} /></div><div className='flex flex-col gap-2 pt-4'><button onClick={() => { setInventory([...inventory, { ...newItem, id: Date.now(), sold: 0 }]); setShowInventoryModal(false); }} className='py-4.5 bg-[#ffcf4b] text-black font-black text-[10px] uppercase rounded-2xl active:scale-95 transition-all'>QO'SHISH</button><button onClick={() => setShowInventoryModal(false)} className='py-2 text-[9px] opacity-20 font-black uppercase'>BEKOR QILISH</button></div></div></motion.div></div>)}
                 {selectedRoomForBar && (<div className='modal-overlay'><motion.div className='modal-content !p-8 !rounded-[2.5rem]'><div className='flex justify-between items-center mb-8'><p className='text-lg font-black italic gold-text uppercase'>BAR TANLASH</p><button onClick={() => setSelectedRoomForBar(null)} className='p-2 bg-white/5 rounded-full text-white/20'><X size={16} /></button></div><div className='grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto no-scrollbar'>{(inventory || []).map(item => (<button key={item.id} disabled={item.stock <= 0} onClick={() => { setRooms(prev => prev.map(r => r.id === selectedRoomForBar.id ? { ...r, items: [...(r.items || []), { ...item, quantity: 1 }] } : r)); setInventory(p => p.map(i => i.id === item.id ? { ...i, stock: i.stock - 1, sold: (i.sold || 0) + 1 } : i)); setSelectedRoomForBar(null); }} className='bg-white/5 p-5 rounded-2xl text-left h-24 flex flex-col justify-between active:scale-95 transition-all border border-white/5 opacity-80'><span className='text-[9px] font-black uppercase text-white/60 leading-tight'>{item.name}</span><span className='gold-text text-xs'>{item.price.toLocaleString()}</span></button>))}</div><button onClick={() => setSelectedRoomForBar(null)} className='w-full mt-6 py-4 text-[9px] opacity-10 font-black uppercase'>BEKOR QILISH</button></motion.div></div>)}
             </AnimatePresence>
         </div>
