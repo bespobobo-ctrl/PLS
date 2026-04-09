@@ -17,8 +17,8 @@ function App() {
     // Persistent State for Main Admin
     const getInitialState = (key, defaultValue) => {
         try {
-            // v38 - Connected to 161.35.196.164
-            const BOT_URL = 'https://pls-taupe.vercel.app/?v=v38';
+            // v39 - Force Cache Refresh & Direct Modal Trigger
+            const BOT_URL = 'https://pls-taupe.vercel.app/?v=v39';
             const API_URL = 'http://161.35.196.164:3001/api';
             const stored = localStorage.getItem(key);
             const parsed = JSON.parse(stored);
