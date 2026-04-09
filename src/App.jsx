@@ -40,6 +40,7 @@ const App = () => {
     const [now, setNow] = useState(Date.now());
     const [expRooms, setExpRooms] = useState({});
     const [showDebtsInAsosiy, setShowDebtsInAsosiy] = useState(getInitialState('showDebtsInAsosiy', true));
+    const [selectedHistoryDate, setSelectedHistoryDate] = useState(new Date().toISOString().split('T')[0]);
 
     // Modals
     const [checkoutRoom, setCheckoutRoom] = useState(null);
@@ -70,8 +71,8 @@ const App = () => {
     }, [rooms, debts, salesLog, historyEntries, inventory, view, username]);
 
     const addToHistory = (type, title, desc, iconColor = 'gold') => {
-        const newEntry = { id: Date.now(), timestamp: Date.now(), type, title, desc, iconColor, club: currentAdminData.club };
-        setHistoryEntries(prev => [newEntry, ...(prev || []).slice(0, 199)]);
+        const newEntry = { id: Date.now(), timestamp: Date.now(), type, title, desc, iconColor, club: currentAdminData.club, dateStr: new Date().toISOString().split('T')[0] };
+        setHistoryEntries(prev => [newEntry, ...(prev || []).slice(0, 499)]);
     };
 
     const currentAdminData = useMemo(() => {
@@ -122,7 +123,7 @@ const App = () => {
         if (paid > 0) setSalesLog(p => [...(p || []), { id: Date.now(), amount: paid, timestamp: Date.now(), club: checkoutRoom?.club }]);
         if ((stats?.total || 0) - paid > 0) setDebts(p => [...(p || []), { id: Date.now(), name: debtUser.name || 'Mijoz', phone: debtUser.phone || '', amount: stats.total - paid, date: new Date().toLocaleString(), timestamp: Date.now(), club: checkoutRoom?.club }]);
 
-        addToHistory('SESSION', checkoutRoom.name, `Xona yopildi. Jami: ${stats.total.toLocaleString()} UZS (Vaqt: ${stats.time})`, 'red');
+        addToHistory('SESSION', checkoutRoom.name, `Xona yopildi. Jami: ${stats.total.toLocaleString()} UZS`, 'red');
 
         setRooms(prev => (prev || []).map(r => r.id === checkoutRoom?.id ? { ...r, isBusy: false, startTime: null, items: [] } : r));
         setCheckoutRoom(null); setFinalStats(null); setPaidAmount(''); setDebtUser({ name: '', phone: '' });
@@ -151,28 +152,52 @@ const App = () => {
                     return (<div key={r.id} onClick={() => setActiveTab('xarita')} className='gold-glass !p-4 flex justify-between items-center bg-black/40 border-white/5 active:scale-95 transition-all text-sm'><div><p className='font-black italic uppercase'>{r.name}</p><p className='text-[8px] font-black gold-text'>{s.time} • {s.startStr}</p></div><p className='font-black'>{s.total.toLocaleString()} UZS</p></div>);
                 })}
             </div>
-        </div>
-    );
-
-    const renderClubHistory = () => (
-        <div className='p-4 space-y-4 pb-28'>
-            <div className='flex justify-between items-center mb-4 px-2'><div className='flex items-center gap-2 text-[#ffcf4b]'><History size={20} /><h2 className='text-lg font-black uppercase italic'>ISTORIYA</h2></div><button onClick={() => { if (window.confirm('Istoriya tozalansinmi?')) setHistoryEntries([]) }} className='text-[8px] font-black opacity-20 uppercase'>Tozalash</button></div>
-            <div className='space-y-3'>
-                {(historyEntries || []).filter(e => e?.club === currentAdminData?.club).map(entry => (
-                    <div key={entry.id} className='gold-glass !p-4 flex gap-4 bg-black/40 border-white/5 relative'>
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${entry.type === 'SESSION' ? 'bg-red-500/10 text-red-500' : entry.type === 'BAR' ? 'bg-[#ffcf4b]/10 text-[#ffcf4b]' : entry.type === 'INV' ? 'bg-blue-500/10 text-blue-500' : 'bg-gray-500/10 text-gray-400'}`}>
-                            {entry.type === 'SESSION' ? <Play size={18} /> : entry.type === 'BAR' ? <ShoppingCart size={18} /> : entry.type === 'INV' ? <Database size={18} /> : <Settings size={18} />}
+            <div className='gold-glass !p-0 overflow-hidden border-red-500/20 bg-red-500/5'>
+                <div onClick={() => setShowDebtsInAsosiy(!showDebtsInAsosiy)} className='p-5 flex justify-between items-center bg-white/5 cursor-pointer active:bg-white/10 transition-all'>
+                    <div className='flex items-center gap-3'><div className='w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center text-red-500'><Users size={16} /></div><div><p className='text-[9px] font-black uppercase opacity-60'>QARZLAR</p><p className='text-xs font-black text-red-500'>{analytics.totalDept.toLocaleString()} UZS</p></div></div>
+                    {showDebtsInAsosiy ? <EyeOff size={16} className='opacity-30' /> : <Eye size={16} className='opacity-30' />}
+                </div>
+                <AnimatePresence>{showDebtsInAsosiy && (<motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className='p-3 border-t border-white/5 space-y-2 max-h-[300px] overflow-y-auto'>
+                    {(debts || []).filter(d => d?.club === currentAdminData?.club).reverse().map(d => (
+                        <div key={d.id} className='gold-glass !p-3 bg-black/40 border-white/5 flex justify-between items-center'>
+                            <div className='space-y-0.5'><div className='flex items-center gap-2'><h4 className='text-[11px] font-black uppercase'>{d.name}</h4><p className='text-[9px] font-black text-red-500'>-{d.amount.toLocaleString()}</p></div>{d.phone && (<a href={`tel:${d.phone}`} className='flex items-center gap-1 text-blue-400'><Phone size={8} /><span className='text-[9px] font-black'>{d.phone}</span></a>)}<div className='flex items-center gap-1 opacity-20'><Calendar size={8} /><span className='text-[7px] font-black uppercase'>{d.date}</span></div></div>
+                            <button onClick={() => { if (window.confirm('To\'landimi?')) setDebts(p => p.filter(x => x.id !== d.id)) }} className='p-2 bg-green-500/10 rounded-lg text-green-500'><CheckCircle2 size={14} /></button>
                         </div>
-                        <div className='flex-1'>
-                            <div className='flex justify-between items-start mb-1'><h4 className='text-xs font-black uppercase'>{entry.title}</h4><span className='text-[8px] font-black opacity-20 tabular-nums'>{formatTimeFull(entry.timestamp)}</span></div>
-                            <p className='text-[10px] opacity-40 font-medium leading-relaxed'>{entry.desc}</p>
-                        </div>
-                    </div>
-                ))}
-                {(historyEntries || []).filter(e => e?.club === currentAdminData?.club).length === 0 && <div className='flex flex-col items-center justify-center py-20 opacity-20 text-center'><History size={48} className='mb-4' /><p className='text-xs font-black uppercase'>Hozircha hech nima yo'q</p></div>}
+                    ))}
+                    {(debts || []).filter(d => d?.club === currentAdminData?.club).length === 0 && <p className='text-center py-4 text-[9px] opacity-20 font-black uppercase'>Qarzlar yo'q</p>}
+                </motion.div>)}</AnimatePresence>
             </div>
         </div>
     );
+
+    const renderClubHistory = () => {
+        const filteredEntries = (historyEntries || []).filter(e => e?.club === currentAdminData?.club && (e.dateStr === selectedHistoryDate || !e.dateStr));
+        return (
+            <div className='p-4 space-y-4 pb-28'>
+                <div className='flex flex-col gap-4 mb-6 px-2'>
+                    <div className='flex justify-between items-center'><div className='flex items-center gap-2 text-[#ffcf4b]'><History size={20} /><h2 className='text-lg font-black uppercase italic'>ISTORIYA</h2></div><button onClick={() => { if (window.confirm('Istoriya tozalansinmi?')) setHistoryEntries([]) }} className='text-[8px] font-black opacity-20 uppercase'>Tozalash</button></div>
+                    <div className='flex items-center gap-3 bg-white/5 p-3 rounded-2xl border border-white/5 overflow-hidden'>
+                        <Calendar size={18} className='text-[#ffcf4b] shrink-0' />
+                        <input type="date" className='bg-transparent text-white font-black text-xs uppercase outline-none flex-1 border-none' value={selectedHistoryDate} onChange={(e) => setSelectedHistoryDate(e.target.value)} />
+                    </div>
+                </div>
+                <div className='space-y-3'>
+                    {filteredEntries.map(entry => (
+                        <div key={entry.id} className='gold-glass !p-4 flex gap-4 bg-black/40 border-white/5'>
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${entry.type === 'SESSION' ? 'bg-red-500/10 text-red-500' : entry.type === 'BAR' ? 'bg-[#ffcf4b]/10 text-[#ffcf4b]' : entry.type === 'INV' ? 'bg-blue-500/10 text-blue-500' : 'bg-gray-500/10 text-gray-400'}`}>
+                                {entry.type === 'SESSION' ? <Play size={18} /> : entry.type === 'BAR' ? <ShoppingCart size={18} /> : entry.type === 'INV' ? <Database size={18} /> : <Settings size={18} />}
+                            </div>
+                            <div className='flex-1'>
+                                <div className='flex justify-between items-start mb-0.5'><h4 className='text-xs font-black uppercase tracking-tight'>{entry.title}</h4><span className='text-[8px] font-black opacity-20 tabular-nums'>{formatTimeShort(entry.timestamp)}</span></div>
+                                <p className='text-[10px] opacity-40 font-medium leading-relaxed'>{entry.desc}</p>
+                            </div>
+                        </div>
+                    ))}
+                    {filteredEntries.length === 0 && <div className='flex flex-col items-center justify-center py-20 opacity-20 text-center'><History size={48} className='mb-4' /><p className='text-xs font-black uppercase text-center'>Ushbu sana uchun ma'lumot yo'q</p></div>}
+                </div>
+            </div>
+        );
+    };
 
     const renderClubXarita = () => (
         <div className='p-4 space-y-4 pb-28'>
@@ -182,11 +207,11 @@ const App = () => {
                 return (
                     <div key={room.id} className={`gold-glass transition-all ${room.isBusy ? 'ring-1 ring-[#ffcf4b]/20 bg-black/60 shadow-2xl' : room.isSuspended ? 'opacity-40 grayscale border-red-500/20' : 'opacity-80'}`}>
                         <div className='p-4 border-b border-white/5 flex justify-between items-center' onClick={() => room.isBusy && setExpRooms(p => ({ ...p, [room.id]: !isExp }))}>
-                            <div className='flex items-center gap-3'><div className={`w-2.5 h-2.5 rounded-full ${room.isBusy ? 'bg-[#ffcf4b] animate-pulse' : room.isSuspended ? 'bg-red-500' : 'bg-white/10'}`}></div><div><h3 className='text-lg font-black italic uppercase tracking-tighter'>{room.name}</h3><p className='text-[8px] font-black opacity-40 uppercase'>{room.isBusy ? `OCHILGAN: ${session.startStr}` : 'READY'}</p></div></div>
+                            <div className='flex items-center gap-3'><div className={`w-2 h-2.5 rounded-full ${room.isBusy ? 'bg-[#ffcf4b] animate-pulse' : room.isSuspended ? 'bg-red-500' : 'bg-white/10'}`}></div><div><h3 className='text-lg font-black italic uppercase tracking-tighter'>{room.name}</h3><p className='text-[8px] font-black opacity-40 uppercase'>{room.isBusy ? `OCHILGAN: ${session.startStr}` : 'READY'}</p></div></div>
                             <div className='flex gap-1.5' onClick={e => e.stopPropagation()}>
                                 <button onClick={() => { const status = !room.isSuspended; setRooms(p => p.map(r => r.id === room.id ? { ...r, isSuspended: status, isBusy: false } : r)); addToHistory('SYSTEM', room.name, status ? 'Xona bloklandi.' : 'Xonadan blok yechildi.', 'gray'); }} className={`p-2.5 rounded-xl transition-all ${room.isSuspended ? 'bg-red-500 text-white' : 'bg-white/5 text-white/30'}`}><PauseCircle size={18} /></button>
                                 <button onClick={() => { setEditingRoom(room); setShowAddRoom(true); }} className='p-2.5 bg-white/5 rounded-xl text-white/30'><Edit3 size={18} /></button>
-                                <button onClick={() => { if (window.confirm('O\'chirrilsinmi?')) { setRooms(p => p.filter(r => r.id !== room.id)); addToHistory('SYSTEM', room.name, 'Xona butkul o\'chirildi.', 'red'); } }} className='p-2.5 bg-red-500/10 rounded-xl text-red-500/50'><Trash2 size={18} /></button>
+                                <button onClick={() => { if (window.confirm('O\'chirrilsinmi?')) { setRooms(p => p.filter(r => r.id !== room.id)); addToHistory('SYSTEM', room.name, 'Xona o\'chirildi.', 'red'); } }} className='p-2.5 bg-red-500/10 rounded-xl text-red-500/50'><Trash2 size={18} /></button>
                             </div>
                         </div>
                         {room.isBusy && (
@@ -195,7 +220,7 @@ const App = () => {
                                 {!isExp && <div className='text-right'><p className='text-[7px] font-black opacity-30 uppercase'>Total</p><p className='text-lg font-black tabular-nums'>{session.total.toLocaleString()} UZS</p></div>}
                                 {isExp && (
                                     <div className='pt-4 border-t border-white/10 space-y-4'>
-                                        <div className='flex justify-between items-center'><p className='text-lg font-black gold-text italic tabular-nums'>{session.total.toLocaleString()} <span className='text-[8px]'>UZS</span></p><button onClick={() => setSelectedRoomForBar(room)} className='bg-[#ffcf4b] text-black px-4 py-1.5 rounded-full text-[9px] font-black uppercase shadow-lg'>+ BAR</button></div>
+                                        <div className='flex justify-between items-center'><p className='text-lg font-black gold-text italic tabular-nums'>{session.total.toLocaleString()} <span className='text-[8px]'>UZS</span></p><button onClick={() => setSelectedRoomForBar(room)} className='bg-[#ffcf4b] text-black px-4 py-1.5 rounded-full text-[9px] font-black uppercase shadow-lg shadow-[#ffcf4b]/20'>+ BAR</button></div>
                                         <div className='flex flex-wrap gap-1.5'>{(room.items || []).map((i, idx) => (<div key={idx} className='text-[8px] font-black uppercase bg-white/10 px-3 py-1.5 rounded-xl border border-white/5'>{i.name}</div>))}</div>
                                         <button onClick={() => { setFinalStats({ ...session }); setCheckoutRoom(room); }} className='w-full py-4 bg-red-600 rounded-2xl text-white font-black uppercase italic text-xs shadow-xl active:scale-95'>HISOBLASH VA YOPISH</button>
                                     </div>
@@ -220,7 +245,7 @@ const App = () => {
             ) : (
                 <div className='space-y-3'>
                     <button onClick={() => setShowInventoryModal(true)} className='w-full py-4 bg-white/5 rounded-xl font-black text-[9px] uppercase border border-white/10'>+ MAHSULOT QO'SHISH</button>
-                    {(inventory || []).map(item => (<div key={item.id} className='gold-glass !p-4 flex justify-between items-center text-xs'><div className='flex items-center gap-3'><div className='w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[#ffcf4b]'><Package size={16} /></div><div><h4 className='font-black'>{item.name}</h4><p className='text-[8px] opacity-30'>Qoldiq: {item.stock} ta</p></div></div><button onClick={() => { setInventory(p => p.filter(i => i.id !== item.id)); addToHistory('INV', item.name, 'Mahsulot ombordan o\'chirildi.', 'gray'); }} className='p-2 bg-red-500/10 rounded-xl text-red-500'><Trash2 size={14} /></button></div>))}
+                    {(inventory || []).map(item => (<div key={item.id} className='gold-glass !p-4 flex justify-between items-center text-xs'><div className='flex items-center gap-3'><div className='w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[#ffcf4b]'><Package size={16} /></div><div><h4 className='font-black'>{item.name}</h4><p className='text-[8px] opacity-30'>Qoldiq: {item.stock} ta</p></div></div><button onClick={() => { setInventory(p => p.filter(i => i.id !== item.id)); addToHistory('INV', item.name, 'Ombordan o\'chirildi.', 'gray'); }} className='p-2 bg-red-500/10 rounded-xl text-red-500'><Trash2 size={14} /></button></div>))}
                 </div>
             )}
         </div>
@@ -247,7 +272,7 @@ const App = () => {
                 )}
             </AnimatePresence>
 
-            {/* Navigation (v4 Tabs) */}
+            {/* Navigation */}
             {view !== 'login' && (
                 <div className='fixed bottom-4 left-4 right-4 bg-black/95 backdrop-blur-3xl border border-white/10 p-2.5 rounded-[2.5rem] flex justify-between z-50 shadow-2xl'>
                     <button onClick={() => setActiveTab('asosiy')} className={`flex-1 flex flex-col items-center py-2 gap-1 ${activeTab === 'asosiy' ? 'text-[#ffcf4b] scale-105' : 'text-white/20'}`}><BarChart size={20} /><span className='text-[7px] font-black uppercase tracking-widest'>ASOSIY</span></button>
@@ -266,9 +291,9 @@ const App = () => {
                             <div className='gold-glass !p-2.5 border-white/5 text-center'><p className='text-[6px] opacity-40 uppercase font-black'>BOSHLANDI</p><p className='text-sm font-black italic'>{finalStats.startStr}</p></div>
                             <div className='gold-glass !p-2.5 border-white/5 text-center'><p className='text-[6px] opacity-40 uppercase font-black'>TUGADI</p><p className='text-sm font-black italic gold-text'>{finalStats.endStr}</p></div>
                         </div>
-                        <div className='gold-glass !p-4 text-center mb-5 bg-[#ffcf4b]/5'>
+                        <div className='gold-glass !p-4 text-center mb-5 bg-[#ffcf4b]/5 relative'>
                             <p className='text-[7px] opacity-40 font-black mb-1 italic'>DAVOMIYLIGI: <span className='text-white'>{finalStats.time}</span></p>
-                            <p className='text-4xl font-black gold-text italic tracking-tighter tabular-nums'>{finalStats.total.toLocaleString()} <span className='text-[10px] opacity-40'>UZS</span></p>
+                            <p className='text-4xl font-black gold-text italic tracking-tighter tabular-nums'>{finalStats.total.toLocaleString()} <span className='text-[10px] opacity-40 uppercase'>UZS</span></p>
                         </div>
                         <input type="number" placeholder="OLINGAN PUL" className='input-luxury-small h-12 text-xl font-black text-center mb-5' value={paidAmount} onChange={(e) => setPaidAmount(e.target.value)} />
                         <div className='flex flex-col gap-2'>
@@ -277,9 +302,9 @@ const App = () => {
                         </div>
                     </motion.div></div>
                 )}
-                {showInventoryModal && (<div className='modal-overlay'><motion.div className='modal-content !p-6'><h2 className='text-xl font-black gold-text mb-6 text-center uppercase'>MAHSULOT</h2><div className='space-y-4'><input type="text" placeholder="NOMI" className='input-luxury-small h-14' value={newItem.name} onChange={(e) => setNewItem({ ...newItem, name: e.target.value })} /><div className='grid grid-cols-2 gap-3'><input type="number" placeholder="NARXI" className='input-luxury-small h-14' value={newItem.price} onChange={(e) => setNewItem({ ...newItem, price: Number(e.target.value) })} /><input type="number" placeholder="SKLAD" className='input-luxury-small h-14' value={newItem.stock} onChange={(e) => setNewItem({ ...newItem, stock: Number(e.target.value) })} /></div><button onClick={() => { setInventory([...inventory, { ...newItem, id: Date.now(), sold: 0 }]); addToHistory('INV', newItem.name, `Yangi mahsulot omborga qo'shildi: ${newItem.stock} ta`, 'blue'); setShowInventoryModal(false); }} className='w-full py-5 bg-[#ffcf4b] text-black font-black uppercase rounded-2xl'>SAQLASH</button></div></motion.div></div>)}
-                {selectedRoomForBar && (<div className='modal-overlay'><motion.div className='modal-content !p-6'><div className='flex justify-between items-center mb-6'><p className='text-sm font-black italic gold-text uppercase'>BAR XIZMATI</p><button onClick={() => setSelectedRoomForBar(null)} className='p-2 bg-white/5 rounded-full'><X size={16} /></button></div><div className='grid grid-cols-2 gap-2.5 max-h-[50vh] overflow-y-auto px-1'>{(inventory || []).map(item => (<button key={item.id} disabled={item.stock <= 0} onClick={() => { setRooms(prev => prev.map(r => r.id === selectedRoomForBar.id ? { ...r, items: [...(r.items || []), { ...item, quantity: 1 }] } : r)); setInventory(p => p.map(i => i.id === item.id ? { ...i, stock: i.stock - 1, sold: (i.sold || 0) + 1 } : i)); addToHistory('BAR', item.name, `Xonaga mahsulot qo'shildi (${selectedRoomForBar.name})`, 'gold'); setSelectedRoomForBar(null); }} className='gold-glass !p-3.5 h-[90px] text-left text-[8px] font-black uppercase active:scale-95 disabled:opacity-20 flex flex-col justify-between'><span>{item.name}</span><span className='gold-text'>{item.price.toLocaleString()}</span></button>))}</div></motion.div></div>)}
-                {showAddRoom && (<div className='modal-overlay'><motion.div className='modal-content !p-6'><h2 className='text-lg font-black italic text-center mb-6 uppercase'>XONA QO'SHISH</h2><div className='space-y-4'><input type="text" placeholder="NOMI" className='input-luxury-small h-14' value={editingRoom ? editingRoom.name : newRoom.name} onChange={(e) => editingRoom ? setEditingRoom({ ...editingRoom, name: e.target.value }) : setNewRoom({ ...newRoom, name: e.target.value })} /><input type="number" placeholder="NARXI (SOAT)" className='input-luxury-small h-14' value={editingRoom ? editingRoom.price : newRoom.price} onChange={(e) => editingRoom ? setEditingRoom({ ...editingRoom, price: Number(e.target.value) }) : setNewRoom({ ...newRoom, price: Number(e.target.value) })} /><button onClick={() => { if (editingRoom) { setRooms(rooms.map(r => r.id === editingRoom.id ? editingRoom : r)); addToHistory('SYSTEM', editingRoom.name, 'Xona ma\'lumotlari tahrirlandi.', 'gray'); setEditingRoom(null); } else { setRooms([...rooms, { ...newRoom, id: Date.now(), club: currentAdminData.club, isBusy: false, isSuspended: false }]); addToHistory('SYSTEM', newRoom.name, 'Yangi xona tizimga qo\'shildi.', 'blue'); } setShowAddRoom(false); }} className='w-full py-5 bg-[#ffcf4b] text-black font-black uppercase rounded-2xl shadow-xl'>SAQLASH</button></div></motion.div></div>)}
+                {showInventoryModal && (<div className='modal-overlay'><motion.div className='modal-content !p-6'><h2 className='text-xl font-black gold-text mb-6 text-center uppercase'>MAHSULOT</h2><div className='space-y-4'><input type="text" placeholder="NOMI" className='input-luxury-small h-14' value={newItem.name} onChange={(e) => setNewItem({ ...newItem, name: e.target.value })} /><div className='grid grid-cols-2 gap-3'><input type="number" placeholder="NARXI" className='input-luxury-small h-14' value={newItem.price} onChange={(e) => setNewItem({ ...newItem, price: Number(e.target.value) })} /><input type="number" placeholder="SKLAD" className='input-luxury-small h-14' value={newItem.stock} onChange={(e) => setNewItem({ ...newItem, stock: Number(e.target.value) })} /></div><button onClick={() => { setInventory([...inventory, { ...newItem, id: Date.now(), sold: 0 }]); addToHistory('INV', newItem.name, `Mahsulot omborga qo'shildi: ${newItem.stock} ta`, 'blue'); setShowInventoryModal(false); }} className='w-full py-5 bg-[#ffcf4b] text-black font-black uppercase rounded-2xl'>SAQLASH</button></div></motion.div></div>)}
+                {selectedRoomForBar && (<div className='modal-overlay'><motion.div className='modal-content !p-6'><div className='flex justify-between items-center mb-6'><p className='text-sm font-black italic gold-text uppercase'>BAR XIZMATI</p><button onClick={() => setSelectedRoomForBar(null)} className='p-2 bg-white/5 rounded-full'><X size={16} /></button></div><div className='grid grid-cols-2 gap-2.5 max-h-[50vh] overflow-y-auto px-1'>{(inventory || []).map(item => (<button key={item.id} disabled={item.stock <= 0} onClick={() => { setRooms(prev => prev.map(r => r.id === selectedRoomForBar.id ? { ...r, items: [...(r.items || []), { ...item, quantity: 1 }] } : r)); setInventory(p => p.map(i => i.id === item.id ? { ...i, stock: i.stock - 1, sold: (i.sold || 0) + 1 } : i)); addToHistory('BAR', item.name, `Xonaga mahsulot berildi: ${selectedRoomForBar.name}`, 'gold'); setSelectedRoomForBar(null); }} className='gold-glass !p-3.5 h-[100px] text-left text-[8px] font-black uppercase active:scale-95 disabled:opacity-20 flex flex-col justify-between'><span>{item.name}</span><span className='gold-text'>{item.price.toLocaleString()}</span></button>))}</div></motion.div></div>)}
+                {showAddRoom && (<div className='modal-overlay'><motion.div className='modal-content !p-6'><h2 className='text-lg font-black italic text-center mb-6 uppercase'>XONA MA'LUMOTLARI</h2><div className='space-y-4'><input type="text" placeholder="NOMI" className='input-luxury-small h-14' value={editingRoom ? editingRoom.name : newRoom.name} onChange={(e) => editingRoom ? setEditingRoom({ ...editingRoom, name: e.target.value }) : setNewRoom({ ...newRoom, name: e.target.value })} /><input type="number" placeholder="NARXI (SOAT)" className='input-luxury-small h-14' value={editingRoom ? editingRoom.price : newRoom.price} onChange={(e) => editingRoom ? setEditingRoom({ ...editingRoom, price: Number(e.target.value) }) : setNewRoom({ ...newRoom, price: Number(e.target.value) })} /><button onClick={() => { if (editingRoom) { setRooms(rooms.map(r => r.id === editingRoom.id ? editingRoom : r)); addToHistory('SYSTEM', editingRoom.name, 'Xona tahrirlandi.', 'gray'); setEditingRoom(null); } else { setRooms([...rooms, { ...newRoom, id: Date.now(), club: currentAdminData.club, isBusy: false, isSuspended: false }]); addToHistory('SYSTEM', newRoom.name, 'Yangi xona qo\'shildi.', 'blue'); } setShowAddRoom(false); }} className='w-full py-5 bg-[#ffcf4b] text-black font-black uppercase rounded-2xl shadow-xl'>SAQLASH</button></div></motion.div></div>)}
             </AnimatePresence>
         </div>
     );
