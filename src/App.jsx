@@ -5,7 +5,7 @@ import {
     Monitor, ArrowRight, Lock, Unlock, Clock, CreditCard, Users,
     BarChart3, ShoppingCart, Database, Zap, PieChart, AlertTriangle,
     Package, TrendingUp, History, UserCheck, ShieldCheck, Briefcase, Phone, UserPlus, Key, Edit3, Calendar, Play, Square, UserMinus,
-    PauseCircle, Coffee, CheckCircle2, ChevronDown, ChevronUp, Wallet, TrendingDown, ArrowUpRight, BarChart, Boxes, LayoutGrid, Eye, EyeOff, ExternalLink, ListChecks, Info, ChevronLeft, Layout as LayoutIcon
+    PauseCircle, Coffee, CheckCircle2, ChevronDown, ChevronUp, Wallet, TrendingDown, ArrowUpRight, BarChart, Boxes, LayoutGrid, Eye, EyeOff, ExternalLink, ListChecks, Info, ChevronLeft, Layout as LayoutIcon, Receipt
 } from 'lucide-react';
 
 const getInitialState = (key, defaultValue) => {
@@ -48,6 +48,7 @@ const App = () => {
     const [editingRoom, setEditingRoom] = useState(null);
     const [newRoom, setNewRoom] = useState({ name: '', price: '' });
     const [newItem, setNewItem] = useState({ name: '', price: '', stock: '', category: 'Ichimlik' });
+    const [selectedHistoryItem, setSelectedHistoryItem] = useState(null);
 
     useEffect(() => {
         const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -65,8 +66,8 @@ const App = () => {
         localStorage.setItem('username', JSON.stringify(username));
     }, [rooms, debts, salesLog, historyEntries, inventory, view, username]);
 
-    const addToHistory = (type, title, desc) => {
-        const newEntry = { id: Date.now(), timestamp: Date.now(), type, title, desc, club: currentAdminData.club, dateStr: new Date().toISOString().split('T')[0] };
+    const addToHistory = (type, title, desc, extra = {}) => {
+        const newEntry = { id: Date.now(), timestamp: Date.now(), type, title, desc, club: currentAdminData.club, dateStr: new Date().toISOString().split('T')[0], ...extra };
         setHistoryEntries(prev => [newEntry, ...(prev || []).slice(0, 499)]);
     };
 
@@ -114,8 +115,12 @@ const App = () => {
         if (paid > 0) setSalesLog(p => [...(p || []), { id: Date.now(), amount: paid, timestamp: Date.now(), club: checkoutRoom?.club, type: 'ROOM' }]);
         if ((stats?.total || 0) - paid > 0) setDebts(p => [...(p || []), { id: Date.now(), name: debtUser.name || 'Mijoz', phone: debtUser.phone || '', amount: stats.total - paid, date: new Date().toLocaleString(), timestamp: Date.now(), club: checkoutRoom?.club }]);
 
-        // Detailed History Log
-        addToHistory('SESS', checkoutRoom.name, `Seans yakunlandi: ${stats.startStr} dan ${endTimeStr} gacha. Jami: ${stats.total.toLocaleString()} UZS`);
+        addToHistory('SESS_CLOSE', checkoutRoom.name, `Seans yakunlandi.`, {
+            startTime: stats.startStr,
+            endTime: endTimeStr,
+            amount: stats.total,
+            duration: stats.time
+        });
 
         setRooms(prev => (prev || []).map(r => r.id === checkoutRoom?.id ? { ...r, isBusy: false, startTime: null, items: [] } : r));
         setCheckoutRoom(null); setFinalStats(null); setPaidAmount(''); setDebtUser({ name: '', phone: '' });
@@ -172,7 +177,7 @@ const App = () => {
                     {dates.map(dStr => {
                         const dateObj = new Date(dStr); const isSel = selectedHistoryDate === dStr;
                         return (
-                            <button key={dStr} onClick={() => setSelectedHistoryDate(dStr)} className={`shrink-0 w-12 h-16 rounded-2xl flex flex-col items-center justify-center transition-all border ${isSel ? 'bg-[#ffcf4b] border-[#ffcf4b] text-black shadow-lg shadow-[#ffcf4b]/10' : 'bg-white/5 border border-white/5 text-white/30'}`}>
+                            <button key={dStr} onClick={() => setSelectedHistoryDate(dStr)} className={`shrink-0 w-12 h-16 rounded-2xl flex flex-col items-center justify-center transition-all border ${isSel ? 'bg-[#ffcf4b] border-[#ffcf4b] text-black shadow-lg shadow-[#ffcf4b]/10' : 'bg-white/5 border-white/5 text-white/30'}`}>
                                 <span className='text-[7px] font-black uppercase opacity-60 mb-0.5'>{dateObj.toLocaleDateString('uz-UZ', { weekday: 'short' })}</span>
                                 <span className='text-sm font-black italic'>{dateObj.getDate()}</span>
                             </button>
@@ -181,12 +186,23 @@ const App = () => {
                 </div>
                 <div className='space-y-2.5'>
                     {filteredEntries.map(e => (
-                        <div key={e.id} className='bg-white/5 border border-white/5 p-4 rounded-2xl flex gap-4 active:bg-white/10 transition-all'>
-                            <div className='w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center shrink-0 opacity-40'>{e.type === 'SESS' ? <Play size={14} /> : <ShoppingCart size={14} />}</div>
-                            <div className='flex-1 py-0.5'><div className='flex justify-between items-start mb-0.5'><h4 className='text-[10px] font-black uppercase text-white/70'>{e.title}</h4><span className='text-[8px] opacity-20 font-black'>{formatTimeShort(e.timestamp)}</span></div><p className='text-[9px] opacity-30 leading-relaxed'>{e.desc}</p></div>
+                        <div key={e.id} onClick={() => setSelectedHistoryItem(e)} className='bg-white/5 border border-white/5 p-5 rounded-[2rem] flex justify-between items-center active:scale-[0.98] transition-all cursor-pointer'>
+                            <div className='flex items-center gap-4'>
+                                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${e.type === 'SESS_CLOSE' ? 'bg-[#ffcf4b]/10 text-[#ffcf4b]' : e.type === 'BAR' ? 'bg-green-500/10 text-green-500' : 'bg-white/5 text-white/40'}`}>
+                                    {e.type === 'SESS_CLOSE' ? <Monitor size={18} /> : e.type === 'BAR' ? <ShoppingCart size={18} /> : <Activity size={18} />}
+                                </div>
+                                <div>
+                                    <h4 className='text-[11px] font-black uppercase text-white/80 italic'>{e.title}</h4>
+                                    <p className='text-[8px] opacity-20 font-black uppercase'>{e.type === 'SESS_CLOSE' ? 'Yopildi' : e.type === 'BAR' ? 'Sotuv' : 'Harakat'}</p>
+                                </div>
+                            </div>
+                            <div className='text-right'>
+                                {e.amount ? <p className='text-xs font-black gold-text'>{e.amount.toLocaleString()} UZS</p> : <p className='text-[8px] opacity-20 font-black uppercase'>Batafsil</p>}
+                                <p className='text-[8px] opacity-10 font-bold mt-1'>{formatTimeShort(e.timestamp)}</p>
+                            </div>
                         </div>
                     ))}
-                    {filteredEntries.length === 0 && <p className='text-center py-24 text-[10px] opacity-20 font-black uppercase'>MAHLUMOT TOPILMADI</p>}
+                    {filteredEntries.length === 0 && <p className='text-center py-24 text-[10px] opacity-20 font-black uppercase tracking-[5px]'>BO'SH</p>}
                 </div>
             </div>
         );
@@ -217,7 +233,7 @@ const App = () => {
                                     </div>
                                 )}
                             </div>
-                        ) : (<div className='px-5 pb-5'><button onClick={() => { setRooms(p => p.map(x => x.id === r.id ? { ...x, isBusy: true, startTime: Date.now(), items: [] } : x)); addToHistory('SESS', r.name, 'Xona ochildi.'); }} className='w-full py-4 bg-white/5 rounded-2xl text-white/30 font-black uppercase text-[9px] border border-white/5 active:bg-[#ffcf4b] active:text-black transition-all'>Xonani Ochish</button></div>)}
+                        ) : (<div className='px-5 pb-5'><button onClick={() => { setRooms(p => p.map(x => x.id === r.id ? { ...x, isBusy: true, startTime: Date.now(), items: [] } : x)); addToHistory('SESS_OPEN', r.name, 'Seans boshlandi.'); }} className='w-full py-4 bg-white/5 rounded-2xl text-white/30 font-black uppercase text-[9px] border border-white/5 active:bg-[#ffcf4b] active:text-black transition-all'>Xonani Ochish</button></div>)}
                     </div>
                 );
             })}</div>
@@ -231,7 +247,7 @@ const App = () => {
             <div className='flex justify-between items-end mb-2'><h2 className='text-xl font-black italic gold-text uppercase tracking-tighter'>BAR</h2><div className='flex gap-1.5 p-1 bg-white/5 rounded-xl border border-white/5'><button onClick={() => setBarSubTab('sotuv')} className={`px-4 py-2 rounded-lg text-[8px] font-black uppercase transition-all ${barSubTab === 'sotuv' ? 'bg-[#ffcf4b] text-black shadow-md' : 'text-white/20'}`}>Sotuv</button><button onClick={() => setBarSubTab('ombor')} className={`px-4 py-2 rounded-lg text-[8px] font-black uppercase transition-all ${barSubTab === 'ombor' ? 'bg-white/10 text-white' : 'text-white/20'}`}>Ombor</button></div></div>
             {barSubTab === 'sotuv' ? (
                 <div className='grid grid-cols-2 gap-3.5'>
-                    {(inventory || []).length > 0 ? (inventory || []).map(item => (<button key={item.id} onClick={() => { if (item.stock <= 0) return alert('Omborda yo\'q!'); if (window.confirm('Sotilsinmi?')) { setInventory(p => p.map(i => i.id === item.id ? { ...i, stock: i.stock - 1, sold: (i.sold || 0) + 1 } : i)); setSalesLog(p => [...p, { id: Date.now(), amount: item.price, timestamp: Date.now(), club: currentAdminData.club, type: 'BAR' }]); addToHistory('BAR', item.name, `Sotuv: ${item.price.toLocaleString()} UZS`); } }} className='bg-white/5 border border-white/5 p-5 rounded-2xl text-left h-28 flex flex-col justify-between active:scale-95 transition-all'><div><p className='text-[6px] opacity-20 font-black uppercase mb-0.5'>{item.category}</p><h4 className='text-[11px] font-black uppercase text-white/70 italic'>{item.name}</h4></div><p className='text-[10px] font-black gold-text'>{item.price.toLocaleString()} UZS</p></button>)) : <div className='col-span-2 py-32 text-center opacity-10 text-[9px] font-black uppercase tracking-[5px]'>OMBOR BO'SH</div>}
+                    {(inventory || []).length > 0 ? (inventory || []).map(item => (<button key={item.id} onClick={() => { if (item.stock <= 0) return alert('Omborda yo\'q!'); if (window.confirm('Sotilsinmi?')) { setInventory(p => p.map(i => i.id === item.id ? { ...i, stock: i.stock - 1, sold: (i.sold || 0) + 1 } : i)); setSalesLog(p => [...p, { id: Date.now(), amount: item.price, timestamp: Date.now(), club: currentAdminData.club, type: 'BAR' }]); addToHistory('BAR', item.name, `Bar savdosi.`, { amount: item.price }); } }} className='bg-white/5 border border-white/5 p-5 rounded-2xl text-left h-28 flex flex-col justify-between active:scale-95 transition-all'><div><p className='text-[6px] opacity-20 font-black uppercase mb-0.5'>{item.category}</p><h4 className='text-[11px] font-black uppercase text-white/70 italic'>{item.name}</h4></div><p className='text-[10px] font-black gold-text'>{item.price.toLocaleString()} UZS</p></button>)) : <div className='col-span-2 py-32 text-center opacity-10 text-[9px] font-black uppercase tracking-[5px]'>OMBOR BO'SH</div>}
                 </div>
             ) : (
                 <div className='space-y-3.5'>
@@ -287,6 +303,32 @@ const App = () => {
 
             {/* Modals */}
             <AnimatePresence>
+                {selectedHistoryItem && (
+                    <div className='modal-overlay' onClick={() => setSelectedHistoryItem(null)}><motion.div onClick={e => e.stopPropagation()} initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className='modal-content !p-0 !rounded-[2.5rem] !max-w-[85%] border border-white/10 overflow-hidden bg-[#0a0a0a]'>
+                        <div className='p-8 text-center bg-gradient-to-b from-[#ffcf4b]/10 to-transparent'>
+                            <div className='w-16 h-16 rounded-[2rem] bg-[#ffcf4b] flex items-center justify-center mx-auto mb-6 shadow-xl shadow-[#ffcf4b]/20'><Receipt size={32} className='text-black' /></div>
+                            <h2 className='text-xl font-black italic gold-text uppercase tracking-[3px]'>{selectedHistoryItem.title}</h2>
+                            <p className='text-[9px] opacity-20 font-black uppercase mt-1'>Muvaffaqiyatli seans</p>
+                        </div>
+                        <div className='p-8 space-y-6'>
+                            <div className='grid grid-cols-2 gap-8'>
+                                <div><p className='text-[8px] font-black opacity-20 uppercase tracking-[2px] mb-1'>OCHILDI</p><p className='text-xs font-black italic text-white/80'>{selectedHistoryItem.startTime || formatTimeShort(selectedHistoryItem.timestamp)}</p></div>
+                                <div className='text-right'><p className='text-[8px] font-black opacity-20 uppercase tracking-[2px] mb-1'>YOPILDI</p><p className='text-xs font-black italic text-white/80'>{selectedHistoryItem.endTime || formatTimeShort(selectedHistoryItem.timestamp)}</p></div>
+                            </div>
+                            {selectedHistoryItem.duration && (
+                                <div className='pt-4 border-t border-white/5 flex justify-between items-center'>
+                                    <p className='text-[8px] font-black opacity-20 uppercase'>DAVOMIYLIGI</p>
+                                    <p className='text-xs font-black text-[#ffcf4b] tabular-nums'>{selectedHistoryItem.duration}</p>
+                                </div>
+                            )}
+                            <div className='pt-6 border-t-2 border-dashed border-white/5'>
+                                <p className='text-[8px] font-black opacity-20 uppercase tracking-[4px] text-center mb-2'>UMUMIY SUMMA</p>
+                                <p className='text-4xl font-black italic gold-text text-center tracking-tighter'>{selectedHistoryItem.amount ? selectedHistoryItem.amount.toLocaleString() : '0'}<span className='text-[10px] NOT-italic opacity-20 ml-2'>UZS</span></p>
+                            </div>
+                        </div>
+                        <button onClick={() => setSelectedHistoryItem(null)} className='w-full py-6 bg-white/5 border-t border-white/5 text-[9px] font-black uppercase tracking-[3px] text-white/20 active:bg-white/10 transition-all'>Yopish</button>
+                    </motion.div></div>
+                )}
                 {checkoutRoom && (
                     <div className='modal-overlay'><motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className='modal-content !p-8 !rounded-[2.5rem] !max-w-[85%] border border-[#ffcf4b]/5'>
                         <h2 className='text-xl font-black italic gold-text text-center mb-8 uppercase tracking-[4px]'>YOPISH</h2>
