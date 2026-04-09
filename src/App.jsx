@@ -116,36 +116,38 @@ const App = () => {
     };
 
     const renderClubAsosiy = () => (
-        <div className='p-6 space-y-5 pb-32 animate-fade-in'>
-            <div className='flex gap-3'>
-                <div className='gold-glass flex-1 !p-3 bg-white/5 border-transparent text-center'><p className='text-[8px] font-black opacity-30 mb-1 uppercase'>JAMI</p><p className='text-sm font-black gold-text'>{analytics.totalR}</p></div>
-                <div className='gold-glass flex-1 !p-3 bg-white/5 border-transparent text-center'><p className='text-[8px] font-black opacity-30 mb-1 uppercase'>BAND</p><p className='text-sm font-black gold-text'>{analytics.busyR}</p></div>
-                <div className='gold-glass flex-1 !p-3 bg-white/5 border-transparent text-center'><p className='text-[8px] font-black opacity-30 mb-1 uppercase'>BO'SH</p><p className='text-sm font-black gold-text'>{analytics.freeR}</p></div>
+        <div className='p-6 space-y-5 pb-40 animate-fade-in'>
+            <div className='flex gap-2.5'>
+                <div className='bg-white/5 backdrop-blur-lg border border-white/5 flex-1 p-3 rounded-2xl text-center'><p className='text-[8px] font-black opacity-20 mb-0.5 uppercase'>JAMI</p><p className='text-xs font-black opacity-60'>{analytics.totalR}</p></div>
+                <div className='bg-white/5 backdrop-blur-lg border border-white/5 flex-1 p-3 rounded-2xl text-center'><p className='text-[8px] font-black opacity-20 mb-0.5 uppercase'>BAND</p><p className='text-xs font-black gold-text'>{analytics.busyR}</p></div>
+                <div className='bg-white/5 backdrop-blur-lg border border-white/5 flex-1 p-3 rounded-2xl text-center'><p className='text-[8px] font-black opacity-20 mb-0.5 uppercase'>BO'SH</p><p className='text-xs font-black text-green-500/60'>{analytics.freeR}</p></div>
             </div>
-            <div className='gold-glass !p-7 bg-gradient-to-br from-[#ffcf4b]/10 to-transparent border-[#ffcf4b]/10 rounded-[2.5rem] relative overflow-hidden'>
-                <div className='absolute -right-10 -top-10 w-40 h-40 bg-[#ffcf4b]/5 rounded-full blur-3xl'></div>
-                <p className='text-[10px] font-black opacity-40 uppercase tracking-[3px] mb-2'>BUGUNGI KASSA</p>
-                <h2 className='text-4xl font-black italic gold-text tracking-tighter tabular-nums'>{analytics.daily.toLocaleString()} <span className='text-xs opacity-30 NOT-italic ml-1'>UZS</span></h2>
+            <div className='relative p-7 rounded-[2rem] bg-gradient-to-br from-[#ffcf4b]/10 to-transparent border border-[#ffcf4b]/5 overflow-hidden'>
+                <div className='absolute -right-5 -top-5 w-32 h-32 bg-[#ffcf4b]/5 rounded-full blur-3xl'></div>
+                <p className='text-[9px] font-black opacity-30 uppercase tracking-[3px] mb-2'>BUGUNGI KASSA</p>
+                <div className='flex items-baseline gap-1'>
+                    <h2 className='text-3xl font-black italic gold-text tracking-tighter tabular-nums'>{analytics.daily.toLocaleString()}</h2>
+                    <span className='text-[9px] opacity-20 font-black'>UZS</span>
+                </div>
             </div>
-            <div className='grid grid-cols-3 gap-3'>
-                <div className='gold-glass !p-4 bg-white/5 border-transparent text-center'><p className='text-[7px] opacity-30 font-black mb-1 uppercase'>HAFTA</p><p className='text-xs font-black'>{analytics.weekly.toLocaleString()}</p></div>
-                <div className='gold-glass !p-4 bg-white/5 border-transparent text-center'><p className='text-[7px] opacity-30 font-black mb-1 uppercase'>OY</p><p className='text-xs font-black'>{analytics.monthly.toLocaleString()}</p></div>
-                <div className='gold-glass !p-4 bg-white/5 border-transparent text-center'><p className='text-[7px] opacity-30 font-black mb-1 uppercase'>YIL</p><p className='text-xs font-black gold-text'>{analytics.yearly.toLocaleString()}</p></div>
+            <div className='grid grid-cols-3 gap-2.5'>
+                {[{ l: 'HAFTA', v: analytics.weekly }, { l: 'OY', v: analytics.monthly }, { l: 'YIL', v: analytics.yearly }].map((item, idx) => (
+                    <div key={idx} className='bg-white/5 border border-white/5 p-4 rounded-2xl text-center'><p className='text-[7px] opacity-20 font-black mb-1 uppercase'>{item.l}</p><p className='text-[10px] font-black opacity-60'>{item.v.toLocaleString()}</p></div>
+                ))}
             </div>
-            <div className='pt-2 space-y-3'>
-                <p className='text-[10px] font-black opacity-20 uppercase tracking-widest px-1'>JONLI MONITORING</p>
+            <div className='pt-2 space-y-2.5'>
+                <p className='text-[9px] font-black opacity-20 uppercase tracking-[3px] px-1'>JONLI MONITORING</p>
                 {(activeRooms || []).filter(r => r?.isBusy).map(r => {
                     const s = calculateSession(r);
-                    return (<div key={r.id} onClick={() => setActiveTab('xarita')} className='gold-glass !p-5 flex justify-between items-center bg-black/30 border-white/5 active:scale-[0.98] transition-all cursor-pointer'><div><p className='text-xs font-black italic uppercase'>{r.name}</p><p className='text-[9px] opacity-30 mt-0.5'>{s.time} • {s.startStr}</p></div><p className='text-sm font-black gold-text'>{s.total.toLocaleString()}</p></div>);
+                    return (<div key={r.id} onClick={() => setActiveTab('xarita')} className='group bg-white/5 border border-white/5 p-5 rounded-2xl flex justify-between items-center active:scale-[0.98] transition-all cursor-pointer'><div><p className='text-[11px] font-black italic uppercase text-white/80'>{r.name}</p><p className='text-[8px] opacity-20 font-bold mt-0.5'>{s.time} • {s.startStr}</p></div><p className='text-xs font-black gold-text'>{s.total.toLocaleString()} UZS</p></div>);
                 })}
             </div>
-            <div className='gold-glass !p-6 bg-red-500/5 border-red-500/10'>
-                <div onClick={() => setShowDebtsInAsosiy(!showDebtsInAsosiy)} className='flex justify-between items-center cursor-pointer'><div className='flex items-center gap-3'><Users size={18} className='text-red-500' /><p className='text-sm font-black'>QARZLAR: <span className='text-red-500'>{analytics.totalDept.toLocaleString()} UZS</span></p></div>{showDebtsInAsosiy ? <ChevronUp size={16} className='opacity-30' /> : <ChevronDown size={16} className='opacity-30' />}</div>
-                <AnimatePresence>{showDebtsInAsosiy && (<motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className='mt-5 space-y-3 overflow-hidden'>
+            <div className='bg-red-500/5 border border-red-500/10 p-5 rounded-[2rem]'>
+                <div onClick={() => setShowDebtsInAsosiy(!showDebtsInAsosiy)} className='flex justify-between items-center cursor-pointer'><div className='flex items-center gap-3'><Users size={16} className='text-red-500' /><p className='text-[11px] font-black uppercase text-red-500/80'>QARZLAR: {analytics.totalDept.toLocaleString()}</p></div>{showDebtsInAsosiy ? <ChevronUp size={14} className='opacity-20' /> : <ChevronDown size={14} className='opacity-20' />}</div>
+                <AnimatePresence>{showDebtsInAsosiy && (<motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className='mt-4 space-y-2.5 overflow-hidden'>
                     {(debts || []).filter(d => d?.club === currentAdminData?.club).reverse().map(d => (
-                        <div key={d.id} className='bg-black/40 p-4 rounded-2xl border border-white/5 flex justify-between items-center'><div className='space-y-1'><h4 className='text-[11px] font-black uppercase'>{d.name}</h4><p className='text-[10px] text-red-500 font-bold tracking-tight'>-{d.amount.toLocaleString()} UZS</p></div><button onClick={() => { if (window.confirm('Qarz to\'landimi?')) setDebts(p => p.filter(x => x.id !== d.id)) }} className='p-3 bg-green-500/10 text-green-500 rounded-xl active:scale-90 transition-all'><CheckCircle2 size={16} /></button></div>
+                        <div key={d.id} className='bg-black/40 p-4 rounded-2xl border border-white/5 flex justify-between items-center'><div className='space-y-0.5'><h4 className='text-[10px] font-black uppercase text-white/60'>{d.name}</h4><p className='text-[10px] text-red-500/80 font-black'>-{d.amount.toLocaleString()} UZS</p></div><button onClick={() => { if (window.confirm('Qarz to\'landimi?')) setDebts(p => p.filter(x => x.id !== d.id)) }} className='p-2.5 bg-green-500/5 text-green-500/60 rounded-xl active:scale-90 transition-all'><CheckCircle2 size={14} /></button></div>
                     ))}
-                    {(debts || []).filter(d => d?.club === currentAdminData?.club).length === 0 && <p className='text-center py-4 text-[9px] opacity-30 font-black'>QARZLAR YO'Q</p>}
                 </motion.div>)}</AnimatePresence>
             </div>
         </div>
@@ -155,114 +157,118 @@ const App = () => {
         const filteredEntries = (historyEntries || []).filter(e => e?.club === currentAdminData?.club && (e.dateStr === selectedHistoryDate || !e.dateStr));
         const dates = []; for (let i = 0; i < 7; i++) { const d = new Date(); d.setDate(d.getDate() - i); dates.push(d.toISOString().split('T')[0]); }
         return (
-            <div className='p-6 space-y-6 pb-32 animate-fade-in'>
-                <div className='flex justify-between items-end px-1'><div className='flex items-center gap-3'><History size={24} className='text-[#ffcf4b]' /><h2 className='text-xl font-black italic gold-text uppercase'>ISTORIYA</h2></div><input type="date" className='bg-transparent text-[9px] font-black uppercase opacity-20 outline-none' value={selectedHistoryDate} onChange={(e) => setSelectedHistoryDate(e.target.value)} /></div>
-                <div className='flex gap-3 overflow-x-auto no-scrollbar pb-2 px-1'>
+            <div className='p-6 space-y-6 pb-40 animate-fade-in'>
+                <div className='flex justify-between items-end px-1'><h2 className='text-xl font-black italic gold-text uppercase tracking-tighter'>ISTORIYA</h2><input type="date" className='bg-transparent text-[8px] font-black uppercase opacity-10 outline-none' value={selectedHistoryDate} onChange={(e) => setSelectedHistoryDate(e.target.value)} /></div>
+                <div className='flex gap-2.5 overflow-x-auto no-scrollbar px-1'>
                     {dates.map(dStr => {
                         const dateObj = new Date(dStr); const isSel = selectedHistoryDate === dStr;
                         return (
-                            <button key={dStr} onClick={() => setSelectedHistoryDate(dStr)} className={`shrink-0 w-14 h-14 rounded-2xl flex flex-col items-center justify-center transition-all ${isSel ? 'bg-[#ffcf4b] text-black shadow-lg' : 'bg-white/5 text-white/40'}`}>
-                                <span className='text-[7px] font-black uppercase opacity-60'>{dateObj.toLocaleDateString('uz-UZ', { weekday: 'short' })}</span>
+                            <button key={dStr} onClick={() => setSelectedHistoryDate(dStr)} className={`shrink-0 w-12 h-16 rounded-2xl flex flex-col items-center justify-center transition-all border ${isSel ? 'bg-[#ffcf4b] border-[#ffcf4b] text-black shadow-lg shadow-[#ffcf4b]/10' : 'bg-white/5 border-white/5 text-white/30'}`}>
+                                <span className='text-[7px] font-black uppercase opacity-60 mb-0.5'>{dateObj.toLocaleDateString('uz-UZ', { weekday: 'short' })}</span>
                                 <span className='text-sm font-black italic'>{dateObj.getDate()}</span>
                             </button>
                         );
                     })}
                 </div>
-                <div className='space-y-3'>
+                <div className='space-y-2.5'>
                     {filteredEntries.map(e => (
-                        <div key={e.id} className='gold-glass !p-4 flex gap-4 bg-black/30 border-white/5 active:bg-white/5 transition-all'>
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${e.type === 'SESS' ? 'bg-red-500/10 text-red-500' : 'bg-white/5 text-white/20'}`}>{e.type === 'SESS' ? <Play size={16} /> : <ShoppingCart size={16} />}</div>
-                            <div className='flex-1 py-1'><div className='flex justify-between items-start mb-0.5'><h4 className='text-[11px] font-black uppercase text-white/80'>{e.title}</h4><span className='text-[8px] opacity-20 font-black'>{formatTimeShort(e.timestamp)}</span></div><p className='text-[10px] opacity-40 leading-relaxed'>{e.desc}</p></div>
+                        <div key={e.id} className='bg-white/5 border border-white/5 p-4 rounded-2xl flex gap-4 active:bg-white/10 transition-all'>
+                            <div className='w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center shrink-0 opacity-40'>{e.type === 'SESS' ? <Play size={14} /> : <ShoppingCart size={14} />}</div>
+                            <div className='flex-1 py-0.5'><div className='flex justify-between items-start mb-0.5'><h4 className='text-[10px] font-black uppercase text-white/70'>{e.title}</h4><span className='text-[8px] opacity-20 font-black'>{formatTimeShort(e.timestamp)}</span></div><p className='text-[9px] opacity-30 leading-relaxed'>{e.desc}</p></div>
                         </div>
                     ))}
-                    {filteredEntries.length === 0 && <p className='text-center py-24 text-[10px] opacity-20 font-black uppercase'>MAHLUMOT TOPILMADI</p>}
                 </div>
             </div>
         );
     };
 
     const renderClubXarita = () => (
-        <div className='p-6 space-y-4 pb-32 animate-fade-in'>
-            <div className='flex justify-between items-center mb-2 px-1'><p className='text-[10px] font-black opacity-20 uppercase tracking-[2px]'>XONALAR RO'YXATI</p></div>
+        <div className='p-6 space-y-4 pb-40 animate-fade-in'>
             <div className='grid grid-cols-1 gap-4'>{(activeRooms || []).map(r => {
                 const s = calculateSession(r); const isExp = expRooms[r?.id];
                 return (
-                    <div key={r.id} className={`gold-glass transition-all border-white/5 ${r.isBusy ? 'bg-black/60 shadow-xl border-[#ffcf4b]/10' : 'bg-black/20 opacity-70'}`}>
+                    <div key={r.id} className={`rounded-[2rem] border transition-all duration-300 ${r.isBusy ? 'bg-black/40 border-[#ffcf4b]/10 shadow-xl' : 'bg-black/20 border-white/5 opacity-60'}`}>
                         <div className='p-5 flex justify-between items-center' onClick={() => r.isBusy && setExpRooms(p => ({ ...p, [r.id]: !isExp }))}>
-                            <div className='flex items-center gap-4'><div className={`w-2.5 h-2.5 rounded-full ${r.isBusy ? 'bg-[#ffcf4b] animate-pulse shadow-[0_0_10px_#ffcf4b]' : 'bg-white/5'}`}></div><div><h3 className='text-lg font-black italic uppercase'>{r.name}</h3><p className='text-[8px] opacity-30 uppercase font-black tracking-widest mt-0.5'>{r.isBusy ? `OCHIK: ${s.startStr}` : 'BO\'SH'}</p></div></div>
-                            <div className='flex gap-2' onClick={e => e.stopPropagation()}>
-                                <button onClick={() => { setEditingRoom(r); setShowAddRoom(true); }} className='p-3 bg-white/5 rounded-2xl text-white/30 active:scale-90 transition-all'><Edit3 size={18} /></button>
-                                <button onClick={() => { if (window.confirm('O\'chirrilsinmi?')) { setRooms(p => p.filter(x => x.id !== r.id)); addToHistory('SYS', r.name, 'Xona o\'chirildi.'); } }} className='p-3 bg-red-500/10 text-red-500/40 rounded-2xl active:scale-90 transition-all'><Trash2 size={18} /></button>
+                            <div className='flex items-center gap-4'><div className={`w-2 h-2 rounded-full ${r.isBusy ? 'bg-[#ffcf4b]' : 'bg-white/10'}`}></div><div><h3 className='text-lg font-black italic uppercase text-white/90'>{r.name}</h3><p className='text-[8px] opacity-20 uppercase font-black tracking-widest mt-0.5'>{r.isBusy ? `OCHIQ: ${s.startStr}` : 'BO\'SH'}</p></div></div>
+                            <div className='flex gap-1.5' onClick={e => e.stopPropagation()}>
+                                <button onClick={() => { setEditingRoom(r); setShowAddRoom(true); }} className='p-2.5 bg-white/5 rounded-xl text-white/20 active:scale-90 transition-all'><Edit3 size={16} /></button>
+                                <button onClick={() => { if (window.confirm('Xona o\'chirilsinmi?')) { setRooms(p => p.filter(x => x.id !== r.id)); addToHistory('SYS', r.name, 'Xona o\'chirildi.'); } }} className='p-2.5 bg-red-500/5 text-red-500/30 rounded-xl active:scale-90 transition-all font-black text-[9px]'><Trash2 size={16} /></button>
                             </div>
                         </div>
                         {r.isBusy ? (
-                            <div className={`px-5 pb-5 ${isExp ? 'space-y-5 pt-3 border-t border-white/5' : 'flex justify-between items-center'}`}>
-                                <div className='flex flex-col'><p className='text-[7px] font-black opacity-30 uppercase tracking-widest'>VAQT</p><p className={`${isExp ? 'text-4xl' : 'text-xl'} font-black gold-text italic tabular-nums tracking-tighter`}>{s.time}</p></div>
-                                {!isExp && <p className='text-base font-black gold-text tracking-tighter'>{s.total.toLocaleString()} <span className='text-[8px] opacity-30 ml-0.5'>UZS</span></p>}
+                            <div className={`px-5 pb-5 ${isExp ? 'space-y-5 pt-4 border-t border-white/5' : 'flex justify-between items-center'}`}>
+                                <div className='flex flex-col'><p className='text-[7px] font-black opacity-20 uppercase tracking-widest'>VAQT</p><p className={`${isExp ? 'text-4xl' : 'text-xl'} font-black gold-text italic tabular-nums tracking-tighter`}>{s.time}</p></div>
+                                {!isExp && <p className='text-sm font-black gold-text'>{s.total.toLocaleString()} <span className='text-[8px] opacity-20 NOT-italic ml-0.5'>UZS</span></p>}
                                 {isExp && (
                                     <div className='space-y-5'>
-                                        <div className='flex justify-between items-center'><p className='text-3xl font-black gold-text italic tracking-tighter'>{s.total.toLocaleString()}</p><button onClick={() => setSelectedRoomForBar(r)} className='bg-[#ffcf4b] text-black px-6 py-2 rounded-full text-[10px] font-black uppercase shadow-lg shadow-[#ffcf4b]/20 active:scale-90 transition-all'>+ BAR</button></div>
-                                        <div className='flex flex-wrap gap-1.5'>{(r.items || []).map((i, idx) => (<div key={idx} className='text-[8px] font-black uppercase bg-white/5 px-4 py-2 rounded-2xl border border-white/5'>{i.name}</div>))}</div>
-                                        <button onClick={() => { setFinalStats({ ...s }); setCheckoutRoom(r); }} className='w-full py-5 bg-red-600 rounded-3xl text-white font-black uppercase italic text-xs shadow-xl active:scale-95 transition-all'>YOPISH VA HISOBLASH</button>
+                                        <div className='flex justify-between items-center'><p className='text-3xl font-black gold-text italic tracking-tighter tabular-nums'>{s.total.toLocaleString()}</p><button onClick={() => setSelectedRoomForBar(r)} className='bg-white/5 border border-white/10 text-[#ffcf4b] px-5 py-2 rounded-full text-[9px] font-black uppercase active:scale-90 transition-all'>+ BAR</button></div>
+                                        <div className='flex flex-wrap gap-1.5'>{(r.items || []).map((i, idx) => (<div key={idx} className='text-[7px] font-black uppercase bg-white/5 px-3 py-1.5 rounded-xl border border-white/5 opacity-60'>{i.name}</div>))}</div>
+                                        <button onClick={() => { setFinalStats({ ...s }); setCheckoutRoom(r); }} className='w-full py-4.5 bg-red-600/90 rounded-2xl text-white font-black uppercase text-[10px] shadow-xl active:scale-[0.98] transition-all'>XONANI YOPISH</button>
                                     </div>
                                 )}
                             </div>
-                        ) : (<div className='px-5 pb-5'><button onClick={() => { setRooms(p => p.map(x => x.id === r.id ? { ...x, isBusy: true, startTime: Date.now(), items: [] } : x)); addToHistory('SESS', r.name, 'Xona ochildi.'); }} className='w-full py-4.5 bg-white/5 rounded-2xl text-white/40 font-black uppercase text-[10px] border border-white/5 active:bg-[#ffcf4b] active:text-black transition-all'>Xonani Ochish</button></div>)}
+                        ) : (<div className='px-5 pb-5'><button onClick={() => { setRooms(p => p.map(x => x.id === r.id ? { ...x, isBusy: true, startTime: Date.now(), items: [] } : x)); addToHistory('SESS', r.name, 'Xona ochildi.'); }} className='w-full py-4 bg-white/5 rounded-2xl text-white/30 font-black uppercase text-[9px] border border-white/5 active:bg-[#ffcf4b] active:text-black transition-all'>Xonani Ochish</button></div>)}
                     </div>
                 );
             })}</div>
-            <button onClick={() => { setEditingRoom(null); setShowAddRoom(true); }} className='fixed right-6 bottom-32 w-14 h-14 bg-[#ffcf4b] rounded-[1.8rem] flex items-center justify-center text-black shadow-[0_15px_40px_rgba(255,207,75,0.4)] active:scale-[0.85] transition-all z-50 border-[3px] border-black'><Plus size={30} strokeWidth={3} /></button>
+
+            {/* Sleek Floating Add Button */}
+            <button onClick={() => { setEditingRoom(null); setShowAddRoom(true); }} className='fixed right-8 bottom-32 w-12 h-12 bg-[#ffcf4b] rounded-2xl flex items-center justify-center text-black shadow-xl shadow-[#ffcf4b]/10 active:scale-90 transition-all z-50'><Plus size={24} strokeWidth={3} /></button>
         </div>
     );
 
     const renderClubBar = () => (
-        <div className='p-6 space-y-6 pb-32 animate-fade-in'>
-            <div className='flex justify-between items-end mb-2'><h2 className='text-xl font-black italic gold-text uppercase'>BAR PANEL</h2><div className='flex gap-2 p-1 bg-white/5 rounded-xl border border-white/5'><button onClick={() => setBarSubTab('sotuv')} className={`px-5 py-2 rounded-lg text-[9px] font-black uppercase transition-all ${barSubTab === 'sotuv' ? 'bg-[#ffcf4b] text-black shadow-md' : 'text-white/20'}`}>Sotuv</button><button onClick={() => setBarSubTab('ombor')} className={`px-5 py-2 rounded-lg text-[9px] font-black uppercase transition-all ${barSubTab === 'ombor' ? 'bg-white/10 text-white' : 'text-white/20'}`}>Ombor</button></div></div>
+        <div className='p-6 space-y-6 pb-40 animate-fade-in'>
+            <div className='flex justify-between items-end mb-2'><h2 className='text-xl font-black italic gold-text uppercase tracking-tighter'>BAR</h2><div className='flex gap-1.5 p-1 bg-white/5 rounded-xl border border-white/5'><button onClick={() => setBarSubTab('sotuv')} className={`px-4 py-2 rounded-lg text-[8px] font-black uppercase transition-all ${barSubTab === 'sotuv' ? 'bg-[#ffcf4b] text-black shadow-md' : 'text-white/20'}`}>Sotuv</button><button onClick={() => setBarSubTab('ombor')} className={`px-4 py-2 rounded-lg text-[8px] font-black uppercase transition-all ${barSubTab === 'ombor' ? 'bg-white/10 text-white' : 'text-white/20'}`}>Ombor</button></div></div>
             {barSubTab === 'sotuv' ? (
-                <div className='grid grid-cols-2 gap-4'>
-                    {(inventory || []).length > 0 ? (inventory || []).map(item => (<button key={item.id} onClick={() => { if (item.stock <= 0) return alert('Omborda yo\'q!'); if (window.confirm('Sotilsinmi?')) { setInventory(p => p.map(i => i.id === item.id ? { ...i, stock: i.stock - 1, sold: (i.sold || 0) + 1 } : i)); setSalesLog(p => [...p, { id: Date.now(), amount: item.price, timestamp: Date.now(), club: currentAdminData.club }]); addToHistory('BAR', item.name, `Sotuv: ${item.price.toLocaleString()} UZS`); } }} className='gold-glass !p-5 bg-black/40 text-left h-28 flex flex-col justify-between active:scale-95 transition-all border-white/5'><div><p className='text-[7px] opacity-30 font-black uppercase mb-1'>{item.category}</p><h4 className='text-xs font-black uppercase gold-text italic'>{item.name}</h4></div><p className='text-[11px] font-black tabular-nums'>{item.price.toLocaleString()} UZS</p></button>)) : <div className='col-span-2 py-32 text-center opacity-20 text-[10px] font-black uppercase tracking-widest'>OMBOR BO'SH</div>}
+                <div className='grid grid-cols-2 gap-3.5'>
+                    {(inventory || []).length > 0 ? (inventory || []).map(item => (<button key={item.id} onClick={() => { if (item.stock <= 0) return alert('Omborda yo\'q!'); if (window.confirm('Sotilsinmi?')) { setInventory(p => p.map(i => i.id === item.id ? { ...i, stock: i.stock - 1, sold: (i.sold || 0) + 1 } : i)); setSalesLog(p => [...p, { id: Date.now(), amount: item.price, timestamp: Date.now(), club: currentAdminData.club }]); addToHistory('BAR', item.name, `Sotuv: ${item.price.toLocaleString()} UZS`); } }} className='bg-white/5 border border-white/5 p-5 rounded-2xl text-left h-28 flex flex-col justify-between active:scale-95 transition-all'><div><p className='text-[6px] opacity-20 font-black uppercase mb-0.5'>{item.category}</p><h4 className='text-[11px] font-black uppercase text-white/70 italic'>{item.name}</h4></div><p className='text-[10px] font-black gold-text'>{item.price.toLocaleString()} UZS</p></button>)) : <div className='col-span-2 py-32 text-center opacity-10 text-[9px] font-black uppercase tracking-[5px]'>OMBOR BO'SH</div>}
                 </div>
             ) : (
-                <div className='space-y-4'>
-                    <button onClick={() => setShowInventoryModal(true)} className='w-full py-5 bg-white/5 border border-dashed border-white/10 rounded-[2rem] text-[10px] font-black uppercase text-[#ffcf4b] active:scale-95 transition-all'>+ YANGI MAHSULOT QO'SHISH</button>
-                    {(inventory || []).map(item => (<div key={item.id} className='gold-glass !p-5 flex justify-between items-center bg-black/30 border-white/5'><div className='flex items-center gap-4'><div className='w-10 h-10 border border-white/5 bg-white/5 rounded-2xl flex items-center justify-center text-[#ffcf4b]'><Package size={20} /></div><div><h4 className='text-[11px] font-black uppercase'>{item.name}</h4><p className='text-[8px] opacity-30 tracking-widest'>{item.stock} ta qoldi</p></div></div><button onClick={() => { if (window.confirm('O\'chirilsinmi?')) setInventory(p => p.filter(i => i.id !== item.id)) }} className='p-3 bg-red-500/10 text-red-500 rounded-2xl active:scale-90 transition-all font-black text-[9px]'><Trash2 size={16} /></button></div>))}
+                <div className='space-y-3.5'>
+                    <button onClick={() => setShowInventoryModal(true)} className='w-full py-4 bg-white/5 border border-dashed border-white/10 rounded-2xl text-[9px] font-black uppercase text-[#ffcf4b]/60 active:scale-95 transition-all'>+ YANGI MAHSULOT</button>
+                    {(inventory || []).map(item => (<div key={item.id} className='bg-white/5 p-5 rounded-2xl border border-white/5 flex justify-between items-center'><div className='flex items-center gap-4'><div className='w-9 h-9 bg-white/5 rounded-xl flex items-center justify-center text-[#ffcf4b]/40'><Package size={16} /></div><div><h4 className='text-[10px] font-black uppercase text-white/50'>{item.name}</h4><p className='text-[7px] opacity-20 uppercase font-black'>{item.stock} ta qoldi</p></div></div><button onClick={() => { if (window.confirm('O\'chirilsinmi?')) setInventory(p => p.filter(i => i.id !== item.id)) }} className='p-2.5 text-red-500/20 active:text-red-500 transition-colors'><Trash2 size={16} /></button></div>))}
                 </div>
             )}
         </div>
     );
 
     return (
-        <div className='min-h-screen bg-[#000] text-white animated-bg font-sans overflow-x-hidden selection:bg-[#ffcf4b]/30'>
+        <div className='min-h-screen bg-[#000] text-white animated-bg font-sans overflow-x-hidden selection:bg-[#ffcf4b]/20'>
             <AnimatePresence mode='wait'>
                 {view === 'login' ? (
                     <div className='flex flex-col items-center justify-center min-h-screen p-10'>
-                        <div className='w-20 h-20 rounded-[2.5rem] bg-[#ffcf4b] flex items-center justify-center mb-12 shadow-2xl shadow-[#ffcf4b]/20'><Lock size={32} className='text-black' /></div>
-                        <h2 className='text-4xl font-black italic mb-12 text-[#ffcf4b] tracking-tighter'>PLS_ACCESS</h2>
-                        <input type="text" placeholder="LOGIN ID" className='input-luxury-small h-16 w-full max-w-[300px] text-center' value={username} onChange={(e) => setUsername(e.target.value)} />
-                        <button onClick={() => setView('clubDashboard')} className='btn-gold-minimal mt-10 py-5 w-full max-w-[300px] text-lg font-black uppercase rounded-[2rem]'>TIZIMGA KIRISH</button>
+                        <div className='w-14 h-14 rounded-2xl bg-[#ffcf4b] flex items-center justify-center mb-10 shadow-lg shadow-[#ffcf4b]/10'><Lock size={24} className='text-black' /></div>
+                        <h2 className='text-2xl font-black italic mb-10 text-[#ffcf4b]/80 tracking-tighter'>PLS_SYSTEM</h2>
+                        <input type="text" placeholder="ID" className='bg-white/5 border border-white/10 h-14 w-full max-w-[280px] text-center rounded-2xl text-sm font-black uppercase tracking-widest placeholder:opacity-10 outline-none' value={username} onChange={(e) => setUsername(e.target.value)} />
+                        <button onClick={() => setView('clubDashboard')} className='mt-8 py-4 w-full max-w-[280px] text-xs font-black uppercase rounded-2xl bg-white/5 border border-white/10 text-white/40 active:bg-[#ffcf4b] active:text-black transition-all'>TIZIMGA KIRISH</button>
                     </div>
                 ) : (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                        <header className='px-7 py-6 flex justify-between items-center bg-black/70 backdrop-blur-3xl border-b border-white/5 sticky top-0 z-50'>
-                            <div className='flex items-center gap-4'><div className='w-11 h-11 rounded-2xl bg-[#ffcf4b] flex items-center justify-center shadow-lg'><Activity size={22} className='text-black' /></div><div><h2 className='text-base font-black italic uppercase tracking-tighter'>{currentAdminData?.name}</h2><p className='text-[8px] opacity-30 uppercase font-black tracking-[4px]'>{currentAdminData?.club}</p></div></div>
-                            <p className='text-[11px] font-black gold-text tabular-nums italic tracking-[2px]'>{new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}</p>
+                        <header className='px-7 py-5 flex justify-between items-center bg-black/80 backdrop-blur-2xl border-b border-white/5 sticky top-0 z-50'>
+                            <div className='flex items-center gap-3'><div className='w-8 h-8 rounded-xl bg-[#ffcf4b] flex items-center justify-center shadow-md'><Activity size={16} className='text-black' /></div><div><h2 className='text-[13px] font-black italic uppercase tracking-tighter text-white/90'>{currentAdminData?.name}</h2><p className='text-[7px] opacity-20 uppercase font-black tracking-[3px]'>{currentAdminData?.club}</p></div></div>
+                            <p className='text-[10px] font-black gold-text tabular-nums italic tracking-wider'>{new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}</p>
                         </header>
-                        <main className='max-w-[480px] mx-auto pb-40'>{activeTab === 'asosiy' ? renderClubAsosiy() : activeTab === 'bar' ? renderClubBar() : activeTab === 'history' ? renderClubHistory() : renderClubXarita()}</main>
+                        <main className='max-w-[480px] mx-auto'>{activeTab === 'asosiy' ? renderClubAsosiy() : activeTab === 'bar' ? renderClubBar() : activeTab === 'history' ? renderClubHistory() : renderClubXarita()}</main>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* Professional Floating Toolbar */}
+            {/* Sleek Minimalist Toolbar */}
             {view !== 'login' && (
                 <div className='fixed bottom-8 left-0 right-0 flex justify-center z-50 px-8'>
-                    <nav className='bg-black/80 backdrop-blur-3xl border border-white/10 p-2 rounded-[2.8rem] flex items-center shadow-[0_25px_60px_rgba(0,0,0,0.8)] relative w-full max-w-[400px]'>
+                    <nav className='bg-white/5 backdrop-blur-3xl border border-white/5 p-1.5 rounded-[2.5rem] flex items-center shadow-2xl w-full max-w-[360px]'>
                         {['asosiy', 'xarita', 'bar', 'history'].map((tab) => {
                             const isSel = activeTab === tab;
                             return (
-                                <button key={tab} onClick={() => setActiveTab(tab)} className={`relative flex-1 py-4 flex flex-col items-center justify-center gap-1.5 transition-all duration-500 rounded-[2rem] ${isSel ? 'text-black' : 'text-white/20'}`}>
-                                    {isSel && <motion.div layoutId='tab-bg' className='absolute inset-0 bg-[#ffcf4b] rounded-[2rem] shadow-[0_10px_25px_rgba(255,207,75,0.4)]' transition={{ type: 'spring', stiffness: 350, damping: 30 }} />}
-                                    <div className='relative z-10'>{tab === 'asosiy' ? <BarChart2 size={22} /> : tab === 'xarita' ? <Monitor size={22} /> : tab === 'bar' ? <Boxes size={22} /> : <History size={22} />}</div>
-                                    {isSel && <motion.span initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} className='relative z-10 text-[8px] font-black uppercase tracking-widest'>{tab.slice(0, 4)}</motion.span>}
+                                <button key={tab} onClick={() => setActiveTab(tab)} className={`relative flex-1 py-3.5 flex flex-col items-center justify-center gap-1 transition-all duration-300 ${isSel ? 'text-[#ffcf4b]' : 'text-white/20'}`}>
+                                    <div className={`transition-all duration-300 ${isSel ? 'scale-110' : 'scale-90 opacity-40'}`}>
+                                        {tab === 'asosiy' ? <BarChart3 size={20} /> : tab === 'xarita' ? <Monitor size={20} /> : tab === 'bar' ? <Boxes size={20} /> : <History size={20} />}
+                                    </div>
+                                    <span className={`text-[7px] font-black uppercase tracking-[2px] transition-all duration-300 ${isSel ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
+                                        {tab.slice(0, 4)}
+                                    </span>
+                                    {isSel && <motion.div layoutId='nav-glow' className='absolute -bottom-1 w-1 h-1 bg-[#ffcf4b] rounded-full shadow-[0_0_8px_#ffcf4b]' />}
                                 </button>
                             );
                         })}
@@ -270,39 +276,36 @@ const App = () => {
                 </div>
             )}
 
-            {/* Unified Modal System with Cancel buttons */}
+            {/* Modals - Refined & Comfortable */}
             <AnimatePresence>
                 {checkoutRoom && (
-                    <div className='modal-overlay'><motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className='modal-content !p-8 !rounded-[3rem] !max-w-[90%] border border-[#ffcf4b]/10'>
-                        <h2 className='text-2xl font-black italic gold-text text-center mb-8 uppercase tracking-[3px]'>YOPISH VA HISOBLASH</h2>
-                        <div className='gold-glass !p-7 bg-[#ffcf4b]/5 text-center mb-8 border-transparent rounded-[2rem]'>
-                            <p className='text-[9px] font-black opacity-30 uppercase tracking-[4px] mb-3'>UMUMIY SUMMA</p>
-                            <p className='text-5xl font-black italic tracking-tighter tabular-nums gold-text'>{finalStats.total.toLocaleString()}<span className='text-[11px] NOT-italic opacity-30 ml-2 uppercase'>UZS</span></p>
+                    <div className='modal-overlay'><motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className='modal-content !p-8 !rounded-[2.5rem] !max-w-[85%] border border-[#ffcf4b]/5'>
+                        <h2 className='text-xl font-black italic gold-text text-center mb-8 uppercase tracking-[4px]'>YOPISH</h2>
+                        <div className='bg-[#ffcf4b]/5 p-7 text-center mb-8 rounded-[2rem] border border-[#ffcf4b]/5'>
+                            <p className='text-[8px] font-black opacity-20 uppercase tracking-[4px] mb-2'>JAMI SUMMA</p>
+                            <p className='text-4xl font-black italic tracking-tighter tabular-nums gold-text'>{finalStats.total.toLocaleString()}<span className='text-[10px] opacity-20 ml-2'>UZS</span></p>
                         </div>
                         <div className='space-y-4 mb-8'>
-                            <input type="number" placeholder="OLINGAN PUL" className='input-luxury-small h-16 text-2xl font-black text-center outline-none border-white/10 rounded-[1.5rem]' value={paidAmount} onChange={(e) => setPaidAmount(e.target.value)} />
+                            <input type="number" placeholder="OLINGAN PUL" className='bg-white/5 border border-white/10 h-16 w-full text-2xl font-black text-center outline-none rounded-2xl placeholder:text-[10px]' value={paidAmount} onChange={(e) => setPaidAmount(e.target.value)} />
                             {(finalStats.total - Number(paidAmount) > 0 && Number(paidAmount) > 0) && (
                                 <div className='p-5 bg-red-500/5 rounded-2xl border border-red-500/10 space-y-3'>
-                                    <p className='text-[9px] font-black text-red-500 text-center uppercase tracking-widest mb-1'>QARZDORLIK QOLDI</p>
-                                    <input type="text" placeholder="MIJOZ ISMI" className='input-luxury-small h-12 text-[10px]' value={debtUser.name} onChange={(e) => setDebtUser({ ...debtUser, name: e.target.value })} />
-                                    <input type="text" placeholder="TEL RAQAM" className='input-luxury-small h-12 text-[10px]' value={debtUser.phone} onChange={(e) => setDebtUser({ ...debtUser, phone: e.target.value })} />
+                                    <input type="text" placeholder="ISMI" className='bg-white/5 border border-white/5 h-12 w-full text-[10px] px-4 rounded-xl outline-none font-black uppercase' value={debtUser.name} onChange={(e) => setDebtUser({ ...debtUser, name: e.target.value })} />
+                                    <input type="text" placeholder="TEL" className='bg-white/5 border border-white/5 h-12 w-full text-[10px] px-4 rounded-xl outline-none font-black uppercase' value={debtUser.phone} onChange={(e) => setDebtUser({ ...debtUser, phone: e.target.value })} />
                                 </div>
                             )}
                         </div>
-                        <div className='flex flex-col gap-3'>
-                            <button onClick={confirmCheckout} className='py-5 bg-[#ffcf4b] text-black text-sm font-black uppercase rounded-2xl shadow-xl active:scale-95 transition-all'>TO'LOVNI TASDIQLASH</button>
-                            <button onClick={() => setCheckoutRoom(null)} className='py-4 text-[10px] opacity-40 font-black uppercase tracking-widest hover:opacity-100 transition-all'>BEKOR QILISH</button>
+                        <div className='flex flex-col gap-2'>
+                            <button onClick={confirmCheckout} className='py-4.5 bg-[#ffcf4b] text-black text-[11px] font-black uppercase rounded-2xl shadow-xl active:scale-95 transition-all'>TASDIQLASH</button>
+                            <button onClick={() => setCheckoutRoom(null)} className='py-3 text-[9px] opacity-20 font-black uppercase tracking-widest'>BEKOR QILISH</button>
                         </div>
                     </motion.div></div>
                 )}
-                {showAddRoom && (<div className='modal-overlay'><motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className='modal-content !p-8 !rounded-[3rem] border border-white/5'><h2 className='text-2xl font-black italic uppercase gold-text text-center mb-8 tracking-tighter'>XONA SOZLAMALARI</h2><div className='space-y-5'><input type="text" placeholder="XONA NOMI (MASALAN: VIP)" className='input-luxury-small h-16 text-center' value={editingRoom ? editingRoom.name : newRoom.name} onChange={(e) => editingRoom ? setEditingRoom({ ...editingRoom, name: e.target.value }) : setNewRoom({ ...newRoom, name: e.target.value })} /><input type="number" placeholder="SOATIGA NARXI (UZS)" className='input-luxury-small h-16 text-center' value={editingRoom ? editingRoom.price : newRoom.price} onChange={(e) => editingRoom ? setEditingRoom({ ...editingRoom, price: Number(e.target.value) }) : setNewRoom({ ...newRoom, price: Number(e.target.value) })} /><div className='flex flex-col gap-3 pt-4'><button onClick={() => { if (editingRoom) { setRooms(rooms.map(r => r.id === editingRoom.id ? editingRoom : r)); setEditingRoom(null); } else { setRooms([...rooms, { ...newRoom, id: Date.now(), club: currentAdminData.club, isBusy: false, isSuspended: false }]); } setShowAddRoom(false); }} className='py-5 bg-[#ffcf4b] text-black font-black uppercase rounded-2xl shadow-xl active:scale-95 transition-all'>SAQLASH</button><button onClick={() => setShowAddRoom(false)} className='py-3 text-[10px] opacity-30 font-black uppercase tracking-widest'>BEKOR QILISH</button></div></div></motion.div></div>)}
-                {showInventoryModal && (<div className='modal-overlay'><motion.div className='modal-content !p-8 !rounded-[3rem]'><h2 className='text-2xl font-black gold-text text-center mb-8 uppercase tracking-tighter'>YANGI MAHSULOT</h2><div className='space-y-4'><input type="text" placeholder="NOMI" className='input-luxury-small h-16 text-center' value={newItem.name} onChange={(e) => setNewItem({ ...newItem, name: e.target.value })} /><div className='grid grid-cols-2 gap-4'><input type="number" placeholder="NARXI" className='input-luxury-small h-16 text-center' value={newItem.price} onChange={(e) => setNewItem({ ...newItem, price: Number(e.target.value) })} /><input type="number" placeholder="SONI" className='input-luxury-small h-16 text-center' value={newItem.stock} onChange={(e) => setNewItem({ ...newItem, stock: Number(e.target.value) })} /></div><div className='flex flex-col gap-3 pt-4'><button onClick={() => { setInventory([...inventory, { ...newItem, id: Date.now(), sold: 0 }]); setShowInventoryModal(false); }} className='py-5 bg-[#ffcf4b] text-black font-black uppercase rounded-2xl active:scale-95 transition-all'>OMBORGA QO'SHISH</button><button onClick={() => setShowInventoryModal(false)} className='py-3 text-[10px] opacity-30 font-black uppercase'>BEKOR QILISH</button></div></div></motion.div></div>)}
-                {selectedRoomForBar && (<div className='modal-overlay'><motion.div className='modal-content !p-8 !rounded-[3rem]'><div className='flex justify-between items-center mb-8'><p className='text-xl font-black italic gold-text uppercase'>BAR TANLASH</p><button onClick={() => setSelectedRoomForBar(null)} className='p-3 bg-white/5 rounded-full text-white/30'><X size={20} /></button></div><div className='grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto no-scrollbar'>{(inventory || []).map(item => (<button key={item.id} disabled={item.stock <= 0} onClick={() => { setRooms(prev => prev.map(r => r.id === selectedRoomForBar.id ? { ...r, items: [...(r.items || []), { ...item, quantity: 1 }] } : r)); setInventory(p => p.map(i => i.id === item.id ? { ...i, stock: i.stock - 1, sold: (i.sold || 0) + 1 } : i)); addToHistory('BAR', item.name, `Xonaga berildi: ${selectedRoomForBar.name}`); setSelectedRoomForBar(null); }} className='bg-white/5 p-5 rounded-3xl text-left text-[9px] font-black uppercase active:scale-[0.9] transition-all flex flex-col justify-between h-28 border border-white/5'><span>{item.name}</span><span className='gold-text text-sm'>{item.price.toLocaleString()}</span></button>))}</div><button onClick={() => setSelectedRoomForBar(null)} className='w-full mt-6 py-4 text-[10px] opacity-30 font-black uppercase'>BEKOR QILISH</button></motion.div></div>)}
+                {showAddRoom && (<div className='modal-overlay'><motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className='modal-content !p-8 !rounded-[2.5rem] border border-white/5'><h2 className='text-lg font-black italic uppercase gold-text text-center mb-8 tracking-tighter'>SOZLAMALAR</h2><div className='space-y-4'><input type="text" placeholder="XONA NOMI" className='bg-white/5 border border-white/5 h-14 w-full text-center rounded-2xl text-[11px] font-black uppercase outline-none' value={editingRoom ? editingRoom.name : newRoom.name} onChange={(e) => editingRoom ? setEditingRoom({ ...editingRoom, name: e.target.value }) : setNewRoom({ ...newRoom, name: e.target.value })} /><input type="number" placeholder="NARXI (SOATIGA)" className='bg-white/5 border border-white/5 h-14 w-full text-center rounded-2xl text-[11px] font-black uppercase outline-none' value={editingRoom ? editingRoom.price : newRoom.price} onChange={(e) => editingRoom ? setEditingRoom({ ...editingRoom, price: Number(e.target.value) }) : setNewRoom({ ...newRoom, price: Number(e.target.value) })} /><div className='flex flex-col gap-2 pt-4'><button onClick={() => { if (editingRoom) { setRooms(rooms.map(r => r.id === editingRoom.id ? editingRoom : r)); setEditingRoom(null); } else { setRooms([...rooms, { ...newRoom, id: Date.now(), club: currentAdminData.club, isBusy: false, isSuspended: false }]); } setShowAddRoom(false); }} className='py-4.5 bg-[#ffcf4b] text-black font-black text-[10px] uppercase rounded-2xl shadow-xl active:scale-95 transition-all'>SAQLASH</button><button onClick={() => setShowAddRoom(false)} className='py-2 text-[9px] opacity-20 font-black uppercase'>BEKOR QILISH</button></div></div></motion.div></div>)}
+                {showInventoryModal && (<div className='modal-overlay'><motion.div className='modal-content !p-8 !rounded-[2.5rem]'><h2 className='text-lg font-black gold-text text-center mb-8 uppercase tracking-tighter'>YANGI MAHSULOT</h2><div className='space-y-4'><input type="text" placeholder="NOMI" className='bg-white/5 border border-white/5 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newItem.name} onChange={(e) => setNewItem({ ...newItem, name: e.target.value })} /><div className='grid grid-cols-2 gap-4'><input type="number" placeholder="NARXI" className='bg-white/5 border border-white/5 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newItem.price} onChange={(e) => setNewItem({ ...newItem, price: Number(e.target.value) })} /><input type="number" placeholder="SONI" className='bg-white/5 border border-white/5 h-14 w-full text-center rounded-2xl text-[10px] font-black uppercase outline-none' value={newItem.stock} onChange={(e) => setNewItem({ ...newItem, stock: Number(e.target.value) })} /></div><div className='flex flex-col gap-2 pt-4'><button onClick={() => { setInventory([...inventory, { ...newItem, id: Date.now(), sold: 0 }]); setShowInventoryModal(false); }} className='py-4.5 bg-[#ffcf4b] text-black font-black text-[10px] uppercase rounded-2xl active:scale-95 transition-all'>QO'SHISH</button><button onClick={() => setShowInventoryModal(false)} className='py-2 text-[9px] opacity-20 font-black uppercase'>BEKOR QILISH</button></div></div></motion.div></div>)}
+                {selectedRoomForBar && (<div className='modal-overlay'><motion.div className='modal-content !p-8 !rounded-[2.5rem]'><div className='flex justify-between items-center mb-8'><p className='text-lg font-black italic gold-text uppercase'>BAR TANLASH</p><button onClick={() => setSelectedRoomForBar(null)} className='p-2 bg-white/5 rounded-full text-white/20'><X size={16} /></button></div><div className='grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto no-scrollbar'>{(inventory || []).map(item => (<button key={item.id} disabled={item.stock <= 0} onClick={() => { setRooms(prev => prev.map(r => r.id === selectedRoomForBar.id ? { ...r, items: [...(r.items || []), { ...item, quantity: 1 }] } : r)); setInventory(p => p.map(i => i.id === item.id ? { ...i, stock: i.stock - 1, sold: (i.sold || 0) + 1 } : i)); setSelectedRoomForBar(null); }} className='bg-white/5 p-5 rounded-2xl text-left h-24 flex flex-col justify-between active:scale-95 transition-all border border-white/5 opacity-80'><span className='text-[9px] font-black uppercase text-white/60 leading-tight'>{item.name}</span><span className='gold-text text-xs'>{item.price.toLocaleString()}</span></button>))}</div><button onClick={() => setSelectedRoomForBar(null)} className='w-full mt-6 py-4 text-[9px] opacity-10 font-black uppercase'>BEKOR QILISH</button></motion.div></div>)}
             </AnimatePresence>
         </div>
     );
 };
-
-const BarChart2 = ({ size, className }) => <BarChart3 size={size} className={className} />;
 
 export default App;
