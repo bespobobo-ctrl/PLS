@@ -102,8 +102,12 @@ const App = () => {
             const runningRevenue = (activeRooms || []).filter(r => r?.isBusy).reduce((acc, r) => acc + calculateSession(r).total, 0);
             const totalDebt = (debts || []).filter(d => d?.club === currentAdminData?.club).reduce((acc, d) => acc + (d?.amount || 0), 0);
 
-            return { daily: dailyCompleted + runningRevenue, weekly: weekly + runningRevenue, monthly: monthly + runningRevenue, yearly: yearly + runningRevenue, totalDept: totalDebt };
-        } catch { return { daily: 0, weekly: 0, monthly: 0, yearly: 0, totalDept: 0 }; }
+            const totalRooms = activeRooms.length;
+            const busyRooms = activeRooms.filter(r => r.isBusy).length;
+            const freeRooms = activeRooms.filter(r => !r.isBusy && !r.isSuspended).length;
+
+            return { daily: dailyCompleted + runningRevenue, weekly: weekly + runningRevenue, monthly: monthly + runningRevenue, yearly: yearly + runningRevenue, totalDept: totalDebt, totalRooms, busyRooms, freeRooms };
+        } catch { return { daily: 0, weekly: 0, monthly: 0, yearly: 0, totalDept: 0, totalRooms: 0, busyRooms: 0, freeRooms: 0 }; }
     }, [salesLog, debts, currentAdminData?.club, activeRooms, now]);
 
     const confirmCheckout = () => {
@@ -114,14 +118,14 @@ const App = () => {
         setCheckoutRoom(null); setFinalStats(null); setPaidAmount(''); setDebtUser({ name: '', phone: '' });
     };
 
-    const deleteDebt = (id) => {
-        if (window.confirm('Qarz o\'chirilsinmi? (To\'landi deb hisoblanganda)')) {
-            setDebts(prev => prev.filter(d => d.id !== id));
-        }
-    };
-
     const renderClubAsosiy = () => (
         <div className='p-4 space-y-4 pb-28'>
+            <div className='grid grid-cols-3 gap-2'>
+                <div className='gold-glass !p-3 border-white/5 text-center'><p className='text-[7px] opacity-40 uppercase font-black mb-1'>JAMI</p><p className='text-xs font-black'>{analytics.totalRooms}</p></div>
+                <div className='gold-glass !p-3 border-[#ffcf4b]/20 bg-[#ffcf4b]/5 text-center'><p className='text-[7px] gold-text uppercase font-black mb-1'>BAND</p><p className='text-xs font-black gold-text'>{analytics.busyRooms}</p></div>
+                <div className='gold-glass !p-3 border-green-500/20 bg-green-500/5 text-center'><p className='text-[7px] text-green-500 uppercase font-black mb-1'>BO'SH</p><p className='text-xs font-black text-green-500'>{analytics.freeRooms}</p></div>
+            </div>
+
             <div className='gold-glass !p-5 bg-gradient-to-br from-[#ffcf4b]/20 to-transparent border-[#ffcf4b]/20 shadow-xl'>
                 <div className='flex items-center gap-2 mb-1'><span className='w-2 h-2 rounded-full bg-green-500 animate-pulse'></span><p className='text-[8px] font-black opacity-40 uppercase tracking-[4px]'>BUGUNGI KASSA</p></div>
                 <h2 className='text-4xl font-black italic gold-text tracking-tighter tabular-nums'>{analytics.daily.toLocaleString()} <span className='text-xs opacity-40'>UZS</span></h2>
@@ -148,22 +152,14 @@ const App = () => {
                 </div>
                 <AnimatePresence>
                     {showDebtsInAsosiy && (
-                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className='p-3 border-t border-white/5 space-y-2 max-h-[400px] overflow-y-auto'>
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className='p-3 border-t border-white/5 space-y-2 max-h-[300px] overflow-y-auto px-1'>
                             {(debts || []).filter(d => d?.club === currentAdminData?.club).reverse().map(d => (
-                                <div key={d.id} className='gold-glass !p-4 bg-black/40 border-white/5 flex justify-between items-center'>
-                                    <div className='space-y-1'>
-                                        <div className='flex items-center gap-2'><h4 className='text-sm font-black uppercase text-white/90'>{d.name}</h4><p className='text-[10px] font-black text-red-500 italic'>{d.amount.toLocaleString()} UZS</p></div>
-                                        {d.phone && (
-                                            <a href={`tel:${d.phone}`} className='flex items-center gap-1.5 text-blue-400 active:scale-95 transition-all'>
-                                                <Phone size={10} /><span className='text-[10px] font-black'>{d.phone}</span>
-                                            </a>
-                                        )}
-                                        <div className='flex items-center gap-1.5 opacity-20'><Calendar size={10} /><span className='text-[8px] font-black uppercase'>{d.date}</span></div>
-                                    </div>
-                                    <button onClick={() => deleteDebt(d.id)} className='p-2.5 bg-green-500/10 rounded-xl text-green-500 active:scale-95'><CheckCircle2 size={16} /></button>
+                                <div key={d.id} className='gold-glass !p-3 bg-black/40 border-white/5 flex justify-between items-center'>
+                                    <div className='space-y-1'><div className='flex items-center gap-2'><h4 className='text-[11px] font-black uppercase text-white/90'>{d.name}</h4><p className='text-[9px] font-black text-red-500 italic'>{d.amount.toLocaleString()}</p></div>{d.phone && (<a href={`tel:${d.phone}`} className='flex items-center gap-1.5 text-blue-400'><Phone size={8} /><span className='text-[9px] font-black'>{d.phone}</span></a>)}<div className='flex items-center gap-1.5 opacity-20'><Calendar size={8} /><span className='text-[7px] font-black uppercase'>{d.date}</span></div></div>
+                                    <button onClick={() => { if (window.confirm('To\'landimi?')) setDebts(p => p.filter(x => x.id !== d.id)) }} className='p-2 bg-green-500/10 rounded-lg text-green-500'><CheckCircle2 size={14} /></button>
                                 </div>
                             ))}
-                            {(debts || []).filter(d => d?.club === currentAdminData?.club).length === 0 && <p className='text-center py-6 text-[9px] opacity-20 font-black uppercase italic'>Qarzlar ro'yxati bo'sh</p>}
+                            {(debts || []).filter(d => d?.club === currentAdminData?.club).length === 0 && <p className='text-center py-4 text-[9px] opacity-20 font-black uppercase'>Qarzlar yo'q</p>}
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -193,7 +189,7 @@ const App = () => {
                                     {!isExp && <div className='text-right'><p className='text-[7px] font-black opacity-30 uppercase'>Total</p><p className='text-lg font-black tabular-nums'>{session.total.toLocaleString()} UZS</p></div>}
                                     {isExp && (
                                         <div className='pt-4 border-t border-white/10 space-y-4'>
-                                            <div className='flex justify-between items-center'><p className='text-lg font-black gold-text italic tabular-nums'>{session.total.toLocaleString()} <span className='text-[8px]'>UZS</span></p><button onClick={() => setSelectedRoomForBar(room)} className='bg-[#ffcf4b] text-black px-4 py-1.5 rounded-full text-[9px] font-black uppercase shadow-lg'>+ BAR</button></div>
+                                            <div className='flex justify-between items-center'><p className='text-lg font-black gold-text italic tabular-nums'>{session.total.toLocaleString()} <span className='text-[8px]'>UZS</span></p><button onClick={() => setSelectedRoomForBar(room)} className='bg-[#ffcf4b] text-black px-4 py-1.5 rounded-full text-[9px] font-black uppercase shadow-lg shadow-[#ffcf4b]/20'>+ BAR</button></div>
                                             <div className='flex flex-wrap gap-1.5'>{(room.items || []).map((i, idx) => (<div key={idx} className='text-[8px] font-black uppercase bg-white/10 px-3 py-1.5 rounded-xl border border-white/5'>{i.name}</div>))}</div>
                                             <button onClick={() => { setFinalStats({ ...session }); setCheckoutRoom(room); }} className='w-full py-4 bg-red-600 rounded-2xl text-white font-black uppercase italic text-xs shadow-xl active:scale-95'>HISOBLASH VA YOPISH</button>
                                         </div>
@@ -218,7 +214,7 @@ const App = () => {
                 <div className='grid grid-cols-2 gap-2.5'>{(inventory || []).map(item => (<button key={item.id} onClick={() => { if (item.stock <= 0) return alert('Omborda yo\'q!'); if (window.confirm(`${item.name} sotilsinmi?`)) { setInventory(p => p.map(i => i.id === item.id ? { ...i, stock: i.stock - 1, sold: (i.sold || 0) + 1 } : i)); setSalesLog(p => [...p, { id: Date.now(), amount: item.price, timestamp: Date.now(), club: currentAdminData.club }]); } }} className='gold-glass !p-4 bg-black/40 border-white/5 text-left h-[120px] flex flex-col justify-between'><div><p className='text-[7px] opacity-40 font-black uppercase'>{item.category}</p><h4 className='text-xs font-black italic gold-text'>{item.name}</h4></div><p className='text-[10px] font-black'>{item.price.toLocaleString()} UZS</p></button>))}</div>
             ) : (
                 <div className='space-y-3'>
-                    <button onClick={() => setShowInventoryModal(true)} className='w-full py-4 bg-white/5 rounded-xl font-black text-[9px] uppercase border border-white/10'>+ YANGI MAHSULOT</button>
+                    <button onClick={() => setShowInventoryModal(true)} className='w-full py-4 bg-white/5 rounded-xl font-black text-[9px] uppercase border border-white/10'>+ MAHSULOT QO'SHISH</button>
                     {(inventory || []).map(item => (<div key={item.id} className='gold-glass !p-4 flex justify-between items-center text-xs'><div className='flex items-center gap-3'><div className='w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[#ffcf4b]'><Package size={16} /></div><div><h4 className='font-black'>{item.name}</h4><p className='text-[8px] opacity-30'>Qoldiq: {item.stock} ta</p></div></div><button onClick={() => setInventory(p => p.filter(i => i.id !== item.id))} className='p-2 bg-red-500/10 rounded-xl text-red-500'><Trash2 size={14} /></button></div>))}
                 </div>
             )}
@@ -239,7 +235,7 @@ const App = () => {
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                         <div className='px-6 py-4 flex justify-between items-center bg-black/40 backdrop-blur-3xl border-b border-white/5 sticky top-0 z-50'>
                             <div className='flex items-center gap-3'><div className='w-10 h-10 rounded-xl bg-[#ffcf4b] flex items-center justify-center shadow-lg'><Activity size={20} className='text-black' /></div><div><h2 className='text-base font-black italic uppercase tracking-tighter'>{currentAdminData?.name}</h2><p className='text-[7px] font-black opacity-30 uppercase tracking-[2px]'>{currentAdminData?.club}</p></div></div>
-                            <div className='text-right'><p className='text-[11px] font-black gold-text tabular-nums italic'>{new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}</p><p className='text-[6px] opacity-30 font-black uppercase italic'>SYSTEM_LIVE</p></div>
+                            <div className='text-right group'><p className='text-[11px] font-black gold-text tabular-nums italic'>{new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}</p><p className='text-[6px] opacity-30 font-black uppercase italic'>SYSTEM_LIVE</p></div>
                         </div>
                         <main>{activeTab === 'asosiy' ? renderClubAsosiy() : activeTab === 'bar' ? renderClubBar() : renderClubXarita()}</main>
                     </motion.div>
@@ -264,7 +260,7 @@ const App = () => {
                             <div className='gold-glass !p-2.5 border-white/5 text-center'><p className='text-[6px] opacity-40 uppercase font-black'>BOSHLANDI</p><p className='text-sm font-black italic'>{finalStats.startStr}</p></div>
                             <div className='gold-glass !p-2.5 border-white/5 text-center'><p className='text-[6px] opacity-40 uppercase font-black'>TUGADI</p><p className='text-sm font-black italic gold-text'>{finalStats.endStr}</p></div>
                         </div>
-                        <div className='gold-glass !p-4 text-center mb-5 bg-[#ffcf4b]/5 relative'>
+                        <div className='gold-glass !p-4 text-center mb-5 bg-[#ffcf4b]/5'>
                             <p className='text-[7px] opacity-40 font-black mb-1 italic'>DAVOMIYLIGI: <span className='text-white'>{finalStats.time}</span></p>
                             <p className='text-4xl font-black gold-text italic tracking-tighter tabular-nums'>{finalStats.total.toLocaleString()} <span className='text-[10px] opacity-40 uppercase'>UZS</span></p>
                         </div>
