@@ -17,8 +17,8 @@ function App() {
     // Persistent State for Main Admin
     const getInitialState = (key, defaultValue) => {
         try {
-            // v42 - Gold & Black Premium Dashboard
-            const BOT_URL = 'https://pls-taupe.vercel.app/?v=v42';
+            // v43 - Stabilizing Dashboard Icons
+            const BOT_URL = 'https://pls-taupe.vercel.app/?v=v43';
             const API_URL = 'http://161.35.196.164:3001/api';
             const stored = localStorage.getItem(key);
             const parsed = JSON.parse(stored);
@@ -1067,7 +1067,7 @@ function App() {
                                             </div>
 
                                             <div className='gold-glass gold-card col-span-1'>
-                                                <div className='absolute top-2 right-4 opacity-20'><ShieldAlert size={24} className='text-red-500' /></div>
+                                                <div className='absolute top-2 right-4 opacity-20'><AlertTriangle size={24} className='text-red-500' /></div>
                                                 <p className='text-[8px] font-black tracking-[3px] uppercase opacity-40 mb-2 text-red-500/50'>QARZDORLIK</p>
                                                 <p className='text-xl font-black italic tracking-tighter text-red-500'>
                                                     {debts.filter(d => d.club === clubAdmins.find(ca => ca.login === username)?.club).reduce((acc, d) => acc + (d.amount || 0), 0).toLocaleString()}
