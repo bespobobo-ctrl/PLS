@@ -17,9 +17,9 @@ function App() {
     // Persistent State for Main Admin
     const getInitialState = (key, defaultValue) => {
         try {
-            // v37 - Real-time Server Sync
-            const BOT_URL = 'https://pls-taupe.vercel.app/?v=v37';
-            const API_URL = 'https://vps-4241680.fastvps-server.com:3001/api'; // Update this to your real backend URL
+            // v38 - Connected to 161.35.196.164
+            const BOT_URL = 'https://pls-taupe.vercel.app/?v=v38';
+            const API_URL = 'http://161.35.196.164:3001/api';
             const stored = localStorage.getItem(key);
             const parsed = JSON.parse(stored);
             return (parsed && (Array.isArray(parsed) || typeof parsed === 'object')) ? parsed : defaultValue;
