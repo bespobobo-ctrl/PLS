@@ -1036,59 +1036,45 @@ function App() {
                                         </div>
                                     </motion.div>
                                 ) : clubAdminTab === 'asosiy' ? (
-                                    <motion.div key='ca-dash' initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className='space-y-6'>
-                                        {/* Premium Gold Dashboard Grid */}
-                                        <div className='stat-grid'>
-                                            <div className='gold-glass gold-card'>
-                                                <div className='absolute top-2 right-4 opacity-20'><Activity size={24} className='text-[#ffcf4b]' /></div>
-                                                <p className='text-[8px] font-black tracking-[3px] uppercase opacity-40 mb-2'>BUGUNGI_TUSHUM</p>
-                                                <p className='text-3xl gold-text italic tracking-tighter'>
+                                    <div key='ca-dash' className='p-4 space-y-4'>
+                                        {/* Simplified Premium Grid */}
+                                        <div className='grid grid-cols-2 gap-4'>
+                                            <div className='gold-glass p-6 text-center border-white/10'>
+                                                <p className='text-[10px] uppercase opacity-40 mb-2 font-bold tracking-widest'>TUSHUM</p>
+                                                <p className='text-2xl gold-text font-black'>
                                                     {Number((rooms || []).filter(r => r && r.club === clubAdmins.find(ca => ca?.login === username)?.club).reduce((acc, r) => acc + (Number(r?.dailyRevenue) || 0), 0)).toLocaleString()}
                                                 </p>
-                                                <p className='text-[8px] font-bold opacity-30 mt-1 uppercase'>UZS</p>
+                                                <p className='text-[8px] opacity-30 mt-1 uppercase'>UZS</p>
                                             </div>
 
-                                            <div className='gold-glass gold-card'>
-                                                <div className='absolute top-2 right-4 opacity-20'><Zap size={24} className='text-[#ffcf4b]' /></div>
-                                                <p className='text-[8px] font-black tracking-[3px] uppercase opacity-40 mb-2'>AKTIV_KONSOL</p>
-                                                <p className='text-4xl gold-text italic tracking-tighter'>
+                                            <div className='gold-glass p-6 text-center border-white/10'>
+                                                <p className='text-[10px] uppercase opacity-40 mb-2 font-bold tracking-widest'>KONSOL</p>
+                                                <p className='text-3xl gold-text font-black'>
                                                     {rooms.filter(r => r && r.club === clubAdmins.find(ca => ca?.login === username)?.club && r.isBusy).length}
                                                 </p>
-                                                <p className='text-[8px] font-bold opacity-30 mt-1 uppercase'>ONLINE</p>
+                                                <p className='text-[8px] opacity-30 mt-1 uppercase'>ONLINE</p>
                                             </div>
 
-                                            <div className='gold-glass gold-card col-span-1'>
-                                                <div className='absolute top-2 right-4 opacity-20'><PieChart size={24} className='text-[#ffcf4b]' /></div>
-                                                <p className='text-[8px] font-black tracking-[3px] uppercase opacity-40 mb-2'>HAFTALIK_STAT</p>
-                                                <p className='text-2xl gold-text italic tracking-tighter'>
-                                                    +24%
-                                                </p>
-                                                <p className='text-[7px] font-bold opacity-20 uppercase mt-1'>O'SISH DAVRI</p>
+                                            <div className='gold-glass p-6 text-center border-white/10'>
+                                                <p className='text-[10px] uppercase opacity-40 mb-2 font-bold tracking-widest'>FOYDA</p>
+                                                <p className='text-2xl gold-text font-black'>+24%</p>
+                                                <p className='text-[8px] opacity-20 uppercase mt-1'>HAFTALIK</p>
                                             </div>
 
-                                            <div className='gold-glass gold-card col-span-1'>
-                                                <div className='absolute top-2 right-4 opacity-20'><AlertTriangle size={24} className='text-red-500' /></div>
-                                                <p className='text-[8px] font-black tracking-[3px] uppercase opacity-40 mb-2 text-red-500/50'>QARZDORLIK</p>
-                                                <p className='text-xl font-black italic tracking-tighter text-red-500'>
+                                            <div className='gold-glass p-6 text-center border-white/10'>
+                                                <p className='text-[10px] uppercase opacity-40 mb-2 font-bold tracking-widest'>QARZ</p>
+                                                <p className='text-xl font-black text-red-500'>
                                                     {debts.filter(d => d && d.club === clubAdmins.find(ca => ca?.login === username)?.club).reduce((acc, d) => acc + (d?.amount || 0), 0).toLocaleString()}
                                                 </p>
-                                                <p className='text-[8px] font-bold opacity-30 mt-1 uppercase'>UZS</p>
+                                                <p className='text-[8px] opacity-30 mt-1 uppercase'>UZS</p>
                                             </div>
                                         </div>
 
-                                        {/* Bottom Action Cards */}
-                                        <div className='px-4'>
-                                            <div className='gold-glass p-6 border-white/5 bg-gradient-to-r from-white/[0.02] to-transparent'>
-                                                <p className='text-[8px] font-black tracking-[4px] uppercase opacity-30 mb-4'>SO'NGGI_XABARLAR</p>
-                                                <div className='space-y-4'>
-                                                    <div className='flex items-center gap-4'>
-                                                        <div className='w-1.5 h-1.5 rounded-full bg-[#ffcf4b] animate-pulse'></div>
-                                                        <p className='text-[10px] font-medium opacity-60 uppercase tracking-widest'>Barcha tizimlar barqaror ishlamoqda</p>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        <div className='gold-glass p-6 border-white/5'>
+                                            <p className='text-[10px] font-black tracking-[4px] uppercase opacity-30 mb-2'>STATUS</p>
+                                            <p className='text-[10px] font-medium opacity-60 uppercase tracking-widest'>Tizim barqaror ishlamoqda</p>
                                         </div>
-                                    </motion.div>
+                                    </div>
                                 ) : clubAdminTab === 'bar' ? (
                                     <motion.div key='ca-bar' initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='space-y-4 pb-40'>
                                         {/* Sub-Tabs Switcher */}
