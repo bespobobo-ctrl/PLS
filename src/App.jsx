@@ -9,7 +9,7 @@ import {
 
 const getInitialState = (key, defaultValue) => {
     try {
-        const BOT_URL = 'https://pls-taupe.vercel.app/?v=v52';
+        const BOT_URL = 'https://pls-taupe.vercel.app/?v=v53';
         const stored = localStorage.getItem(key);
         return stored ? JSON.parse(stored) : defaultValue;
     } catch {
@@ -41,7 +41,7 @@ const App = () => {
 
     // Forms
     const [newSuper, setNewSuper] = useState({ name: '', phone: '', login: '', password: '' });
-    const [newClubAdmin, setNewClubAdmin] = useState({ name: '', club: 'KOKAND_1', login: '', password: '' });
+    const [newClubAdmin, setNewClubAdmin] = useState({ name: '', club: '', login: '', password: '' });
     const [newRoom, setNewRoom] = useState({ name: '', price: '', club: '' });
 
     // --- LONG PRESS LOGIC ---
@@ -226,7 +226,7 @@ const App = () => {
                         <h2 className='text-xl font-black italic uppercase mb-8 gold-text'>Klub Admin Qo'shish</h2>
                         <div className='space-y-4'>
                             <input type="text" placeholder="FISH" className='input-luxury-small' value={newClubAdmin.name} onChange={(e) => setNewClubAdmin({ ...newClubAdmin, name: e.target.value })} />
-                            <select className='input-luxury-small' value={newClubAdmin.club} onChange={(e) => setNewClubAdmin({ ...newClubAdmin, club: e.target.value })}><option value="KOKAND_1">KOKAND_1</option><option value="KOKAND_2">KOKAND_2</option></select>
+                            <input type="text" placeholder="KLUB NOMI (Masalan: PLS_KOKAND_1)" className='input-luxury-small' value={newClubAdmin.club} onChange={(e) => setNewClubAdmin({ ...newClubAdmin, club: e.target.value })} />
                             <div className='grid grid-cols-2 gap-4'><input type="text" placeholder="LOGIN" className='input-luxury-small' value={newClubAdmin.login} onChange={(e) => setNewClubAdmin({ ...newClubAdmin, login: e.target.value })} /><input type="text" placeholder="PAROL" className='input-luxury-small' value={newClubAdmin.password} onChange={(e) => setNewClubAdmin({ ...newClubAdmin, password: e.target.value })} /></div>
                             <button onClick={() => { setClubAdmins(prev => [...prev, newClubAdmin]); setShowAddClubAdmin(false); }} className='btn-gold-minimal'>TASDIQLASH</button>
                             <button onClick={() => setShowAddClubAdmin(false)} className='w-full py-4 text-[10px] opacity-30 font-black uppercase'>BEKOR QILISH</button>
