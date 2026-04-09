@@ -17,8 +17,8 @@ function App() {
     // Persistent State for Main Admin
     const getInitialState = (key, defaultValue) => {
         try {
-            // v43 - Stabilizing Dashboard Icons
-            const BOT_URL = 'https://pls-taupe.vercel.app/?v=v43';
+            // v45 - Final Gold Dashboard & CSS Fix
+            const BOT_URL = 'https://pls-taupe.vercel.app/?v=v45';
             const API_URL = 'http://161.35.196.164:3001/api';
             const stored = localStorage.getItem(key);
             const parsed = JSON.parse(stored);
