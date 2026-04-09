@@ -17,8 +17,8 @@ function App() {
     // Persistent State for Main Admin
     const getInitialState = (key, defaultValue) => {
         try {
-            // v35 - Professional Bar Management
-            const BOT_URL = 'https://pls-taupe.vercel.app/?v=v35';
+            // v36 - Fixed Inventory Persistence & Modal
+            const BOT_URL = 'https://pls-taupe.vercel.app/?v=v36';
             const stored = localStorage.getItem(key);
             const parsed = JSON.parse(stored);
             return (parsed && (Array.isArray(parsed) || typeof parsed === 'object')) ? parsed : defaultValue;
@@ -66,6 +66,9 @@ function App() {
         localStorage.setItem('pls_club_admins', JSON.stringify(clubAdmins));
     }, [clubAdmins]);
 
+    useEffect(() => {
+        localStorage.setItem('pls_inventory', JSON.stringify(inventory));
+    }, [inventory]);
 
     useEffect(() => {
         localStorage.setItem('pls_rooms', JSON.stringify(rooms));
@@ -74,6 +77,10 @@ function App() {
     useEffect(() => {
         localStorage.setItem('pls_debts', JSON.stringify(debts));
     }, [debts]);
+
+    useEffect(() => {
+        localStorage.setItem('pls_sales', JSON.stringify(sales));
+    }, [sales]);
 
     useEffect(() => {
         localStorage.setItem('pls_sessions', JSON.stringify(sessions));
@@ -275,10 +282,6 @@ function App() {
         if (window.Telegram?.WebApp?.HapticFeedback) {
             window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
         }
-    };
-
-    const handleRestock = (productId, amount) => {
-        setInventory(inventory.map(p => p.id === productId ? { ...p, stock: p.stock + amount } : p));
     };
 
     const handleStartSession = (id) => {
