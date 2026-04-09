@@ -1211,33 +1211,46 @@ function App() {
                                                         <p className='text-[8px] font-black tracking-[4px] text-[#39ff14] uppercase animate-pulse'>SESSIA_AKTIV</p>
                                                     </div>
 
-                                                    {/* Bar Master Grid - Streamlined */}
-                                                    <div className='space-y-3'>
+                                                    {/* Bar Master Grid - Enhanced */}
+                                                    <div className='space-y-4'>
                                                         <div className='flex justify-between items-center px-1'>
-                                                            <span className='text-[9px] font-black tracking-[2px] opacity-20 uppercase'>Bar_Xizmatlari</span>
-                                                            <Coffee size={12} className='opacity-20' />
+                                                            <span className='text-[9px] font-black tracking-[3px] text-[#39ff14] uppercase opacity-40'>Bar Xaridlar</span>
+                                                            <div className='flex gap-2 overflow-x-auto no-scrollbar max-w-[150px]'>
+                                                                {['Hammasi', 'Ichimliklar', 'Energetiklar'].map(c => (
+                                                                    <span key={c} onClick={() => setBarCategory(c)} className={`text-[7px] font-bold px-2 py-0.5 rounded-full border ${barCategory === c ? 'bg-[#39ff14] text-black border-[#39ff14]' : 'border-white/10 text-white/40'}`}>{c}</span>
+                                                                ))}
+                                                            </div>
                                                         </div>
-                                                        <div className='grid grid-cols-3 gap-2'>
-                                                            {inventory.map(product => (
-                                                                <button
-                                                                    key={product.id}
-                                                                    onClick={() => {
-                                                                        handleAddBar(activeModalRoom.id, product.price, product.name, product.id);
-                                                                        if (window.Telegram?.WebApp?.HapticFeedback) {
-                                                                            window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-                                                                        }
-                                                                    }}
-                                                                    className={`premium-glass p-0 h-20 flex flex-col items-center justify-center gap-1 border-white/5 transition-all group ${product.stock <= 0 ? 'opacity-20 grayscale pointer-events-none' : 'hover:border-[#39ff14]/30 hover:bg-white/[0.04] active:scale-[0.94]'}`}
-                                                                >
-                                                                    <div className='w-8 h-8 rounded-lg overflow-hidden border border-white/5'>
-                                                                        <img src={product.image} alt="" className='w-full h-full object-cover opacity-80' />
-                                                                    </div>
-                                                                    <div className='text-center'>
-                                                                        <p className='text-[7px] font-bold opacity-30 group-hover:opacity-100 uppercase tracking-tighter px-1 truncate w-20'>{product.name}</p>
-                                                                        <p className='text-[8px] font-black text-[#39ff14]'>{product.price / 1000}K</p>
-                                                                    </div>
-                                                                </button>
-                                                            ))}
+                                                        <div className='grid grid-cols-2 gap-2 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar'>
+                                                            {inventory
+                                                                .filter(p => barCategory === 'Hammasi' || p.category === barCategory)
+                                                                .map(product => (
+                                                                    <button
+                                                                        key={product.id}
+                                                                        onClick={() => {
+                                                                            handleAddBar(activeModalRoom.id, product.price, product.name, product.id);
+                                                                            if (window.Telegram?.WebApp?.HapticFeedback) {
+                                                                                window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                                                                            }
+                                                                        }}
+                                                                        className={`premium-glass p-2 h-24 flex flex-col items-center justify-between border-white/5 transition-all relative overflow-hidden group ${product.stock <= 0 ? 'opacity-20 grayscale pointer-events-none' : 'hover:border-[#39ff14]/30 hover:bg-[#39ff14]/5 active:scale-[0.96]'}`}
+                                                                    >
+                                                                        <div className='absolute inset-0 z-0 opacity-10 group-hover:opacity-20 transition-opacity'>
+                                                                            <img src={product.image} alt="" className='w-full h-full object-cover scale-150 blur-[2px]' />
+                                                                        </div>
+                                                                        <div className='relative z-10 w-10 h-10 rounded-lg overflow-hidden border border-white/10 shadow-lg'>
+                                                                            <img src={product.image} alt="" className='w-full h-full object-cover' />
+                                                                        </div>
+                                                                        <div className='relative z-10 text-center'>
+                                                                            <p className='text-[8px] font-black uppercase tracking-tight text-white/80 leading-none mb-1'>{product.name}</p>
+                                                                            <div className='flex items-center gap-1 justify-center'>
+                                                                                <span className='text-[9px] font-black text-[#39ff14]'>{product.price.toLocaleString()}</span>
+                                                                                <span className='text-[6px] opacity-30'>UZS</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        {product.stock <= 3 && <div className='absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse'></div>}
+                                                                    </button>
+                                                                ))}
                                                         </div>
                                                     </div>
 
