@@ -96,19 +96,25 @@ const App = () => {
             const clubLog = (salesLog || []).filter(s => s?.club === currentAdminData?.club);
             const nowTime = Date.now();
             const day = 24 * 60 * 60 * 1000; const week = 7 * day; const month = 30 * day; const year = 365 * day;
-            const daily = clubLog.filter(s => (nowTime - s.timestamp) < day).reduce((acc, s) => acc + s.amount, 0);
+
+            const dailySales = clubLog.filter(s => (nowTime - s.timestamp) < day);
+            const dailyBar = dailySales.filter(s => s?.type === 'BAR').reduce((acc, s) => acc + s.amount, 0);
+            const dailyRoom = dailySales.filter(s => s?.type === 'ROOM' || !s?.type).reduce((acc, s) => acc + s.amount, 0);
+
             const weekly = clubLog.filter(s => (nowTime - s.timestamp) < week).reduce((acc, s) => acc + s.amount, 0);
             const monthly = clubLog.filter(s => (nowTime - s.timestamp) < month).reduce((acc, s) => acc + s.amount, 0);
             const yearly = clubLog.filter(s => (nowTime - s.timestamp) < year).reduce((acc, s) => acc + s.amount, 0);
+
             const activeRev = (activeRooms || []).filter(r => r?.isBusy).reduce((acc, r) => acc + calculateSession(r).total, 0);
             const totalD = (debts || []).filter(d => d?.club === currentAdminData?.club).reduce((acc, d) => acc + (d?.amount || 0), 0);
-            return { daily: daily + activeRev, weekly: weekly + activeRev, monthly: monthly + activeRev, yearly: yearly + activeRev, totalDept: totalD, totalR: activeRooms.length, busyR: activeRooms.filter(r => r.isBusy).length, freeR: activeRooms.filter(r => !r.isBusy && !r.isSuspended).length };
-        } catch { return { daily: 0, weekly: 0, monthly: 0, yearly: 0, totalDept: 0, totalR: 0, busyR: 0, freeR: 0 }; }
+
+            return { daily: dailyRoom + dailyBar + activeRev, dailyBar, dailyRoom: dailyRoom + activeRev, weekly: weekly + activeRev, monthly: monthly + activeRev, yearly: yearly + activeRev, totalDept: totalD, totalR: activeRooms.length, busyR: activeRooms.filter(r => r.isBusy).length, freeR: activeRooms.filter(r => !r.isBusy && !r.isSuspended).length };
+        } catch { return { daily: 0, dailyBar: 0, dailyRoom: 0, weekly: 0, monthly: 0, yearly: 0, totalDept: 0, totalR: 0, busyR: 0, freeR: 0 }; }
     }, [salesLog, debts, currentAdminData?.club, activeRooms, now]);
 
     const confirmCheckout = () => {
         const stats = finalStats; const paid = Number(paidAmount) || 0;
-        if (paid > 0) setSalesLog(p => [...(p || []), { id: Date.now(), amount: paid, timestamp: Date.now(), club: checkoutRoom?.club }]);
+        if (paid > 0) setSalesLog(p => [...(p || []), { id: Date.now(), amount: paid, timestamp: Date.now(), club: checkoutRoom?.club, type: 'ROOM' }]);
         if ((stats?.total || 0) - paid > 0) setDebts(p => [...(p || []), { id: Date.now(), name: debtUser.name || 'Mijoz', phone: debtUser.phone || '', amount: stats.total - paid, date: new Date().toLocaleString(), timestamp: Date.now(), club: checkoutRoom?.club }]);
         addToHistory('SESS', checkoutRoom.name, `Xona yopildi: ${stats.total.toLocaleString()} UZS`);
         setRooms(prev => (prev || []).map(r => r.id === checkoutRoom?.id ? { ...r, isBusy: false, startTime: null, items: [] } : r));
@@ -118,16 +124,19 @@ const App = () => {
     const renderClubAsosiy = () => (
         <div className='p-6 space-y-5 pb-40 animate-fade-in'>
             <div className='flex gap-2.5'>
-                <div className='bg-white/5 backdrop-blur-lg border border-white/5 flex-1 p-3 rounded-2xl text-center'><p className='text-[8px] font-black opacity-20 mb-0.5 uppercase'>JAMI</p><p className='text-xs font-black opacity-60'>{analytics.totalR}</p></div>
-                <div className='bg-white/5 backdrop-blur-lg border border-white/5 flex-1 p-3 rounded-2xl text-center'><p className='text-[8px] font-black opacity-20 mb-0.5 uppercase'>BAND</p><p className='text-xs font-black gold-text'>{analytics.busyR}</p></div>
-                <div className='bg-white/5 backdrop-blur-lg border border-white/5 flex-1 p-3 rounded-2xl text-center'><p className='text-[8px] font-black opacity-20 mb-0.5 uppercase'>BO'SH</p><p className='text-xs font-black text-green-500/60'>{analytics.freeR}</p></div>
+                <div className='bg-white/5 border border-white/5 flex-1 p-3 rounded-2xl text-center'><p className='text-[8px] font-black opacity-20 mb-0.5 uppercase'>JAMI</p><p className='text-xs font-black opacity-60'>{analytics.totalR}</p></div>
+                <div className='bg-white/5 border border-white/5 flex-1 p-3 rounded-2xl text-center'><p className='text-[8px] font-black opacity-20 mb-0.5 uppercase'>BAND</p><p className='text-xs font-black gold-text'>{analytics.busyR}</p></div>
+                <div className='bg-white/5 border border-white/5 flex-1 p-3 rounded-2xl text-center'><p className='text-[8px] font-black opacity-20 mb-0.5 uppercase'>BO'SH</p><p className='text-xs font-black text-green-500/60'>{analytics.freeR}</p></div>
             </div>
             <div className='relative p-7 rounded-[2rem] bg-gradient-to-br from-[#ffcf4b]/10 to-transparent border border-[#ffcf4b]/5 overflow-hidden'>
                 <div className='absolute -right-5 -top-5 w-32 h-32 bg-[#ffcf4b]/5 rounded-full blur-3xl'></div>
-                <p className='text-[9px] font-black opacity-30 uppercase tracking-[3px] mb-2'>BUGUNGI KASSA</p>
-                <div className='flex items-baseline gap-1'>
-                    <h2 className='text-3xl font-black italic gold-text tracking-tighter tabular-nums'>{analytics.daily.toLocaleString()}</h2>
-                    <span className='text-[9px] opacity-20 font-black'>UZS</span>
+                <div className='flex justify-between items-start mb-2'>
+                    <div><p className='text-[9px] font-black opacity-30 uppercase tracking-[3px] mb-1'>UMUMIY KASSA</p><h2 className='text-4xl font-black italic gold-text tracking-tighter tabular-nums'>{analytics.daily.toLocaleString()} <span className='text-[10px] opacity-20 NOT-italic'>UZS</span></h2></div>
+                    <div className='text-right'><TrendingUp size={16} className='text-[#ffcf4b] opacity-30 ml-auto mb-1' /><p className='text-[7px] font-black opacity-20 uppercase'>LIVE_DATA</p></div>
+                </div>
+                <div className='grid grid-cols-2 gap-4 mt-8 pt-6 border-t border-white/5'>
+                    <div><p className='text-[7px] font-black opacity-20 uppercase mb-1 tracking-widest'>XONA SAVDOSI</p><p className='text-sm font-black text-white/80 tabular-nums'>{analytics.dailyRoom.toLocaleString()}</p></div>
+                    <div className='text-right'><p className='text-[7px] font-black opacity-20 uppercase mb-1 tracking-widest'>BAR SAVDOSI</p><p className='text-sm font-black gold-text tabular-nums'>{analytics.dailyBar.toLocaleString()}</p></div>
                 </div>
             </div>
             <div className='grid grid-cols-3 gap-2.5'>
@@ -139,7 +148,7 @@ const App = () => {
                 <p className='text-[9px] font-black opacity-20 uppercase tracking-[3px] px-1'>JONLI MONITORING</p>
                 {(activeRooms || []).filter(r => r?.isBusy).map(r => {
                     const s = calculateSession(r);
-                    return (<div key={r.id} onClick={() => setActiveTab('xarita')} className='group bg-white/5 border border-white/5 p-5 rounded-2xl flex justify-between items-center active:scale-[0.98] transition-all cursor-pointer'><div><p className='text-[11px] font-black italic uppercase text-white/80'>{r.name}</p><p className='text-[8px] opacity-20 font-bold mt-0.5'>{s.time} • {s.startStr}</p></div><p className='text-xs font-black gold-text'>{s.total.toLocaleString()} UZS</p></div>);
+                    return (<div key={r.id} onClick={() => setActiveTab('xarita')} className='bg-white/5 border border-white/5 p-5 rounded-2xl flex justify-between items-center active:scale-[0.98] transition-all cursor-pointer'><div><p className='text-[11px] font-black italic uppercase text-white/80'>{r.name}</p><p className='text-[8px] opacity-20 font-bold mt-0.5'>{s.time} • {s.startStr}</p></div><p className='text-xs font-black gold-text'>{s.total.toLocaleString()} UZS</p></div>);
                 })}
             </div>
             <div className='bg-red-500/5 border border-red-500/10 p-5 rounded-[2rem]'>
@@ -211,8 +220,6 @@ const App = () => {
                     </div>
                 );
             })}</div>
-
-            {/* Sleek Floating Add Button */}
             <button onClick={() => { setEditingRoom(null); setShowAddRoom(true); }} className='fixed right-8 bottom-32 w-12 h-12 bg-[#ffcf4b] rounded-2xl flex items-center justify-center text-black shadow-xl shadow-[#ffcf4b]/10 active:scale-90 transition-all z-50'><Plus size={24} strokeWidth={3} /></button>
         </div>
     );
@@ -222,7 +229,7 @@ const App = () => {
             <div className='flex justify-between items-end mb-2'><h2 className='text-xl font-black italic gold-text uppercase tracking-tighter'>BAR</h2><div className='flex gap-1.5 p-1 bg-white/5 rounded-xl border border-white/5'><button onClick={() => setBarSubTab('sotuv')} className={`px-4 py-2 rounded-lg text-[8px] font-black uppercase transition-all ${barSubTab === 'sotuv' ? 'bg-[#ffcf4b] text-black shadow-md' : 'text-white/20'}`}>Sotuv</button><button onClick={() => setBarSubTab('ombor')} className={`px-4 py-2 rounded-lg text-[8px] font-black uppercase transition-all ${barSubTab === 'ombor' ? 'bg-white/10 text-white' : 'text-white/20'}`}>Ombor</button></div></div>
             {barSubTab === 'sotuv' ? (
                 <div className='grid grid-cols-2 gap-3.5'>
-                    {(inventory || []).length > 0 ? (inventory || []).map(item => (<button key={item.id} onClick={() => { if (item.stock <= 0) return alert('Omborda yo\'q!'); if (window.confirm('Sotilsinmi?')) { setInventory(p => p.map(i => i.id === item.id ? { ...i, stock: i.stock - 1, sold: (i.sold || 0) + 1 } : i)); setSalesLog(p => [...p, { id: Date.now(), amount: item.price, timestamp: Date.now(), club: currentAdminData.club }]); addToHistory('BAR', item.name, `Sotuv: ${item.price.toLocaleString()} UZS`); } }} className='bg-white/5 border border-white/5 p-5 rounded-2xl text-left h-28 flex flex-col justify-between active:scale-95 transition-all'><div><p className='text-[6px] opacity-20 font-black uppercase mb-0.5'>{item.category}</p><h4 className='text-[11px] font-black uppercase text-white/70 italic'>{item.name}</h4></div><p className='text-[10px] font-black gold-text'>{item.price.toLocaleString()} UZS</p></button>)) : <div className='col-span-2 py-32 text-center opacity-10 text-[9px] font-black uppercase tracking-[5px]'>OMBOR BO'SH</div>}
+                    {(inventory || []).length > 0 ? (inventory || []).map(item => (<button key={item.id} onClick={() => { if (item.stock <= 0) return alert('Omborda yo\'q!'); if (window.confirm('Sotilsinmi?')) { setInventory(p => p.map(i => i.id === item.id ? { ...i, stock: i.stock - 1, sold: (i.sold || 0) + 1 } : i)); setSalesLog(p => [...p, { id: Date.now(), amount: item.price, timestamp: Date.now(), club: currentAdminData.club, type: 'BAR' }]); addToHistory('BAR', item.name, `Sotuv: ${item.price.toLocaleString()} UZS`); } }} className='bg-white/5 border border-white/5 p-5 rounded-2xl text-left h-28 flex flex-col justify-between active:scale-95 transition-all'><div><p className='text-[6px] opacity-20 font-black uppercase mb-0.5'>{item.category}</p><h4 className='text-[11px] font-black uppercase text-white/70 italic'>{item.name}</h4></div><p className='text-[10px] font-black gold-text'>{item.price.toLocaleString()} UZS</p></button>)) : <div className='col-span-2 py-32 text-center opacity-10 text-[9px] font-black uppercase tracking-[5px]'>OMBOR BO'SH</div>}
                 </div>
             ) : (
                 <div className='space-y-3.5'>
@@ -276,7 +283,7 @@ const App = () => {
                 </div>
             )}
 
-            {/* Modals - Refined & Comfortable */}
+            {/* Modals */}
             <AnimatePresence>
                 {checkoutRoom && (
                     <div className='modal-overlay'><motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className='modal-content !p-8 !rounded-[2.5rem] !max-w-[85%] border border-[#ffcf4b]/5'>
