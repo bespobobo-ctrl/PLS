@@ -8,8 +8,8 @@ import {
 
 const getInitialState = (key, defaultValue) => {
     try {
-        // v47 - Premium Map & Room UI Stable
-        const BOT_URL = 'https://pls-taupe.vercel.app/?v=v47';
+        // v48 - Improved Login Feedback
+        const BOT_URL = 'https://pls-taupe.vercel.app/?v=v48';
         const API_URL = 'http://161.35.196.164:3001/api';
         const stored = localStorage.getItem(key);
         return stored ? JSON.parse(stored) : defaultValue;
@@ -34,10 +34,12 @@ const App = () => {
     const [editingProduct, setEditingProduct] = useState(null);
     const [newRoom, setNewRoom] = useState({ name: '', price: '', type: 'VIP' });
     const [newProduct, setNewProduct] = useState({ name: '', price: '', stock: '', category: 'Ichimliklar', image: '/images/pepsi.png' });
+    const [loginError, setLoginError] = useState(false);
 
     const clubAdmins = [
         { login: 'admin1', password: '11', club: 'KOKAND_1' },
-        { login: 'admin2', password: '22', club: 'KOKAND_2' }
+        { login: 'admin2', password: '22', club: 'KOKAND_2' },
+        { login: '123', password: '123', club: 'TEST_CLUB' }
     ];
 
     // --- EFFECTS ---
@@ -53,8 +55,14 @@ const App = () => {
         const admin = clubAdmins.find(a => a.login === username && a.password === password);
         if (admin) {
             setView('clubAdmin');
+            setLoginError(false);
             if (window.Telegram?.WebApp?.HapticFeedback) {
                 window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+            }
+        } else {
+            setLoginError(true);
+            if (window.Telegram?.WebApp?.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
             }
         }
     };
@@ -75,6 +83,12 @@ const App = () => {
                         </div>
                         <h1 className='text-4xl font-black italic tracking-tighter mb-2 uppercase'>PLS_ADMIN</h1>
                         <p className='text-[10px] font-bold opacity-30 tracking-[4px] mb-12 uppercase'>Premium Management System</p>
+
+                        {loginError && (
+                            <motion.div initial={{ x: -10 }} animate={{ x: 0 }} className="text-red-500 text-[10px] font-black mb-4 uppercase tracking-widest">
+                                XATO LOGIN YOKI PAROL!
+                            </motion.div>
+                        )}
 
                         <div className='w-full max-w-sm space-y-4'>
                             <input
